@@ -14,13 +14,29 @@ return new class extends Migration
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('conversation_id')->constrained()->onDelete('cascade');
-            $table->uuid('sender_id');
-            $table->enum('type', ['text', 'image', 'file'])->default('text');
-            $table->text('content')->nullable();  // encrypt later
+            $table->string('sender_type'); // 'user', 'ai', 'agent', 'system'
+            $table->foreignId('sender_id')->nullable();
+            $table->enum('type', ['text', 'image', 'file', 'voice'])->default('text');
+            $table->text('content')->nullable();
             $table->jsonb('metadata')->nullable();
+            $table->jsonb('attachments')->nullable();
             $table->timestamps();
-            $table->index(['conversation_id', 'created_at']);  // برای sorting
+            // 👇 index برای performance بالا
+            $table->index(['conversation_id', 'created_at']);
+            $table->index('sender_type');
         });
+
+
+//        Schema::create('messages', function (Blueprint $table) {
+//            $table->id();
+//            $table->foreignId('conversation_id');
+//            $table->foreignId('sender_id')->nullable();
+//            $table->enum('type', ['text', 'image', 'file'])->default('text');
+//            $table->text('content')->nullable();  // encrypt later
+//            $table->jsonb('metadata')->nullable();
+//            $table->timestamps();
+//            $table->index(['conversation_id', 'created_at']);  // برای sorting
+//        });
     }
 
     /**

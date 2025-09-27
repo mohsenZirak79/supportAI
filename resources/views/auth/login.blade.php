@@ -7,6 +7,15 @@
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
     <title>@yield('title')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script>
+        var win = navigator.platform.indexOf('Win') > -1;
+        if (win && document.querySelector('#sidenav-scrollbar')) {
+            var options = {
+                damping: '0.5'
+            }
+            Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+        }
+    </script>
 </head>
 
 <body class="g-sidenav-show rtl bg-gray-100">
@@ -51,7 +60,7 @@
                                     <label>کد ورود</label>
                                     <div class="mb-3">
                                         <input type="hidden" name="phone">
-                                        <input type="text" name="otp" placeholder="کد تایید" required>
+                                        <input type="text" name="otp" placeholder="کد تایید" class="form-control" required>
                                     </div>
                                     <button type="submit" class="btn bg-gradient-info w-100 mt-4 mb-0">
                                         تایید کد
@@ -82,6 +91,7 @@
 <script>
     // ارسال شماره
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        console.log(1111111111111);
         e.preventDefault();
         const phoneInput = document.querySelector('#loginForm input[name="phone"]');
         const phone = phoneInput.value.trim();
@@ -101,6 +111,7 @@
             }
 
         } catch (error) {
+            console.log(error)
             document.getElementById('error').innerText = error.response?.data?.error?.message || 'خطا در ارسال شماره';
         }
     });

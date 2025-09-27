@@ -111,11 +111,11 @@ class AuthController
 //        return response()->json(['error' => ['code' => 'AUTH_ERROR', 'message' => 'Invalid credentials']], 401);
 //    }
 
-    public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
-        return ['message' => 'Logged out'];
-    }
+//    public function logout(Request $request)
+//    {
+//        $request->user()->currentAccessToken()->delete();
+//        return ['message' => 'Logged out'];
+//    }
 
     public function sessions(Request $request)
     {
@@ -133,12 +133,15 @@ class AuthController
     }
     public function login(Request $request) // بدون Request class، چون ساده
     {
-        $request->validate(['phone' => 'required|regex:/^(\+98|0)?9\d{9}$/|exists:users,phone']);
+
+        $request->validate([
+            'phone' => ['required', 'regex:/^(\+98|0)?9\d{9}$/', 'exists:users,phone'],
+        ]);
+
         if (RateLimiter::tooManyAttempts('login_' . $request->ip(), 10)) {
             return response()->json(['error' => ['code' => 'TOO_MANY_ATTEMPTS', 'message' => 'Too many login attempts']], 429);
         }
         RateLimiter::hit('login_' . $request->ip(), 60);
-
         $user = User::where('phone', $request->phone)->first();
         $otp = rand(100000, 999999);
         Cache::put('otp_login_' . $request->phone, $otp, 120);

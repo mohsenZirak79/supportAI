@@ -14,11 +14,11 @@
 
 
 
-
+const isDocker = process.env.DOCKER === 'true';
 
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-
+import vue from '@vitejs/plugin-vue';
 export default defineConfig({
     plugins: [
         laravel({
@@ -32,7 +32,26 @@ export default defineConfig({
             ],
             refresh: true,
         }),
+        vue({
+            template: {
+                transformAssetUrls: {
+                    base: null,
+                    includeAbsolute: false,
+                },
+            },
+        }),
     ],
+    // server: {
+    //     host: '0.0.0.0', // برای دسترسی از هاست
+    //     port: 5173,
+    //     hmr: isDocker
+    //         ? {
+    //             host: 'localhost',
+    //             protocol: 'ws',
+    //             clientPort: 5173,
+    //         }
+    //         : true, // پیش‌فرض
+    // },
     build: {
         outDir: 'public/build',
         assetsDir: 'assets',

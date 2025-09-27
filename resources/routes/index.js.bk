@@ -1,0 +1,19 @@
+// src/router/index.js (مثال)
+import { createRouter, createWebHistory } from 'vue-router'
+import ChatInterface from '@/views/ChatInterface.vue'
+
+const routes = [
+    // ... سایر مسیرها
+    {
+        path: '/chat',
+        name: 'Chat',
+        component: ChatInterface
+    }
+]
+
+const router = createRouter({
+    history: createWebHistory(),
+    routes
+})
+
+export default router

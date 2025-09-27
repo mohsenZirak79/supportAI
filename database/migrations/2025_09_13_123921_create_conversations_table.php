@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('conversations', function (Blueprint $table) {
             $table->id();
-            $table->uuid('user_id');
-            $table->uuid('support_agent_id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->uuid('support_agent_id')->nullable();
             $table->enum('status', ['ai', 'human', 'closed'])->default('ai')->index();
-            $table->jsonb('user_profile');  // JSONB برای PostgreSQL – efficient
+            $table->jsonb('user_profile')->nullable();  // JSONB برای PostgreSQL – efficient
+            $table->char('title',250)->nullable();  // encrypt later
             $table->timestamps();
             $table->softDeletes();  // برای recovery
         });

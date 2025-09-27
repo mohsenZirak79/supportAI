@@ -57,7 +57,11 @@ return [
             'channels' => explode(',', (string) env('LOG_STACK', 'single')),
             'ignore_exceptions' => false,
         ],
-
+        'sms' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/sms.log'),
+            'level' => 'debug',
+        ],
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
@@ -126,7 +130,11 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
-
+        'sms' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/sms.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];

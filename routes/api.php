@@ -23,18 +23,26 @@ use Illuminate\Support\Facades\Route;
 
 use App\Domains\Auth\Controllers\AuthController;
 use App\Domains\UserPanel\Controllers\ConversationController;
-use App\Domains\UserPanel\Controllers\FileController;
-use App\Domains\AgentPanel\Controllers\TicketController;
-use App\Domains\AdminPanel\Controllers\UserController;
-use App\Domains\AdminPanel\Controllers\RoleController;
+//use App\Domains\UserPanel\Controllers\FileController;
+//use App\Domains\AgentPanel\Controllers\TicketController;
+//use App\Domains\AdminPanel\Controllers\UserController;
+//use App\Domains\AdminPanel\Controllers\RoleController;
 
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->middleware(['forceTestUser'])->group(function () {
     // Auth Routes
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/activate', [AuthController::class, 'activate']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/verify-login-otp', [AuthController::class, 'verifyLoginOtp']);
     Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+
+    Route::get('conversations', [ConversationController::class, 'index']);
+    Route::post('conversations', [ConversationController::class, 'store']);
+    Route::patch('conversations/{conversation}/title', [ConversationController::class, 'updateTitle']);
+    Route::delete('conversations/{conversation}', [ConversationController::class, 'destroy']);
+    Route::post('conversations/{conversation}/messages', [ConversationController::class, 'sendMessage']);
+    Route::get('conversations/{conversation}/messages', [ConversationController::class, 'messages']);
 
     // User Panel Routes
 //    Route::middleware(['auth:sanctum', \App\Http\Middleware\GuestChat::class, \App\Http\Middleware\IdleTimeout::class])->group(function () {

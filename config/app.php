@@ -51,7 +51,13 @@ return [
     | the application so that it's available within Artisan commands.
     |
     */
-
+//    'providers' => [
+//        App\Domains\SmsPanel\Providers\SmsServiceProvider::class,
+//    ],
+//
+//    'aliases' => [
+//        'Sms' => App\Domains\SmsPanel\Facades\Sms::class,
+//    ],
     'url' => env('APP_URL', 'http://localhost'),
 
     /*
@@ -122,5 +128,7 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
-
+    'force_test_user' => env('FORCE_TEST_USER', false),
+    'test_user_id' => env('TEST_USER_ID'),
+    'use_mock_ai' => env('USE_MOCK_AI', true),
 ];

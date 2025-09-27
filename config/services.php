@@ -34,5 +34,8 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'python_ai' => [
+        'url' => env('PYTHON_AI_URL', 'http://localhost:5000'),
+    ],
 
 ];
