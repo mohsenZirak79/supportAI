@@ -15,7 +15,7 @@ class ForceTestUser
         if (app()->environment('local') && config('app.force_test_user')) {
             $testUserId = config('app.test_user_id');
             if ($testUserId) {
-                $user = User::find($testUserId);
+                $user = User::first();
                 if ($user) {
                     Auth::setUser($user);
                 }

@@ -4,6 +4,7 @@ namespace App\Domains\UserPanel\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Domains\Shared\Models\Ticket;
+use App\Http\Resources\TicketResource;
 use Illuminate\Http\Request;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -42,10 +43,10 @@ class TicketController extends Controller
             'priority' => $validated['priority'] ?? 'normal'
         ]);
 
-        if ($request->filled('attachments')) {
-            $media = Media::whereIn('id', $request->attachments)->get();
-            foreach ($media as $file) {
-                $ticket->addMedia($file->getPath())->toMediaCollection('ticket-attachments');
+        // آپلود فایل‌ها (اگر وجود داشت)
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $ticket->addMedia($file)->toMediaCollection('ticket-attachments');
             }
         }
 
@@ -90,6 +91,7 @@ class TicketController extends Controller
 
     public function show(string $rootId)
     {
+
         // بررسی اینکه تیکت متعلق به کاربر است
         $rootTicket = Ticket::where('id', $rootId)
             ->where('sender_type', 'user')
@@ -105,5 +107,41 @@ class TicketController extends Controller
             'ticket' => $rootTicket,
             'messages' => $messages
         ]);
+    }
+    public function getDepartments()
+    {
+        // دریافت نقش‌های پشتیبانی از Spatie
+//        $roles = User::role(['support_website', 'support_sales', 'support_admin', 'support_finance'])
+//            ->distinct()
+//            ->pluck('roles.name');
+//
+//        $departments = $roles->map(function ($role) {
+//            return [
+//                'id' => $role,
+//                'name' => match($role) {
+//                    'support_website' => 'پشتیبانی وب سایت',
+//                    'support_sales' => 'پشتیبانی فروش',
+//                    'support_admin' => 'پشتیبانی اداری',
+//                    'support_finance' => 'پشتیبانی مالی',
+//                    default => ucfirst(str_replace('_', ' ', $role))
+//                }
+//            ];
+//        });
+        $departments = [
+            'support_website' => 'پشتیبانی وب سایت',
+            'support_sales' => 'پشتیبانی فروش',
+            'support_admin' => 'پشتیبانی اداری',
+            'support_finance' => 'پشتیبانی مالی'
+        ];
+
+// تبدیل آرایه به فرمت مورد نیاز
+        $formattedDepartments = array_map(function ($key, $value) {
+            return [
+                'id' => $key,
+                'name' => $value
+            ];
+        }, array_keys($departments), $departments);
+
+        return response()->json($formattedDepartments);
     }
 }

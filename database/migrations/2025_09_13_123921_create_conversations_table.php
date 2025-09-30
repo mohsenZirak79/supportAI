@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('conversations', function (Blueprint $table) {
-            $table->uuid();
+            $table->uuid('id')->primary();
             $table->uuid('user_id');
             $table->uuid('support_agent_id')->nullable();
             $table->enum('status', ['ai', 'human', 'closed'])->default('ai')->index();

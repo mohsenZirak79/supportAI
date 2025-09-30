@@ -24,7 +24,7 @@
         <!-- Header -->
         <header class="bg-white shadow-sm border-b">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center py-4">
+                <div class="flex justify-between items-center py-2">
                     <div class="flex items-center space-x-4 space-x-reverse">
                         <div class="bg-blue-600 p-2 rounded-lg">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,9 +49,9 @@
             </div>
         </header>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                     <div class="flex items-center">
                         <div class="bg-blue-100 p-3 rounded-lg">
@@ -107,7 +107,7 @@
             </div>
 
             <!-- Filters -->
-            <div class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-100">
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-4 border border-gray-100">
                 <div class="flex flex-wrap gap-4 items-center">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">فیلتر بر اساس وضعیت</label>
@@ -158,47 +158,53 @@
                     :key="ticket.id"
                     class="ticket-card bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
                 >
-                    <div class="p-6">
+                    <div class="p-4">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex-1">
                                 <div class="flex items-center space-x-3 space-x-reverse mb-2">
                                     <h3 class="text-lg font-semibold text-gray-900">{{ ticket.title }}</h3>
-                                    <span class="text-sm text-gray-500">#{{ ticket.id }}</span>
+                                    <span class="text-sm text-gray-500"></span>
                                 </div>
                                 <div class="flex items-center space-x-4 space-x-reverse text-sm text-gray-600">
-                  <span class="flex items-center">
-                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                    </svg>
-                    {{ getDepartmentName(ticket.department) }}
-                  </span>
                                     <span class="flex items-center">
-                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    {{ formatDate(ticket.created_at) }}
-                  </span>
+                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                        </svg>
+                                        {{ getDepartmentName(ticket.department) }}
+                                    </span>
+                                    <span class="flex items-center">
+                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ formatDate(ticket.created_at) }}
+                                    </span>
                                     <span :class="getPriorityClass(ticket.priority)">
-                    {{ getPriorityLabel(ticket.priority) }}
-                  </span>
+                                        {{ getPriorityLabel(ticket.priority) }}
+                                    </span>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-3 space-x-reverse">
-                <span :class="getStatusClass(ticket.status)" class="status-badge">
-                  {{ getStatusLabel(ticket.status) }}
-                </span>
+                                <span :class="getStatusClass(ticket.status)" class="status-badge">
+                                    {{ getStatusLabel(ticket.status) }}
+                                </span>
                                 <button
                                     @click="viewThread(ticket.id)"
-                                    class="text-blue-600 hover:text-blue-800 transition-colors"
+                                    class="bg-blue-100 hover:bg-blue-200 text-blue-600 px-3 py-1 rounded-lg font-medium transition-colors flex items-center space-x-2 space-x-reverse"
                                 >
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                     </svg>
+                                    <span>نمایش گفتگو</span>
                                 </button>
                             </div>
                         </div>
                         <p class="text-gray-600 mb-4">{{ ticket.message.substring(0, 150) }}...</p>
+                        <div v-if="ticket.attachments && ticket.attachments.length > 0" class="flex items-center text-sm text-gray-500 mb-4">
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                            </svg>
+                            {{ ticket.attachments.length }} فایل پیوست
+                        </div>
                     </div>
                 </div>
             </div>
@@ -206,28 +212,42 @@
 
         <!-- Thread Modal -->
         <transition name="fade">
-            <div v-if="selectedThread" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                    <div class="p-6 border-b border-gray-200 relative">
-                        <h2 class="text-xl font-bold text-gray-900">گفتگوی تیکت: {{ selectedThread.title }}</h2>
-                        <button @click="closeThreadModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
+            <div v-if="selectedThread" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto relative">
+                    <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-bold text-gray-900">گفتگوی تیکت: {{ selectedThread.title }}</h2>
+                            <button
+                                @click="closeThreadModal"
+                        class="absolute top-4 left-4 text-red-500 hover:text-red-700 transition-colors p-2 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                        style="width: 36px; height: 36px;"
+                            >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-                    <div class="p-6 space-y-4 max-h-96 overflow-y-auto">
-                        <div v-for="msg in threadMessages" :key="msg.id" class="flex">
-                            <div class="flex-shrink-0">
-                                <div :class="`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                  msg.sender_type === 'agent' ? 'bg-green-500' : 'bg-blue-500'
-                }`">
-                                    {{ msg.sender_type === 'agent' ? 'پشتیبان' : 'شما' }}
+            <div class="p-6 space-y-6 max-h-[65vh] overflow-y-auto bg-gray-50">
+                <div v-for="msg in threadMessages" :key="msg.id" class="flex items-start">
+                    <div class="flex-shrink-0 mt-1">
+                        <div :class="`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium ${
+                            msg.sender_type === 'user' ? 'bg-blue-500' : 'bg-green-500'
+                                }`">
+                                    {{ msg.sender_type === 'user' ? 'پشتیبان' : 'شما' }}
                                 </div>
                             </div>
-                            <div class="mr-3 flex-1">
-                                <div :class="msg.sender_type === 'agent' ? 'bg-green-50 border border-green-200' : 'bg-white shadow-sm'" class="rounded-lg p-4">
+                    <div class="ml-4 flex-1">
+                        <div :class="msg.sender_type === 'user' ? 'bg-blue-50 border border-blue-200 text-blue-800' : 'bg-green-50 border border-green-200 text-green-800'" class="rounded-lg p-4 shadow-sm">
                                     <p>{{ msg.message }}</p>
+                                    <div v-if="msg.attachments && msg.attachments.length" class="mt-2 text-sm text-gray-600">
+                                        <div v-for="file in msg.attachments" :key="file.id" class="flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                            </svg>
+                                            {{ file.name }}
+                                        </div>
+                                    </div>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-1">{{ formatDate(msg.created_at) }}</p>
                             </div>
@@ -235,15 +255,62 @@
                     </div>
 
                     <!-- Reply Form -->
-                    <div v-if="canReplyToThread" class="p-6 border-t">
+                    <div v-if="canReplyToThread" class="p-6 border-t bg-white">
                         <form @submit.prevent="submitThreadReply" class="space-y-4">
-              <textarea
-                  v-model="threadReplyMessage"
-                  rows="3"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="پاسخ خود را بنویسید..."
-                  required
-              ></textarea>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">پاسخ شما</label>
+                                <textarea
+                                    v-model="threadReplyMessage"
+                                    rows="3"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="پاسخ خود را بنویسید..."
+                                    required
+                                ></textarea>
+                            </div>
+                            <!-- File Upload for Reply -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">📎 فایل‌های پیوست</label>
+                                <div
+                                    class="file-drop-zone w-full p-4 rounded-lg text-center cursor-pointer border-2 border-dashed border-gray-300"
+                                    :class="{'border-blue-500 bg-blue-50': isDragOverReply}"
+                                    @dragover.prevent="isDragOverReply = true"
+                                    @dragleave.prevent="isDragOverReply = false"
+                                    @drop.prevent="handleFileDropReply"
+                                    @click="$refs.replyFileInput.click()"
+                                >
+                                    <p class="text-gray-600">فایل‌ها را اینجا بکشید یا کلیک کنید</p>
+                                </div>
+                                <input
+                                    type="file"
+                                    ref="replyFileInput"
+                                    @change="handleFileSelectReply"
+                                    multiple
+                                    class="hidden"
+                                    accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
+                                >
+                            </div>
+                            <!-- Selected Files Preview -->
+                            <transition-group name="slide" tag="div" class="space-y-2">
+                                <div
+                                    v-for="(file, index) in replyFiles"
+                                    :key="file.name + index"
+                                    class="flex items-center justify-between bg-gray-50 p-2 rounded-lg"
+                                >
+                                    <div class="flex items-center space-x-2 space-x-reverse">
+                                        <div class="text-lg">{{ getFileIcon(file.type) }}</div>
+                                        <span class="text-sm">{{ file.name }}</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        @click="removeReplyFile(index)"
+                                        class="text-red-500 hover:text-red-700"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </transition-group>
                             <button
                                 type="submit"
                                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
@@ -279,7 +346,7 @@
                                 required
                             >
                                 <option value="">انتخاب بخش...</option>
-                                <option v-for="dept in departments" :key="dept.id" :value="dept.value">
+                                <option v-for="dept in departments" :key="dept.id" :value="dept.id">
                                     {{ dept.name }}
                                 </option>
                             </select>
@@ -304,6 +371,57 @@
                                 required
                             ></textarea>
                         </div>
+                        <!-- File Upload -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">📎 فایل‌های پیوست</label>
+                            <div
+                                class="file-drop-zone w-full p-8 rounded-lg text-center cursor-pointer border-2 border-dashed border-gray-300"
+                                :class="{'border-blue-500 bg-blue-50': isDragOver}"
+                                @dragover.prevent="isDragOver = true"
+                                @dragleave.prevent="isDragOver = false"
+                                @drop.prevent="handleFileDrop"
+                                @click="$refs.fileInput.click()"
+                            >
+                                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 48 48">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" />
+                                </svg>
+                                <p class="text-lg font-medium text-gray-600">فایل‌ها را اینجا بکشید یا کلیک کنید</p>
+                                <p class="text-sm text-gray-500 mt-1">حداکثر 10 فایل، هر کدام تا 5 مگابایت</p>
+                            </div>
+                            <input
+                                type="file"
+                                ref="fileInput"
+                                @change="handleFileSelect"
+                                multiple
+                                class="hidden"
+                                accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
+                            >
+                        </div>
+                        <!-- Selected Files -->
+                        <transition-group name="slide" tag="div" class="space-y-2">
+                            <div
+                                v-for="(file, index) in selectedFiles"
+                                :key="file.name + index"
+                                class="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
+                            >
+                                <div class="flex items-center space-x-3 space-x-reverse">
+                                    <div class="text-2xl">{{ getFileIcon(file.type) }}</div>
+                                    <div>
+                                        <p class="font-medium text-gray-800">{{ file.name }}</p>
+                                        <p class="text-sm text-gray-500">{{ formatFileSize(file.size) }}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    @click="removeFile(index)"
+                                    class="text-red-500 hover:text-red-700 transition-colors"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </transition-group>
                         <div class="flex justify-end space-x-3 space-x-reverse pt-4">
                             <button
                                 type="button"
@@ -339,6 +457,8 @@ const loading = ref(true);
 const selectedThread = ref(null);
 const threadMessages = ref([]);
 const threadReplyMessage = ref('');
+const replyFiles = ref([]);
+const isDragOverReply = ref(false);
 const expandedTickets = ref([]);
 const isSubmittingTicket = ref(false);
 const isSubmittingReply = ref(false);
@@ -351,37 +471,10 @@ const newTicket = ref({
     department: '',
     priority: 'normal'
 });
-const replyMessages = ref({});
-const departments = ref([
-    { id: 1, value: 'support_website', name: 'پشتیبانی وب سایت' },
-    { id: 2, value: 'support_sales', name: 'پشتیبانی فروش' },
-    { id: 3, value: 'support_admin', name: 'پشتیبانی اداری' },
-    { id: 4, value: 'support_finance', name: 'پشتیبانی مالی' }
-]);
+const selectedFiles = ref([]);
+const isDragOver = ref(false);
+const departments = ref([]);
 const tickets = ref([]);
-
-// --- Computed ---
-const filteredTickets = computed(() => {
-    let filtered = tickets.value;
-    if (statusFilter.value) {
-        filtered = filtered.filter(ticket => ticket.status === statusFilter.value);
-    }
-    if (departmentFilter.value) {
-        filtered = filtered.filter(ticket => ticket.department === departmentFilter.value);
-    }
-    if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase();
-        filtered = filtered.filter(ticket =>
-            ticket.title.toLowerCase().includes(query) ||
-            ticket.message.toLowerCase().includes(query)
-        );
-    }
-    return filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-});
-
-const pendingTickets = computed(() => tickets.value.filter(t => t.status === 'pending').length);
-const answeredTickets = computed(() => tickets.value.filter(t => t.status === 'answered').length);
-const closedTickets = computed(() => tickets.value.filter(t => t.status === 'closed').length);
 
 // --- Methods ---
 const addToast = (message, type = 'success') => {
@@ -391,6 +484,16 @@ const addToast = (message, type = 'success') => {
 };
 const removeToast = (id) => {
     toasts.value = toasts.value.filter(t => t.id !== id);
+};
+
+// --- Fetch Data ---
+const fetchDepartments = async () => {
+    try {
+        const response = await axios.get('/api/v1/tickets_departments');
+        departments.value = response.data;
+    } catch (error) {
+        addToast('خطا در بارگذاری بخش‌ها', 'error');
+    }
 };
 
 const fetchTickets = async () => {
@@ -405,6 +508,7 @@ const fetchTickets = async () => {
     }
 };
 
+// --- Thread Management ---
 const viewThread = async (rootId) => {
     try {
         const response = await axios.get(`/api/v1/tickets/${rootId}`);
@@ -419,32 +523,62 @@ const closeThreadModal = () => {
     selectedThread.value = null;
     threadMessages.value = [];
     threadReplyMessage.value = '';
+    replyFiles.value = [];
 };
 
 const canReplyToThread = computed(() => {
     if (threadMessages.value.length === 0) return false;
     const lastMessage = threadMessages.value[threadMessages.value.length - 1];
-    return lastMessage.sender_type === 'agent' && lastMessage.status !== 'closed';
+    return lastMessage.sender_type === 'user' && lastMessage.status !== 'closed';
 });
 
 const submitThreadReply = async () => {
     if (!selectedThread.value) return;
     try {
-        await axios.post(`/api/v1/tickets/${selectedThread.value.id}/messages`, {
-            message: threadReplyMessage.value
+        const formData = new FormData();
+        formData.append('message', threadReplyMessage.value);
+        replyFiles.value.forEach(file => formData.append('files[]', file));
+
+        await axios.post(`/api/v1/tickets/${selectedThread.value.id}/messages`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
         addToast('پاسخ شما ارسال شد');
         await viewThread(selectedThread.value.id);
         threadReplyMessage.value = '';
+        replyFiles.value = [];
     } catch (error) {
         addToast('خطا در ارسال پاسخ', 'error');
     }
 };
 
+// --- File Handling for Reply ---
+const handleFileSelectReply = (event) => {
+    const files = Array.from(event.target.files);
+    addFiles(files, replyFiles);
+};
+const handleFileDropReply = (event) => {
+    isDragOverReply.value = false;
+    const files = Array.from(event.dataTransfer.files);
+    addFiles(files, replyFiles);
+};
+const removeReplyFile = (index) => {
+    replyFiles.value.splice(index, 1);
+};
+
+// --- New Ticket ---
 const submitNewTicket = async () => {
     isSubmittingTicket.value = true;
     try {
-        const response = await axios.post('/api/v1/tickets', newTicket.value);
+        const formData = new FormData();
+        formData.append('title', newTicket.value.title);
+        formData.append('message', newTicket.value.message);
+        formData.append('department', newTicket.value.department);
+        selectedFiles.value.forEach(file => formData.append('files[]', file));
+
+        const response = await axios.post('/api/v1/tickets', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
         tickets.value.unshift(response.data);
         closeNewTicketForm();
         addToast(`تیکت شما با موفقیت ثبت شد. شماره پیگیری: #${response.data.id}`);
@@ -457,11 +591,59 @@ const submitNewTicket = async () => {
 
 const closeNewTicketForm = () => {
     showNewTicketForm.value = false;
-    newTicket.value = { title: '', message: '', department: '', priority: 'normal' };
+    newTicket.value = { title: '', message: '', department: '' };
+    selectedFiles.value = [];
 };
 
-const getDepartmentName = (deptValue) => {
-    const dept = departments.value.find(d => d.value === deptValue);
+// --- File Utils ---
+const addFiles = (files, targetArray) => {
+    const maxFiles = 10;
+    const maxSize = 5 * 1024 * 1024;
+    files.forEach(file => {
+        if (targetArray.value.length >= maxFiles) {
+            addToast('حداکثر 10 فایل مجاز است', 'warning');
+            return;
+        }
+        if (file.size > maxSize) {
+            addToast(`فایل ${file.name} بیش از 5 مگابایت است`, 'warning');
+            return;
+        }
+        targetArray.value.push(file);
+    });
+};
+
+const handleFileSelect = (event) => {
+    const files = Array.from(event.target.files);
+    addFiles(files, selectedFiles);
+};
+const handleFileDrop = (event) => {
+    isDragOver.value = false;
+    const files = Array.from(event.dataTransfer.files);
+    addFiles(files, selectedFiles);
+};
+const removeFile = (index) => {
+    selectedFiles.value.splice(index, 1);
+};
+
+const getFileIcon = (type) => {
+    if (type.startsWith('image/')) return '🖼️';
+    if (type.includes('pdf')) return '📄';
+    if (type.includes('word') || type.includes('doc')) return '📝';
+    if (type.includes('zip') || type.includes('rar')) return '📦';
+    return '📎';
+};
+
+const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 بایت';
+    const k = 1024;
+    const sizes = ['بایت', 'کیلوبایت', 'مگابایت'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+// --- Utils ---
+const getDepartmentName = (deptId) => {
+    const dept = departments.value.find(d => d.id === deptId);
     return dept ? dept.name : 'نامشخص';
 };
 
@@ -496,8 +678,31 @@ const formatDate = (dateString) => {
     });
 };
 
+const pendingTickets = computed(() => tickets.value.filter(t => t.status === 'pending').length);
+const answeredTickets = computed(() => tickets.value.filter(t => t.status === 'answered').length);
+const closedTickets = computed(() => tickets.value.filter(t => t.status === 'closed').length);
+
+const filteredTickets = computed(() => {
+    let filtered = tickets.value;
+    if (statusFilter.value) {
+        filtered = filtered.filter(ticket => ticket.status === statusFilter.value);
+    }
+    if (departmentFilter.value) {
+        filtered = filtered.filter(ticket => ticket.department === departmentFilter.value);
+    }
+    if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase();
+        filtered = filtered.filter(ticket =>
+            ticket.title.toLowerCase().includes(query) ||
+            ticket.message.toLowerCase().includes(query)
+        );
+    }
+    return filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+});
+
 // --- Lifecycle ---
 onMounted(() => {
+    fetchDepartments();
     fetchTickets();
 });
 </script>
@@ -559,5 +764,12 @@ onMounted(() => {
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
+}
+.file-drop-zone {
+    transition: all 0.3s ease;
+}
+.file-drop-zone:hover {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
 }
 </style>

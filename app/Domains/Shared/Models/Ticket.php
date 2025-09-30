@@ -2,6 +2,7 @@
 
 namespace App\Domains\Shared\Models;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -33,5 +34,14 @@ class Ticket extends Model implements HasMedia
     public function replies()
     {
         return $this->hasMany(Ticket::class, 'parent_id');
+    }
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = Str::uuid(); // تولید UUID خودکار هنگام ایجاد
+            }
+        });
     }
 }
