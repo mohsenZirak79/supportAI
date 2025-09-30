@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Message extends Model
 {
-    protected $fillable = ['conversation_id', 'sender_type', 'content', 'attachments'];
+    protected $fillable = ['conversation_id', 'sender_id', 'sender_type', 'type', 'content', 'metadata',];
     protected $casts = [
         'attachments' => 'array',
         'created_at' => 'datetime'

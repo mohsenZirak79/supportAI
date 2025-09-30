@@ -13,6 +13,9 @@ Route::get('/test', function (){
 Route::get('/chat', function () {
     return View::make('chat.index');
 });
+Route::get('/ticket', function () {
+    return View::make('tickets.index');
+});
 
 
 Route::get('/login', [WebController::class, 'showLogin'])->name('login');
