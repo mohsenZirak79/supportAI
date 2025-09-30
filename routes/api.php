@@ -54,10 +54,10 @@ Route::prefix('v1')->middleware(['forceTestUser'])->group(function () {
 //    Route::post('tickets/{ticket}/messages', [TicketController::class, 'sendMessage']);
     // User Panel
 
-    Route::get('tickets', [UserPanel\TicketController::class, 'index']); // لیست تیکت‌های اصلی کاربر
-    Route::post('tickets', [UserPanel\TicketController::class, 'store']); // ایجاد تیکت جدید
-    Route::get('tickets/{rootId}', [UserPanel\TicketController::class, 'show']); // مشاهده تمام رفت‌و‌برگشت‌ها
-    Route::post('tickets/{rootId}/messages', [UserPanel\TicketController::class, 'sendMessage']); // پاسخ کاربر
+    Route::get('tickets', [\App\Domains\UserPanel\Controllers\TicketController::class, 'index']); // لیست تیکت‌های اصلی کاربر
+    Route::post('tickets', [\App\Domains\UserPanel\Controllers\TicketController::class, 'store']); // ایجاد تیکت جدید
+    Route::get('tickets/{rootId}', [\App\Domains\UserPanel\Controllers\TicketController::class, 'show']); // مشاهده تمام رفت‌و‌برگشت‌ها
+    Route::post('tickets/{rootId}/messages', [\App\Domains\UserPanel\Controllers\TicketController::class, 'sendMessage']); // پاسخ کاربر
     Route::get('agent/tickets', [AgentPanel\TicketController::class, 'index']); // لیست همه تیکت‌ها (فیلتر شده بر اساس نقش)
     Route::get('agent/tickets/{rootId}', [AgentPanel\TicketController::class, 'show']); // مشاهده رفت‌و‌برگشت‌ها
     Route::post('agent/tickets/{rootId}/messages', [AgentPanel\TicketController::class, 'sendMessage']); // پاسخ پشتیبان

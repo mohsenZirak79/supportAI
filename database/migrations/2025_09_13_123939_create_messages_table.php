@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('messages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('conversation_id')->constrained()->onDelete('cascade');
+            $table->uuid();
+            $table->uuid('conversation_id');
             $table->string('sender_type'); // 'user', 'ai', 'agent', 'system'
-            $table->foreignId('sender_id')->nullable();
+            $table->uuid('sender_id')->nullable();
             $table->enum('type', ['text', 'image', 'file', 'voice'])->default('text');
             $table->text('content')->nullable();
             $table->jsonb('metadata')->nullable();
