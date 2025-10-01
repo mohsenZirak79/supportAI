@@ -15,7 +15,9 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;  // HasRoles برای permissions
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
+    // HasRoles برای permissions
 
     /**
      * The attributes that are mass assignable.
@@ -23,7 +25,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name', 'email', 'password', 'role',
+        'name', 'email', 'password', 'role', 'family', 'national_id', 'postal_code', 'birth_date', 'birth_date', 'address'
     ];
 
     protected $hidden = [

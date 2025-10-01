@@ -1,39 +1,182 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>Register</title>
-    @vite('resources/css/app.css')
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
+    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <title>ثبت‌نام کاربر</title>
+    <title>@yield('title')</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script>
+        var win = navigator.platform.indexOf('Win') > -1;
+        if (win && document.querySelector('#sidenav-scrollbar')) {
+            var options = {
+                damping: '0.5'
+            }
+            Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+        }
+    </script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-<form method="POST" action="{{ route('register') }}" class="bg-white p-6 rounded-lg shadow-lg w-96">
-    @csrf
-    <h2 class="text-2xl font-bold text-blue-600 mb-4">Register</h2>
-    <div class="mb-4">
-        <input type="text" name="phone" placeholder="Enter your phone (e.g., +989123456789)" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400">
-        @error('phone')
-        <p class="text-red-500 text-sm">{{ $message }}</p>
-        @enderror
-    </div>
-    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-green-500 transition">Send OTP</button>
-    @if (session('success'))
-        <p class="text-green-500 mt-2">{{ session('success') }}</p>
-    @endif
-</form>
-<form method="POST" action="{{ route('activate') }}" class="bg-white p-6 rounded-lg shadow-lg w-96 mt-4">
-    @csrf
-    <h2 class="text-2xl font-bold text-blue-600 mb-4">Verify OTP</h2>
-    <input type="hidden" name="phone" value="{{ old('phone') }}">
-    <div class="mb-4">
-        <input type="text" name="otp" placeholder="Enter OTP" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400">
-        @error('otp')
-        <p class="text-red-500 text-sm">{{ $message }}</p>
-        @enderror
-    </div>
-    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-green-500 transition">Verify</button>
-    @if ($errors->any())
-        <p class="text-red-500 mt-2">{{ $errors->first() }}</p>
-    @endif
-</form>
+
+<body class="g-sidenav-show rtl bg-gray-100">
+<div class="container position-sticky z-index-sticky top-0">
+    <!-- Navbar ... (همانند قبل) -->
+</div>
+
+<main class="main-content mt-0">
+    <section>
+        <div class="page-header min-vh-75">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="oblique position-absolute top-0 h-50 d-md-block d-none me-n8">
+                            <div class="oblique-image bg-cover position-absolute fixed-top   h-100 z-index-0 ms-n6"
+                                 style="background-image:url({{ asset('images/login_img.jpg') }})"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-5 col-lg-5 col-md-6 d-flex flex-column mx-auto">
+                        <div class="card card-plain mt-4">
+                            <div class="card-header pb-0 text-left bg-transparent">
+                                <h3 class="font-weight-bolder text-info text-gradient">خوش آمدید</h3>
+                                <p class="mb-0">لطفا اطلاعات خود را وارد کنید.</p>
+                            </div>
+                            @if ($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
+                            <div class="card-body">
+                                <form id="registerForm" method="POST" action="{{ route('register') }}">
+                                    @csrf
+                                    <div class="row">
+                                    <div class="col-md-6 mb-1">
+                                        <label>نام</label>
+                                        <input type="text" class="form-control" name="name" placeholder="نام" required>
+                                    </div>
+                                    <div class="col-md-6 mb-1">
+                                        <label>نام خانوادگی</label>
+                                        <input type="text" class="form-control" name="family" placeholder="نام خانوادگی" required>
+                                    </div>
+                                        <div class="row">
+
+                                    </div>
+                                        <div class="col-md-6 mb-1">
+                                        <label>ایمیل</label>
+                                        <input type="email" class="form-control" name="email" placeholder="ایمیل" required>
+                                    </div>
+                                    <div class="col-md-6 mb-1">
+                                        <label>شماره تلفن</label>
+                                        <input type="text" class="form-control" name="phone" placeholder="شماره تلفن (...09)" required>
+                                    </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-1">
+                                            <label>رمز عبور</label>
+                                            <input type="password" class="form-control" name="password" placeholder="رمز عبور" required>
+                                        </div>
+                                        <div class="col-md-6 mb-1">
+                                            <label>تکرار رمز عبور</label>
+                                            <input type="password" class="form-control" name="password_confirmation" placeholder="تکرار رمز عبور" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                    <div class="col-md-6 mb-1">
+                                        <label>کد ملی</label>
+                                        <input type="text" class="form-control" name="national_id" placeholder="کد ملی">
+                                    </div>
+                                    <div class="col-md-6 mb-1">
+                                        <label>کد پستی</label>
+                                        <input type="text" class="form-control" name="postal_code" placeholder="کد پستی">
+                                    </div>
+                                    </div>
+                                    <div class="col-md-6 mb-1">
+                                        <label>تاریخ تولد</label>
+                                        <input type="date" class="form-control" name="birth_date" placeholder="تاریخ تولد">
+                                    </div>
+                                    <div class="mb-1">
+                                        <label>آدرس</label>
+                                        <textarea class="form-control" name="address" placeholder="آدرس"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn bg-gradient-info w-100 mt-4 mb-0">
+                                        ثبت‌نام
+                                    </button>
+                                </form>
+                                <div id="error" class="text-danger mt-2"></div>
+                            </div>
+
+                            <div class="card-footer text-center pt-0 px-lg-2 px-1">
+                                <p class="mb-4 text-sm mx-auto">
+                                    قبلاً حساب کاربری دارید؟ <a href="{{ route('login') }}" class="text-info text-gradient font-weight-bold">ورود</a>
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="footer py-5">
+    <!-- Footer ... (همانند قبل) -->
+</footer>
+
+<script>
+    // ارسال شماره
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        console.log(1111111111111);
+        e.preventDefault();
+        const phoneInput = document.querySelector('#loginForm input[name="phone"]');
+        const phone = phoneInput.value.trim();
+
+        try {
+            const response = await axios.post('/api/v1/auth/login', { phone });
+
+            // نمایش فرم OTP
+            document.getElementById('loginForm').style.display = 'none';
+            const otpForm = document.getElementById('otpForm');
+            otpForm.style.display = 'block';
+            otpForm.querySelector('input[name="phone"]').value = phone;
+
+            // نمایش OTP تستی (فقط در local)
+            if (response.data.otp) {
+                alert('Test OTP: ' + response.data.otp);
+            }
+
+        } catch (error) {
+            console.log(error)
+            document.getElementById('error').innerText = error.response?.data?.error?.message || 'خطا در ارسال شماره';
+        }
+    });
+
+    // ارسال OTP
+    document.getElementById('otpForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const otpForm = document.getElementById('otpForm');
+        const phone = otpForm.querySelector('input[name="phone"]').value;
+        const otp = otpForm.querySelector('input[name="otp"]').value;
+
+        try {
+            const response = await axios.post('/api/v1/auth/verify-login-otp', { phone, otp });
+
+            localStorage.setItem('token', response.data.access_token);
+            const primaryRole = response.data.primary_role;
+            window.location.href = primaryRole === 'admin' ? '/admin' : '/chat';
+
+        } catch (error) {
+            document.getElementById('error').innerText = error.response?.data?.error?.message || 'خطا در تایید OTP';
+        }
+    });
+</script>
+
 </body>
 </html>
