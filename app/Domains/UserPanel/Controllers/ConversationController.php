@@ -16,20 +16,27 @@ class ConversationController extends Controller
         $user = Auth::user();
         abort_unless($user && $conversation->user_id === $user->id, 403);
 
-        $request->validate(['content' => 'required|string|max:2000']);
+        $validated = $request->validate([
+            'content' => 'nullable|string|max:2000',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'exists:files,id' // ✅ اعتبارسنجی file_id
+        ]);
 
         // بررسی اینکه آیا اولین پیام چت هست
         $isFirstMessage = $conversation->messages()->count() === 0;
-
+        $type = empty($validated['attachments']) ? 'text' : 'voice'; // یا 'file'
         // ذخیره پیام کاربر
-        Message::create([
+        $userMessage = Message::create([
             'conversation_id' => $conversation->id,
             'sender_type' => 'user',
             'sender_id' => $user->id, // فقط برای user/agent
-            'type' => 'text',
-            'content' => $request->content,
+            'type' => $type,
+            'content' => $validated['content'] ?? '',
+            'attachments' => $validated['attachments'] ?? [], // ✅ ذخیره به‌صورت آرایه
         ]);
-
+        if (!empty($validated['attachments'])) {
+            $userMessage->attachments()->attach($validated['attachments']);
+        }
         // ارسال به سرویس AI
         $aiService = new PythonAIService();
         $aiResponse = $aiService->chat([
