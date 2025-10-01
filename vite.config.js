@@ -28,7 +28,7 @@ export default defineConfig({
                 'resources/css/user.css',
                 'resources/js/app.js',
                 'resources/js/chat.js',
-                'resources/js/ticket.js',
+                'resources/js/tickets.js',
             ],
             refresh: true,
         }),
@@ -41,17 +41,16 @@ export default defineConfig({
             },
         }),
     ],
-    // server: {
-    //     host: '0.0.0.0', // برای دسترسی از هاست
-    //     port: 5173,
-    //     hmr: isDocker
-    //         ? {
-    //             host: 'localhost',
-    //             protocol: 'ws',
-    //             clientPort: 5173,
-    //         }
-    //         : true, // پیش‌فرض
-    // },
+    server: {
+        host: '0.0.0.0', // برای دسترسی از هاست
+        port: 5173,
+        hmr: {
+                host: 'localhost',
+                protocol: 'ws',
+                clientPort: 5173,
+            }
+
+    },
     build: {
         outDir: 'public/build',
         assetsDir: 'assets',

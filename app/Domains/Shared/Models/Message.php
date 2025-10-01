@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Message extends Model
 {
-    protected $fillable = ['conversation_id', 'sender_type', 'content', 'attachments'];
+    protected $keyType = 'string';
+    public $incrementing = false;
+    protected $fillable = ['conversation_id', 'sender_id', 'sender_type', 'type', 'content', 'metadata',];
     protected $casts = [
         'attachments' => 'array',
         'created_at' => 'datetime'
@@ -24,5 +26,14 @@ class Message extends Model
     public function sender()
     {
         return $this->belongsTo(\App\Domains\Shared\Models\User::class, 'sender_id');
+    }
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = Str::uuid(); // تولید UUID خودکار هنگام ایجاد
+            }
+        });
     }
 }

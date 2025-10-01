@@ -8,6 +8,7 @@ use App\Models\Message;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -19,6 +20,8 @@ class User extends Authenticatable
 
     // HasRoles برای permissions
 
+    public $incrementing = false;
+    protected $keyType = 'string';
     /**
      * The attributes that are mass assignable.
      *
@@ -49,5 +52,14 @@ class User extends Authenticatable
     public function assignedConversations()
     {
         return $this->hasMany(Conversation::class, 'support_agent_id');
+    }
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = Str::uuid(); // تولید UUID خودکار هنگام ایجاد
+            }
+        });
     }
 }

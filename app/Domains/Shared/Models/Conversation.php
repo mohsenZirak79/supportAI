@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Conversation extends Model
 {
     use HasFactory, SoftDeletes;
-
+    protected $keyType = 'string';
+    public $incrementing = false;
     protected $fillable = ['user_id', 'title', 'status'];
     protected $casts = ['deleted_at' => 'datetime'];
 
@@ -22,5 +23,13 @@ class Conversation extends Model
     {
         return $this->hasMany(Message::class)->orderBy('created_at');
     }
-
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = Str::uuid(); // تولید UUID خودکار هنگام ایجاد
+            }
+        });
+    }
 }

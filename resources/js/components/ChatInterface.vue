@@ -1,413 +1,3 @@
-<!--<template>-->
-<!--    <div class="chat-app" dir="rtl">-->
-<!--        &lt;!&ndash; نوار بالا &ndash;&gt;-->
-<!--        <header class="chat-header">-->
-<!--            <h1>ربات هوشمند</h1>-->
-<!--        </header>-->
-
-<!--        <div class="chat-container">-->
-<!--            &lt;!&ndash; سایدبار چت‌ها &ndash;&gt;-->
-<!--            <aside class="sidebar">-->
-<!--                <div class="new-chat-btn" @click="startNewChat">-->
-<!--                    + چت جدید-->
-<!--                </div>-->
-<!--                <div class="chat-list">-->
-<!--                    <div-->
-<!--                        v-for="chat in chats"-->
-<!--                        :key="chat.id"-->
-<!--                        class="chat-item"-->
-<!--                        :class="{ active: chat.id === activeChatId }"-->
-<!--                        @click="setActiveChat(chat.id)"-->
-<!--                    >-->
-<!--                        {{ chat.title || 'چت جدید' }}-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </aside>-->
-
-<!--            &lt;!&ndash; ناحیه چت اصلی &ndash;&gt;-->
-<!--            <main class="chat-main" v-if="activeChatId">-->
-<!--                <div class="messages-container" ref="messagesContainer">-->
-<!--                    <div-->
-<!--                        v-for="(message, index) in getMessages(activeChatId)"-->
-<!--                        :key="index"-->
-<!--                        class="message"-->
-<!--                        :class="{ 'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot' }"-->
-<!--                    >-->
-<!--                        <div class="message-bubble">-->
-<!--                            {{ message.text }}-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <div v-if="loading" class="message bot-message">-->
-<!--                        <div class="message-bubble loading">-->
-<!--                            <span></span>-->
-<!--                            <span></span>-->
-<!--                            <span></span>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-
-<!--                &lt;!&ndash; فرم ارسال پیام &ndash;&gt;-->
-<!--                <form @submit.prevent="sendMessage" class="input-form">-->
-<!--          <textarea-->
-<!--              v-model="inputMessage"-->
-<!--              placeholder="پیام خود را بنویسید..."-->
-<!--              rows="1"-->
-<!--              @input="autoResize"-->
-<!--              ref="textarea"-->
-<!--          ></textarea>-->
-<!--                    <button type="submit" :disabled="!inputMessage.trim() || loading">-->
-<!--                        ارسال-->
-<!--                    </button>-->
-<!--                </form>-->
-<!--            </main>-->
-
-<!--            &lt;!&ndash; صفحه خالی هنگام عدم انتخاب چت &ndash;&gt;-->
-<!--            <main v-else class="chat-main empty-state">-->
-<!--                <div class="empty-content">-->
-<!--                    <h2>چت جدیدی شروع کنید</h2>-->
-<!--                    <p>برای شروع گفت‌وگو، روی «چت جدید» کلیک کنید.</p>-->
-<!--                </div>-->
-<!--            </main>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</template>-->
-
-<!--<script setup>-->
-<!--import { ref, computed, nextTick, onMounted } from 'vue';-->
-
-<!--// مدیریت چت‌ها-->
-<!--const chats = ref([-->
-<!--    { id: 1, title: 'سوال درباره هوش مصنوعی', messages: [] },-->
-<!--    { id: 2, title: 'کمک برای کدنویسی', messages: [] }-->
-<!--]);-->
-
-<!--const activeChatId = ref(null);-->
-<!--const inputMessage = ref('');-->
-<!--const loading = ref(false);-->
-<!--const textarea = ref(null);-->
-<!--const messagesContainer = ref(null);-->
-
-<!--// انتخاب چت فعال-->
-<!--const setActiveChat = (id) => {-->
-<!--    activeChatId.value = id;-->
-<!--    scrollToBottom();-->
-<!--};-->
-
-<!--// شروع چت جدید-->
-<!--const startNewChat = () => {-->
-<!--    const newId = Date.now();-->
-<!--    chats.value.unshift({ id: newId, title: null, messages: [] });-->
-<!--    activeChatId.value = newId;-->
-<!--};-->
-
-<!--// دریافت پیام‌های چت فعال-->
-<!--const getMessages = computed(() => (chatId) => {-->
-<!--    const chat = chats.value.find(c => c.id === chatId);-->
-<!--    return chat ? chat.messages : [];-->
-<!--});-->
-
-<!--// ارسال پیام-->
-<!--const sendMessage = async () => {-->
-<!--    if (!inputMessage.value.trim() || loading.value) return;-->
-
-<!--    const userMsg = {-->
-<!--        sender: 'user',-->
-<!--        text: inputMessage.value.trim()-->
-<!--    };-->
-
-<!--    // اضافه کردن پیام کاربر-->
-<!--    const activeChat = chats.value.find(c => c.id === activeChatId.value);-->
-<!--    activeChat.messages.push(userMsg);-->
-
-<!--    // تنظیم عنوان چت اگر اولین پیام باشد-->
-<!--    if (!activeChat.title) {-->
-<!--        activeChat.title = inputMessage.value.substring(0, 30) + (inputMessage.value.length > 30 ? '...' : '');-->
-<!--    }-->
-
-<!--    inputMessage.value = '';-->
-<!--    await nextTick();-->
-<!--    scrollToBottom();-->
-
-<!--    // شبیه‌سازی پاسخ ربات (در واقعیت اینجا API فراخوانی می‌شود)-->
-<!--    loading.value = true;-->
-<!--    setTimeout(() => {-->
-<!--        const botMsg = {-->
-<!--            sender: 'bot',-->
-<!--            text: 'این یک پاسخ نمونه از سامانه است. در پیاده‌سازی واقعی، این پاسخ از سرور دریافت می‌شود.'-->
-<!--        };-->
-<!--        activeChat.messages.push(botMsg);-->
-<!--        loading.value = false;-->
-<!--        scrollToBottom();-->
-<!--    }, 1000);-->
-<!--};-->
-
-<!--// اسکرول به پایین-->
-<!--const scrollToBottom = () => {-->
-<!--    if (messagesContainer.value) {-->
-<!--        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;-->
-<!--    }-->
-<!--};-->
-
-<!--// ریسایز خودکار تکست‌اریا-->
-<!--const autoResize = () => {-->
-<!--    const el = textarea.value;-->
-<!--    if (el) {-->
-<!--        el.style.height = 'auto';-->
-<!--        el.style.height = Math.min(el.scrollHeight, 150) + 'px';-->
-<!--    }-->
-<!--};-->
-
-<!--// تنظیم اولین چت به عنوان فعال-->
-<!--onMounted(() => {-->
-<!--    if (chats.value.length > 0) {-->
-<!--        activeChatId.value = chats.value[0].id;-->
-<!--    }-->
-<!--});-->
-<!--</script>-->
-
-<!--<style scoped>-->
-<!--/* ریست و تنظیمات پایه */-->
-<!--* {-->
-<!--    margin: 0;-->
-<!--    padding: 0;-->
-<!--    box-sizing: border-box;-->
-<!--}-->
-
-<!--.chat-app {-->
-<!--    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;-->
-<!--    background-color: #f9fafb;-->
-<!--    height: 100vh;-->
-<!--    display: flex;-->
-<!--    flex-direction: column;-->
-<!--}-->
-
-<!--.chat-header {-->
-<!--    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);-->
-<!--    color: white;-->
-<!--    padding: 16px 24px;-->
-<!--    box-shadow: 0 2px 10px rgba(0,0,0,0.1);-->
-<!--}-->
-
-<!--.chat-header h1 {-->
-<!--    font-size: 1.5rem;-->
-<!--    font-weight: 600;-->
-<!--}-->
-
-<!--.chat-container {-->
-<!--    display: flex;-->
-<!--    flex: 1;-->
-<!--    overflow: hidden;-->
-<!--}-->
-
-<!--/* سایدبار */-->
-<!--.sidebar {-->
-<!--    width: 260px;-->
-<!--    background-color: white;-->
-<!--    border-left: 1px solid #eaeaea;-->
-<!--    display: flex;-->
-<!--    flex-direction: column;-->
-<!--    overflow-y: auto;-->
-<!--}-->
-
-<!--.new-chat-btn {-->
-<!--    padding: 14px 20px;-->
-<!--    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);-->
-<!--    color: white;-->
-<!--    font-weight: 600;-->
-<!--    cursor: pointer;-->
-<!--    text-align: center;-->
-<!--    margin: 12px;-->
-<!--    border-radius: 8px;-->
-<!--    transition: opacity 0.2s;-->
-<!--}-->
-
-<!--.new-chat-btn:hover {-->
-<!--    opacity: 0.9;-->
-<!--}-->
-
-<!--.chat-list {-->
-<!--    padding: 8px 0;-->
-<!--}-->
-
-<!--.chat-item {-->
-<!--    padding: 12px 20px;-->
-<!--    cursor: pointer;-->
-<!--    border-bottom: 1px solid #f0f0f0;-->
-<!--    color: #333;-->
-<!--    transition: background 0.2s;-->
-<!--    font-size: 0.95rem;-->
-<!--}-->
-
-<!--.chat-item:hover {-->
-<!--    background-color: #f5f7ff;-->
-<!--}-->
-
-<!--.chat-item.active {-->
-<!--    background-color: #eef2ff;-->
-<!--    border-right: 3px solid #2575fc;-->
-<!--    font-weight: 600;-->
-<!--}-->
-
-<!--/* ناحیه چت اصلی */-->
-<!--.chat-main {-->
-<!--    flex: 1;-->
-<!--    display: flex;-->
-<!--    flex-direction: column;-->
-<!--    background-color: #ffffff;-->
-<!--}-->
-
-<!--.empty-state {-->
-<!--    display: flex;-->
-<!--    align-items: center;-->
-<!--    justify-content: center;-->
-<!--    height: 100%;-->
-<!--    color: #666;-->
-<!--}-->
-
-<!--.empty-content h2 {-->
-<!--    font-size: 1.4rem;-->
-<!--    margin-bottom: 12px;-->
-<!--}-->
-
-<!--.empty-content p {-->
-<!--    color: #888;-->
-<!--}-->
-
-<!--.messages-container {-->
-<!--    flex: 1;-->
-<!--    padding: 24px;-->
-<!--    overflow-y: auto;-->
-<!--    display: flex;-->
-<!--    flex-direction: column;-->
-<!--    gap: 16px;-->
-<!--}-->
-
-<!--.message {-->
-<!--    display: flex;-->
-<!--    justify-content: flex-end;-->
-<!--}-->
-
-<!--.message.user-message {-->
-<!--    justify-content: flex-end;-->
-<!--}-->
-
-<!--.message.bot-message {-->
-<!--    justify-content: flex-start;-->
-<!--}-->
-
-<!--.message-bubble {-->
-<!--    padding: 12px 16px;-->
-<!--    border-radius: 18px;-->
-<!--    max-width: 80%;-->
-<!--    word-break: break-word;-->
-<!--    line-height: 1.5;-->
-<!--    box-shadow: 0 1px 2px rgba(0,0,0,0.05);-->
-<!--}-->
-
-<!--.user-message .message-bubble {-->
-<!--    background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);-->
-<!--    color: white;-->
-<!--    border-bottom-right-radius: 4px;-->
-<!--}-->
-
-<!--.bot-message .message-bubble {-->
-<!--    background-color: #f1f5f9;-->
-<!--    color: #333;-->
-<!--    border-bottom-left-radius: 4px;-->
-<!--}-->
-
-<!--/* لودینگ */-->
-<!--.loading {-->
-<!--    display: flex;-->
-<!--    align-items: center;-->
-<!--    gap: 4px;-->
-<!--    background: #f1f5f9 !important;-->
-<!--    color: #666;-->
-<!--}-->
-
-<!--.loading span {-->
-<!--    width: 8px;-->
-<!--    height: 8px;-->
-<!--    background-color: #94a3b8;-->
-<!--    border-radius: 50%;-->
-<!--    display: inline-block;-->
-<!--    animation: bounce 1.4s infinite ease-in-out both;-->
-<!--}-->
-
-<!--.loading span:nth-child(1) { animation-delay: -0.32s; }-->
-<!--.loading span:nth-child(2) { animation-delay: -0.16s; }-->
-
-<!--@keyframes bounce {-->
-<!--    0%, 80%, 100% { transform: scale(0); }-->
-<!--    40% { transform: scale(1); }-->
-<!--}-->
-
-<!--/* فرم ورودی */-->
-<!--.input-form {-->
-<!--    display: flex;-->
-<!--    padding: 16px;-->
-<!--    background: white;-->
-<!--    border-top: 1px solid #eaeaea;-->
-<!--    gap: 12px;-->
-<!--}-->
-
-<!--.input-form textarea {-->
-<!--    flex: 1;-->
-<!--    padding: 12px 16px;-->
-<!--    border: 1px solid #d1d5db;-->
-<!--    border-radius: 24px;-->
-<!--    resize: none;-->
-<!--    font-size: 1rem;-->
-<!--    font-family: inherit;-->
-<!--    outline: none;-->
-<!--    transition: border-color 0.2s;-->
-<!--    max-height: 150px;-->
-<!--}-->
-
-<!--.input-form textarea:focus {-->
-<!--    border-color: #2575fc;-->
-<!--    box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.2);-->
-<!--}-->
-
-<!--.input-form button {-->
-<!--    padding: 12px 24px;-->
-<!--    background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);-->
-<!--    color: white;-->
-<!--    border: none;-->
-<!--    border-radius: 24px;-->
-<!--    font-weight: 600;-->
-<!--    cursor: pointer;-->
-<!--    transition: opacity 0.2s;-->
-<!--}-->
-
-<!--.input-form button:disabled {-->
-<!--    opacity: 0.6;-->
-<!--    cursor: not-allowed;-->
-<!--}-->
-
-<!--/* واکنش‌گرا */-->
-<!--@media (max-width: 768px) {-->
-<!--    .sidebar {-->
-<!--        width: 80px;-->
-<!--    }-->
-<!--    .chat-item span {-->
-<!--        display: none;-->
-<!--    }-->
-<!--    .chat-item::before {-->
-<!--        content: "💬";-->
-<!--        font-size: 1.2rem;-->
-<!--    }-->
-<!--    .new-chat-btn span {-->
-<!--        display: none;-->
-<!--    }-->
-<!--    .new-chat-btn::before {-->
-<!--        content: "+";-->
-<!--        font-size: 1.5rem;-->
-<!--    }-->
-<!--}-->
-<!--</style>-->
-
-
 <template>
     <div class="chat-app" dir="rtl">
         <!-- نوار بالا -->
@@ -663,11 +253,20 @@ onUnmounted(() => {
         mediaRecorder.value.stream?.getTracks().forEach(track => track.stop());
     }
 });
+// const scrollToBottom = () => {
+//     if (messagesContainer.value) {
+//         messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+//     }
+// };
 const scrollToBottom = () => {
     if (messagesContainer.value) {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+        messagesContainer.value.scrollTo({
+            top: messagesContainer.value.scrollHeight,
+            behavior: 'smooth'
+        });
     }
 };
+
 
 const activeChat = computed(() => {
     return chats.value.find(chat => chat.id === activeChatId.value) || null;
@@ -953,10 +552,15 @@ onMounted(() => {
     background-color: #f5f7ff;
 }
 
-.chat-item.active {
+/*.chat-item.active {
     background-color: #eef2ff;
     border-right: 3px solid #2575fc;
     font-weight: 600;
+}*/
+.chat-item.active {
+    background-color: #eef2ff;
+    border-right: 3px solid transparent;
+    border-image: linear-gradient(180deg, #6a11cb, #2575fc) 1;
 }
 
 .delete-btn {
@@ -1027,7 +631,13 @@ onMounted(() => {
     word-break: break-word;
     line-height: 1.5;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    animation: fadeInUp 0.3s ease;
 }
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 
 .user-message .message-bubble {
     background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
@@ -1149,11 +759,15 @@ onMounted(() => {
     width: 100%;
 }
 
-.bar {
+/*.bar {
     width: 6px;
     background: linear-gradient(to top, #2575fc, #6a11cb);
     border-radius: 3px;
     transition: height 0.1s ease;
+}*/
+.bar {
+    background: linear-gradient(to top, #2575fc, #6a11cb);
+    box-shadow: 0 0 8px rgba(37,117,252,0.4);
 }
 
 .recording-controls {
@@ -1355,4 +969,9 @@ onMounted(() => {
     font-size: 0.875rem;
     color: #64748b;
 }
+.bot-message .message-bubble::before {
+    content: "🤖";
+    margin-left: 6px;
+}
+
 </style>
