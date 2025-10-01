@@ -17,36 +17,39 @@ class AuthController
     public function register(RegisterRequest $request)
     {
 
-        if (RateLimiter::tooManyAttempts('register_' . $request->ip(), 5)) {
+        //TODO on comment this line
+        /*if (RateLimiter::tooManyAttempts('register_' . $request->ip(), 5)) {
             return response()->json(['error' => ['code' => 'TOO_MANY_ATTEMPTS', 'message' => 'Too many registration attempts']], 429);
         }
-        RateLimiter::hit('register_' . $request->ip(), 60);
-
+        RateLimiter::hit('register_' . $request->ip(), 60);*/
         $user = User::create([
             'name' => $request->name,
             'family' => $request->family,
+            'email' => $request->email,
             'phone' => $request->phone,
-            'postal_code' => $request->postal_code,
+            'password' => Hash::make($request->password),
             'national_id' => $request->national_id,
+            'postal_code' => $request->postal_code,
             'birth_date' => $request->birth_date,
             'address' => $request->address,
-            'kyc_status' => 'pending',
-            'org_id' => $request->org_id ?? env('ORG_ID_DEFAULT'),
-            'device_id' => $request->header('X-Device-Fingerprint'),
         ]);
+
 
         $otp = rand(100000, 999999);
         Cache::put('otp_register_' . $request->phone, $otp, 120); // 2 دقیقه
         $user->otp_sent_at = now();
         $user->save();
 
-        $twilio = new Client(env('TWILIO_SID'), env('TWILIO_TOKEN'));
-        $twilio->messages->create($request->phone, ['from' => env('TWILIO_PHONE'), 'body' => "Activation OTP: $otp"]);
+        return redirect()->route('login')->with('success', 'ثبت‌نام با موفقیت انجام شد. لطفاً وارد شوید.');
 
-        if (env('APP_ENV') === 'local') {
-            return ['message' => 'OTP sent (for test: ' . $otp . ')'];
-        }
-        return ['message' => 'OTP sent for activation'];
+
+//        $twilio = new Client(env('TWILIO_SID'), env('TWILIO_TOKEN'));
+//        $twilio->messages->create($request->phone, ['from' => env('TWILIO_PHONE'), 'body' => "Activation OTP: $otp"]);
+//
+//        if (env('APP_ENV') === 'local') {
+//            return ['message' => 'OTP sent (for test: ' . $otp . ')'];
+//        }
+//        return ['message' => 'OTP sent for activation'];
 
 //        dump($request->all());
 //        $user = User::create([
@@ -131,31 +134,54 @@ class AuthController
     {
         // Enable 2FA, generate secret
     }
-    public function login(Request $request) // بدون Request class، چون ساده
-    {
 
+    public function login(Request $request)
+    {
+        // 1. ولیدیشن
         $request->validate([
             'phone' => ['required', 'regex:/^(\+98|0)?9\d{9}$/', 'exists:users,phone'],
         ]);
 
-        if (RateLimiter::tooManyAttempts('login_' . $request->ip(), 10)) {
-            return response()->json(['error' => ['code' => 'TOO_MANY_ATTEMPTS', 'message' => 'Too many login attempts']], 429);
+        // 2. جلوگیری از حملات brute-force
+        $rateKey = 'login_' . $request->ip();
+        if (RateLimiter::tooManyAttempts($rateKey, 10)) {
+            return response()->json([
+                'error' => [
+                    'code' => 'TOO_MANY_ATTEMPTS',
+                    'message' => 'Too many login attempts'
+                ]
+            ], 429);
         }
-        RateLimiter::hit('login_' . $request->ip(), 60);
+        RateLimiter::hit($rateKey, 60);
+
+        // 3. پیدا کردن یوزر
         $user = User::where('phone', $request->phone)->first();
+
+        // 4. ساخت OTP
         $otp = rand(100000, 999999);
-        Cache::put('otp_login_' . $request->phone, $otp, 120);
+        Cache::put("otp_login_{$request->phone}", $otp, now()->addMinutes(2));
+
         $user->otp_sent_at = now();
         $user->save();
 
+        // 5. ارسال OTP با Twilio
         $twilio = new Client(env('TWILIO_SID'), env('TWILIO_TOKEN'));
-        $twilio->messages->create($request->phone, ['from' => env('TWILIO_PHONE'), 'body' => "Login OTP: $otp"]);
+        $twilio->messages->create($request->phone, [
+            'from' => env('TWILIO_PHONE'),
+            'body' => "Login OTP: $otp"
+        ]);
 
-        if (env('APP_ENV') === 'local') {
-            return ['message' => 'OTP sent', 'otp' => $otp];
+        // 6. محیط local → برگرداندن OTP برای تست
+        if (app()->environment('local')) {
+            return response()->json([
+                'message' => 'OTP sent',
+                'otp' => $otp
+            ]);
         }
-        return ['message' => 'OTP sent for login'];
+
+        return response()->json(['message' => 'OTP sent for login']);
     }
+
 //    public function verifyLoginOtp(LoginOtpRequest $request)
 //    {
 //        if (Cache::get('otp_login_' . $request->phone) == $request->otp) {

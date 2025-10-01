@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <title>ورود کاربر</title>
     <title>@yield('title')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script>
@@ -27,6 +28,13 @@
     <section>
         <div class="page-header min-vh-75">
             <div class="container">
+
+
+                @if(session('success'))
+                    <div class="alert alert-success">
+                        {{ session('success') }}
+                    </div>
+                @endif
                 <div class="row">
                     <div class="col-md-6">
                         <div class="oblique position-absolute top-0 h-100 d-md-block d-none me-n8">
@@ -34,6 +42,7 @@
                                  style="background-image:url({{ asset('images/login_img.jpg') }})"></div>
                         </div>
                     </div>
+
 
                     <div class="col-xl-4 col-lg-5 col-md-6 d-flex flex-column mx-auto">
                         <div class="card card-plain mt-8">
@@ -72,7 +81,7 @@
 
                             <div class="card-footer text-center pt-0 px-lg-2 px-1">
                                 <p class="mb-4 text-sm mx-auto">
-                                    حساب کاربری ندارید؟ <a href="javascript:;" class="text-info text-gradient font-weight-bold">ثبت‌نام</a>
+                                    حساب کاربری ندارید؟ <a href="{{ route('register') }}" class="text-info text-gradient font-weight-bold">ثبت‌نام</a>
                                 </p>
                             </div>
                         </div>

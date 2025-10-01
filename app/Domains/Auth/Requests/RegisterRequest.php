@@ -21,8 +21,8 @@ class RegisterRequest extends FormRequest
             'birth_date' => 'required|string|date_format:Y-m-d',
             'address' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email|max:255',
-            'phone' => 'required|regex:/^(\+98|0)?9\d{9}$/|unique:users,phone|max:11',
-            'password' => 'required|string|min:8|confirmed',
+//            'phone' => 'required|regex:/^(\+98|0)?9\d{9}$/|unique:users,phone|max:11',
+//            'password' => 'required|string|min:8|confirmed',
         ];
     }
 
