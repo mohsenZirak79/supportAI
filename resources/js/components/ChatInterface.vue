@@ -1,4 +1,10 @@
 <template>
+    <HandoffModal
+        :is-open="isHandoffModalOpen"
+        :roles="availableRoles"
+        @close="isHandoffModalOpen = false"
+        @submit="handleHandoffSubmit"
+    />
     <div class="chat-app" dir="rtl">
         <!-- نوار بالا -->
         <header class="chat-header">
@@ -110,6 +116,9 @@
 
 <script setup>
 import {ref, computed, nextTick, onMounted, onUnmounted} from 'vue';
+import HandoffModal from './HandoffModal.vue';
+const isHandoffModalOpen = ref(false);
+const selectedMessageForHandoff = ref(null);
 // --- State ---
 const isRecording = ref(false);
 const recordingTime = ref(0);
@@ -198,20 +207,33 @@ const cleanupRecording = () => {
 };
 
 const uploadVoice = async (blob) => {
-    const formData = new FormData();
-    formData.append('voice', blob, 'recording.webm');
-
     try {
-        const res = await fetch(`/api/v1/conversations/${activeChatId.value}/messages`, {
+        // مرحله ۱: آپلود فایل
+        const formData = new FormData();
+        formData.append('file', blob, 'recording.webm');
+
+        const uploadRes = await fetch('/api/v1/files', {
             method: 'POST',
-            body: formData,
+            body: formData
         });
 
-        if (!res.ok) {
-            throw new Error('خطا در آپلود صدا');
-        }
+        if (!uploadRes.ok) throw new Error('آپلود فایل شکست خورد');
+        const { file_id } = await uploadRes.json();
 
-        const { message } = await res.json();
+        // مرحله ۲: ارسال پیام با فایل
+        const messageRes = await fetch(`/api/v1/conversations/${activeChatId.value}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content: '', // متن خالی
+                attachments: [file_id]
+            })
+        });
+
+        if (!messageRes.ok) throw new Error('ارسال پیام شکست خورد');
+        const { message } = await messageRes.json();
+
+        // آپدیت UI
         const activeChat = chats.value.find(c => c.id === activeChatId.value);
         if (activeChat) {
             activeChat.messages.push({
@@ -466,6 +488,20 @@ const showHandoffModal = (message) => {
     selectedMessageForHandoff.value = message;
     isHandoffModalOpen.value = true;
 };
+const handleHandoffSubmit = async (data) => {
+    try {
+        const res = await fetch(`/api/v1/conversations/${activeChatId.value}/handoff`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (res.ok) {
+            alert('ارجاع با موفقیت انجام شد!');
+        }
+    } catch (e) {
+        alert('خطا در ارجاع');
+    }
+};
 // --- Lifecycle ---
 onMounted(() => {
     loadChats();
@@ -617,11 +653,11 @@ onMounted(() => {
 }
 
 .message.user-message {
-    justify-content: flex-end;
+    justify-content: flex-start;
 }
 
 .message.bot-message {
-    justify-content: flex-start;
+    justify-content: flex-end;
 }
 
 .message-bubble {
@@ -640,8 +676,10 @@ onMounted(() => {
 
 
 .user-message .message-bubble {
-    background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
-    color: white;
+    /*background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);*/
+    background-color: #f1f5f9;
+    color: #333;
+    /*color: white;*/
     border-bottom-right-radius: 4px;
 }
 

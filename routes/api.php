@@ -58,7 +58,7 @@ Route::prefix('v1')->middleware(['forceTestUser'])->group(function () {
     Route::post('tickets', [\App\Domains\UserPanel\Controllers\TicketController::class, 'store']); // ایجاد تیکت جدید
     Route::get('tickets/{rootId}', [\App\Domains\UserPanel\Controllers\TicketController::class, 'show']); // مشاهده تمام رفت‌و‌برگشت‌ها
     Route::post('tickets/{rootId}/messages', [\App\Domains\UserPanel\Controllers\TicketController::class, 'sendMessage']); // پاسخ کاربر
-    Route::get('tickets_departments', [\App\Domains\UserPanel\Controllers\TicketController::class, 'getDepartments']);
+//    Route::get('tickets_departments', [\App\Domains\UserPanel\Controllers\TicketController::class, 'getDepartments']);
     Route::get('agent/tickets', [AgentPanel\TicketController::class, 'index']); // لیست همه تیکت‌ها (فیلتر شده بر اساس نقش)
     Route::get('agent/tickets/{rootId}', [AgentPanel\TicketController::class, 'show']); // مشاهده رفت‌و‌برگشت‌ها
     Route::post('agent/tickets/{rootId}/messages', [AgentPanel\TicketController::class, 'sendMessage']); // پاسخ پشتیبان
@@ -79,6 +79,8 @@ Route::prefix('v1')->middleware(['forceTestUser'])->group(function () {
         $media = $uploadService->finalize($fileId, $metadata);
         return response()->json($media);
     });
+
+    Route::get('support-roles', [\App\Domains\Shared\Controllers\RoleController::class, 'getSupportRoles']);
 });
 // User Panel Routes
 //    Route::middleware(['auth:sanctum', \App\Http\Middleware\GuestChat::class, \App\Http\Middleware\IdleTimeout::class])->group(function () {
