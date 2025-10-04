@@ -91,7 +91,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link " href="../pages/billing.html">
+                <a class="nav-link " href="{{ route('admin.roles') }}">
                     <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center ms-2 d-flex align-items-center justify-content-center">
                         <svg width="12px" height="12px" viewBox="0 0 43 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                             <title>credit-card</title>
@@ -111,7 +111,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link " href="../pages/virtual-reality.html">
+                <a class="nav-link " href="{{ route('admin.tickets') }}">
                     <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center ms-2 d-flex align-items-center justify-content-center">
                         <svg width="12px" height="12px" viewBox="0 0 42 42" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                             <title>box-3d-50</title>
@@ -191,38 +191,17 @@
                         <table class="table align-items-center mb-0 datatable">
                             <thead>
                             <tr>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">نام و کد ملی</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">نقش</th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">تلفن همراه</th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ایمیل</th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">تاریخ شروع</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">عنوان</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">نام ارسال کننده</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">تاریخ ثبت</th>
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($users as $user)
+                            @foreach($tickets as $ticket)
                                 <tr>
-                                    <td>
-                                        <div class="d-flex flex-column">
-                                            <h6 class="mb-0 text-sm">{{ $user->name }} {{ $user->family }}</h6>
-                                            <p class="text-xs text-secondary mb-0">{{ $user->national_id }}</p>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">
-                                            {{ $user->roles->pluck('name')->join(', ') }}
-                                        </p>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="text-secondary text-xs font-weight-bold">{{ $user->phone }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="text-secondary text-xs font-weight-bold">{{ $user->email }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                <span class="text-secondary text-xs font-weight-bold">
-                                    {{ $user->created_at->format('Y-m-d') }}
-                                </span>
-                                    </td>
+                                    <td>{{ $ticket->title }}</td>
+                                    <td>{{ $ticket->sender->name }}</td>
+                                    <td>{{ \Morilog\Jalali\Jalalian::fromDateTime($ticket->created_at)->format('Y/m/d') }}</td>
                                 </tr>
                             @endforeach
                             </tbody>

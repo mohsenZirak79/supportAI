@@ -44,4 +44,8 @@ class Ticket extends Model implements HasMedia
             }
         });
     }
+    public function sender()
+    {
+        return $this->belongsTo(User::class, 'sender_id');
+    }
 }

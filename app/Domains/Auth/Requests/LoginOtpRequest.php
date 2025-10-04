@@ -14,7 +14,7 @@ class LoginOtpRequest extends FormRequest
     public function rules()
     {
         return [
-            'phone' => 'required|regex:/^(\+98|0)?9\d{9}$/|exists:users,phone',
+//            'phone' => 'required|regex:/^(\+98|0)?9\d{9}$/|exists:users,phone',
             'otp' => 'required|digits:6',
         ];
     }
