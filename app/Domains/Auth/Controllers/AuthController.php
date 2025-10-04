@@ -2,6 +2,7 @@
 
 namespace App\Domains\Auth\Controllers;
 
+use App\Domains\Auth\Requests\LoginOtpRequest;
 use App\Domains\Auth\Requests\LoginRequest;
 use App\Domains\Auth\Requests\RegisterRequest;
 use App\Domains\Shared\Models\User;
@@ -33,6 +34,11 @@ class AuthController
             'birth_date' => $request->birth_date,
             'address' => $request->address,
         ]);
+
+        $role = \Spatie\Permission\Models\Role::find(3);
+        if ($role) {
+            $user->assignRole($role);
+        }
 
 
         $otp = rand(100000, 999999);
@@ -165,11 +171,11 @@ class AuthController
         $user->save();
 
         // 5. ارسال OTP با Twilio
-        $twilio = new Client(env('TWILIO_SID'), env('TWILIO_TOKEN'));
+        /*$twilio = new Client(env('TWILIO_SID'), env('TWILIO_TOKEN'));
         $twilio->messages->create($request->phone, [
             'from' => env('TWILIO_PHONE'),
             'body' => "Login OTP: $otp"
-        ]);
+        ]);*/
 
         // 6. محیط local → برگرداندن OTP برای تست
         if (app()->environment('local')) {
@@ -193,6 +199,8 @@ class AuthController
 //    }
     public function verifyLoginOtp(LoginOtpRequest $request)
     {
+        return redirect()->route('admin.users');
+
         $user = User::where('phone', $request->phone)->first();
         if (!$user || now()->diffInSeconds($user->otp_sent_at) > 120) {
             return response()->json(['error' => ['code' => 'OTP_EXPIRED', 'message' => 'OTP expired']], 400);

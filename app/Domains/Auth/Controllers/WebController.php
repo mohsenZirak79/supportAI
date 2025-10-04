@@ -2,6 +2,8 @@
 
 namespace App\Domains\Auth\Controllers;
 
+use App\Domains\Role\Models\Role;
+use App\Domains\Shared\Models\Ticket;
 use App\Domains\Shared\Models\User;
 use Illuminate\Http\Request;
 
@@ -23,18 +25,29 @@ class WebController
     }
     public function showTickets()
     {
-        return view('admin.tickets');
+        $tickets = Ticket::with('sender')->latest()->get();
+
+        // همه کاربران با نقش‌ها
+        $users = User::with('roles')->get();
+
+        // همه نقش‌ها با تعداد کاربران
+        $roles = Role::withCount('users')->get();
+
+        return view('admin.tickets', compact('tickets', 'users', 'roles'));
     }
     public function showUsers()
     {
         $users = User::with('roles')->get();
-
-        return view('admin.users', compact('users'));
+        $roles = Role::all();
+        return view('admin.users', compact('users' , 'roles'));
     }
 
     public function showRoles()
     {
-        return view('admin.roles');
+        // نقش‌ها همراه با تعداد کاربران
+        $roles = Role::withCount('users')->get();
+
+        return view('admin.roles', compact('roles'));
     }
 
     public function showChat()
