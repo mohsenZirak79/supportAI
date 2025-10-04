@@ -24,17 +24,18 @@
     <!-- Navbar ... (همانند قبل) -->
 </div>
 
+
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
 <main class="main-content mt-0">
     <section>
         <div class="page-header min-vh-75">
             <div class="container">
 
 
-                @if(session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
                 <div class="row">
                     <div class="col-md-6">
                         <div class="oblique position-absolute top-0 h-100 d-md-block d-none me-n8">

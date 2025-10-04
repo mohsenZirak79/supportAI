@@ -45,8 +45,9 @@ class WebController
     public function showRoles()
     {
         // نقش‌ها همراه با تعداد کاربران
-        $roles = Role::withCount('users')->get();
-
+        $roles = Role::withCount('users')
+            ->where('id', '!=', 1)
+            ->get();
         return view('admin.roles', compact('roles'));
     }
 

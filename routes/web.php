@@ -5,8 +5,8 @@ use App\Domains\Shared\Models\User;
 use App\Domains\Shared\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
-use App\Domain\Role\Controllers\RoleController;
-use App\Domain\Permission\Controllers\PermissionController;
+use App\Domains\Role\Controllers\RoleController;
+use App\Domains\Permission\Controllers\PermissionController;
 
 use App\Domains\Auth\Controllers\AuthController;
 use Illuminate\Support\Str;
@@ -92,6 +92,15 @@ Route::prefix('user')->name('users.')->group(function () {
     Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy'); // حذف کاربر
 });
 
+Route::prefix('role')->name('roles.')->group(function () {
+    Route::get('/', [RoleController::class, 'index'])->name('index');       // لیست نقش ها
+    Route::get('/create', [RoleController::class, 'create'])->name('create'); // فرم ایجاد
+    Route::post('/', [RoleController::class, 'store'])->name('store');      // ذخیره نقش  جدید
+    Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit'); // فرم ویرایش
+    Route::put('/{role}', [RoleController::class, 'update'])->name('update'); // آپدیت نقش
+    Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy'); // حذف نقش
+});
+
 
 Route::view('/register', 'auth.register')->name('register');
 Route::view('/login', 'auth.login')->name('login');
@@ -99,13 +108,6 @@ Route::post('/register', [AuthController::class, 'register'])->name('register');
 //Route::post('/login', [AuthController::class, 'register'])->name('register');
 Route::post('/activate', [AuthController::class, 'activate'])->name('activate');
 
-
-Route::prefix('roles')->group(function () {
-    Route::get('/', [RoleController::class, 'index']);
-    Route::post('/', [RoleController::class, 'store']);
-    Route::put('/{id}', [RoleController::class, 'update']);
-    Route::delete('/{id}', [RoleController::class, 'destroy']);
-});
 
 Route::prefix('permissions')->group(function () {
     Route::get('/', [PermissionController::class, 'index']);
