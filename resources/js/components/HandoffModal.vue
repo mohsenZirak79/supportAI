@@ -1,3 +1,4 @@
+<!-- /var/www/supportAI/resources/js/components/HandoffModal.vue -->
 <template>
     <div v-if="isOpen" class="modal-overlay" @click="close">
         <div class="modal-content" @click.stop>
@@ -6,8 +7,11 @@
                 <label>نقش پشتیبان:</label>
                 <select v-model="selectedRole" class="select-input">
                     <option value="">انتخاب کنید...</option>
-                    <option v-for="role in roles" :key="role" :value="role">
-                        {{ roleLabel(role) }}
+                    <!-- v-for درست: key و value روی id، نمایش name -->
+                    <option
+                        v-for="role in roles"
+                        :key="role.id">
+                    {{ roleLabel(role) }}
                     </option>
                 </select>
             </div>
@@ -28,15 +32,22 @@ import { ref, defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
     isOpen: Boolean,
-    roles: Array
+    roles: Array  // array از objects مثل [{id: "...", name: "..."}]
 });
 
 const emit = defineEmits(['close', 'submit']);
 
-const selectedRole = ref('');
+const selectedRole = ref('');  // حالا id string ذخیره می‌کنه
 const reason = ref('');
 
+// roleLabel آپدیت‌شده: اگر object باشه name رو برگردون، else old logic
 const roleLabel = (role) => {
+    // اگر role object باشه (از API جدید)، name رو برگردون
+    if (typeof role === 'object' && role && role.name) {
+        return role.name;
+    }
+
+    // old logic برای string keys (اگر بعداً نیاز شد)
     const labels = {
         'support_sales': 'پشتیبانی فروش',
         'support_finance': 'پشتیبانی مالی',
@@ -46,13 +57,19 @@ const roleLabel = (role) => {
 };
 
 const close = () => emit('close');
+
 const submit = () => {
+    // emit فقط id string و reason
     emit('submit', { target_role: selectedRole.value, reason: reason.value });
     close();
+    // اختیاری: reset form
+    selectedRole.value = '';
+    reason.value = '';
 };
 </script>
 
 <style scoped>
+/* بدون تغییر - همون کد قبلی */
 .modal-overlay {
     position: fixed;
     top: 0;

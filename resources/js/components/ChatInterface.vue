@@ -8,7 +8,10 @@
     <div class="chat-app" dir="rtl">
         <!-- نوار بالا -->
         <header class="chat-header">
-            <h1 @click="editCurrentTitle">{{ activeChat?.title || 'چت با هوش مصنوعی ' }}</h1>
+            <div class="header-content">
+                <h1 @click="editCurrentTitle">{{ activeChat?.title || 'چت با هوش مصنوعی' }}</h1>
+                <button @click="goToTickets" class="nav-btn">تیکت‌ها</button>
+            </div>
         </header>
 
         <div class="chat-container">
@@ -125,6 +128,24 @@ const recordingTime = ref(0);
 const recordingInterval = ref(null);
 const mediaRecorder = ref(null);
 const audioChunks = ref([]);
+const availableRoles = ref([]);
+const fetchDepartments = async () => {  // ← این تابع رو کامل اضافه کن
+    try {
+        const response = await fetch('/api/v1/support-roles', {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (response.ok) {
+            const data = await response.json();  // یا data.data اگر API فرق داره
+            availableRoles.value = data;  // array objects مثل [{id: "...", name: "..."}]
+            console.log('Roles loaded:', availableRoles.value);  // برای debug
+        } else {
+            console.error('خطا در بارگذاری roles');
+        }
+    } catch (error) {
+        console.error('خطا در fetch departments:', error);
+        // اختیاری: alert('خطا در بارگذاری بخش‌ها');
+    }
+};
 const formatDate = (isoString) => {
     if (!isoString) return '';
     const date = new Date(isoString);
@@ -483,28 +504,34 @@ const copyText = (text) => {
         // نمایش toast موفقیت (اختیاری)
     });
 };
-
+const goToTickets = () => {
+    window.location.href = '/ticket';
+};
 const showHandoffModal = (message) => {
     selectedMessageForHandoff.value = message;
     isHandoffModalOpen.value = true;
 };
-const handleHandoffSubmit = async (data) => {
+const handleHandoffSubmit = async (data) => {  // ← این رو هم fix کن: modal رو ببند
     try {
-        const res = await fetch(`/api/v1/conversations/${activeChatId.value}/handoff`, {
+        const res = await fetch(`/api/v1/conversations/${selectedMessageForHandoff._rawValue.id}/handoff`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
         if (res.ok) {
             alert('ارجاع با موفقیت انجام شد!');
+            isHandoffModalOpen.value = false;  // ← اضافه کن: modal رو ببند
+        } else {
+            throw new Error('خطا در ارجاع');
         }
     } catch (e) {
-        alert('خطا در ارجاع');
+        alert('خطا در ارجاع: ' + e.message);
     }
 };
 // --- Lifecycle ---
 onMounted(() => {
     loadChats();
+    fetchDepartments();
 });
 </script>
 
@@ -1011,5 +1038,27 @@ onMounted(() => {
     content: "🤖";
     margin-left: 6px;
 }
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+}
 
+.nav-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
 </style>

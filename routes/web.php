@@ -17,6 +17,9 @@ Route::get('/chat', function () {
     return View::make('chat.index');
 });
 Route::get('/ticket', function () {
+    return View::make('tickets.index');
+});
+
 //    User::create([
 //
 //        'name' => 'کاربر تست',
@@ -35,10 +38,6 @@ Route::get('/ticket', function () {
 //        'sender_id'=>'c52c582f-e127-4776-8b06-ea6304bc930e',
 //
 //    ]);
-    return View::make('tickets.index');
-});
-
-
 Route::get('/login', [WebController::class, 'showLogin'])->name('login');
 Route::get('/register', [WebController::class, 'showRegister'])->name('register');
 Route::get('/admin', [WebController::class, 'showAdmin'])->middleware('auth:sanctum', 'role:admin');
