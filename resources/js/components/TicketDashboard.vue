@@ -24,18 +24,22 @@
         <!-- Header -->
         <header class="bg-white shadow-sm border-b">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center py-2">
-                    <div class="flex items-center space-x-4 space-x-reverse">
-                        <div class="bg-blue-600 p-2 rounded-lg">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h1 class="text-xl font-bold text-gray-900">سیستم تیکتینگ</h1>
-                            <p class="text-sm text-gray-500">پنل مدیریت تیکت‌های شما</p>
-                        </div>
-                    </div>
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <!-- ... (آیکون و عنوان قبلی) ... -->
+                </div>
+
+                <!-- این بخش رو جایگزین کن یا اضافه کن -->
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <button
+                        @click="goToChat"
+                        class="bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 space-x-reverse"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        <span>چت</span>
+                    </button>
+
                     <button
                         @click="showNewTicketForm = true"
                         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 space-x-reverse"
@@ -699,7 +703,9 @@ const filteredTickets = computed(() => {
     }
     return filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 });
-
+const goToChat = () => {
+    window.location.href = '/chat';
+};
 // --- Lifecycle ---
 onMounted(() => {
     fetchDepartments();
