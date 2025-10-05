@@ -8,7 +8,7 @@ use Morilog\Jalali\Jalalian;
 class Role extends SpatieRole
 {
     protected $fillable = [
-        'name', 'guard_name',
+        'name', 'guard_name','allow_ticket'
     ];
 
     protected $appends = ['created_at_jalali'];

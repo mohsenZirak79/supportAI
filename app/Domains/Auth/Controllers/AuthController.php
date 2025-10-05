@@ -12,6 +12,8 @@ use Twilio\Rest\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController
 {
@@ -199,21 +201,61 @@ class AuthController
 //    }
     public function verifyLoginOtp(LoginOtpRequest $request)
     {
-        return redirect()->route('admin.users');
-
         $user = User::where('phone', $request->phone)->first();
+
+        // 1️⃣ چک OTP و زمان
         if (!$user || now()->diffInSeconds($user->otp_sent_at) > 120) {
-            return response()->json(['error' => ['code' => 'OTP_EXPIRED', 'message' => 'OTP expired']], 400);
+            return response()->json([
+                'error' => [
+                    'code' => 'OTP_EXPIRED',
+                    'message' => 'OTP expired'
+                ]
+            ], 400);
         }
 
-        if (Cache::get('otp_login_' . $request->phone) == $request->otp) {
-            $token = $user->createToken('aiii', ['user:read'])->plainTextToken;
-            $roles = $user->roles->pluck('name');
-            $primaryRole = $roles->contains('admin') ? 'admin' : ($roles->contains('support_agent') ? 'support' : 'user');
-
-            return ['access_token' => $token, 'roles' => $roles, 'primary_role' => $primaryRole];
+        if (Cache::get('otp_login_' . $request->phone) != $request->otp) {
+            return response()->json([
+                'error' => [
+                    'code' => 'OTP_INVALID',
+                    'message' => 'Invalid OTP'
+                ]
+            ], 400);
         }
-        return response()->json(['error' => ['code' => 'OTP_INVALID', 'message' => 'Invalid OTP']], 400);
+
+        // 2️⃣ ساخت JWT و ذخیره در Cache
+        $token = JWTAuth::fromUser($user);
+        Cache::put('jwt_token_'.$user->id, $token, now()->addHours(2));
+
+        // حذف OTP بعد از استفاده
+        Cache::forget('otp_login_' . $request->phone);
+
+        // 3️⃣ نقش‌ها و پرمیشن‌ها
+        $roles = $user->roles->pluck('name');
+
+        // 4️⃣ تعیین مقصد لاگین بر اساس نقش و پرمیشن
+        if ($roles->contains('ادمین')) {
+            $redirect = 'admin.users';
+        } elseif ($user->roles->pluck('id')->contains(5)) { // کاربر عادی
+            $redirect = '/chat';
+        } elseif ($user->can('create-ticket') && $user->can('read-ticket') &&
+            $user->can('update-ticket') && $user->can('delete-ticket')) {
+            $redirect = route('admin.tickets');
+        } else {
+            return response()->json([
+                'error' => [
+                    'code' => 'PERMISSION_DENIED',
+                    'message' => 'User does not have permission to access any page'
+                ]
+            ], 403);
+        }
+
+        redirect()->route($redirect);
+        // پاسخ نهایی (فرانت می‌تونه redirect انجام بده یا بر اساس نیاز)
+        /*return [
+            'message' => 'Login successful',
+            'roles' => $roles,
+            'redirect_to' => $redirect
+        ];*/
     }
 
     public function logout(Request $request)

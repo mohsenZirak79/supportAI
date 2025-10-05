@@ -13,9 +13,9 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         // 1. نقش‌ها
-        $roles = ['برنامه نویس', 'ادمین', 'کاربر', 'پشتیبان'];
+        $roles = ['برنامه نویس', 'ادمین'];
         foreach ($roles as $role) {
-            Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
+            Role::firstOrCreate(['name' => $role, 'guard_name' => 'web' , 'allow_ticket' => '1']);
         }
 
         // 2. پرمیشن‌ها
@@ -41,33 +41,23 @@ class RolePermissionSeeder extends Seeder
         $admin = Role::where('name', 'ادمین')->first();
         $admin->syncPermissions(Permission::all());
 
-        $support = Role::where('name', 'پشتیبان')->first();
+        /*$support = Role::where('name', 'پشتیبان')->first();
         $support->syncPermissions([
             'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket',
             'create-chat', 'read-chat', 'update-chat', 'delete-chat',
-        ]);
-
-        $userRole = Role::where('name', 'کاربر')->first();
-        $userRole->syncPermissions([
-            'read-ticket',
-            'create-chat', 'read-chat',
-        ]);
+        ]);*/
 
         // 4. یوزرهای تستی + assign role
         $users = [
-            ['name' => 'Ali', 'email' => 'ali@example.com', 'password' => '123456789', 'phone' => '09123456781', 'role' => 'برنامه نویس'],
-            ['name' => 'Sara', 'email' => 'sara@example.com', 'password' => '123456789', 'phone' => '09123456782', 'role' => 'ادمین'],
-            ['name' => 'Reza', 'email' => 'reza@example.com', 'password' => '123456789', 'phone' => '09123456783', 'role' => 'کاربر'],
-            ['name' => 'Neda', 'email' => 'neda@example.com', 'password' => '123456789', 'phone' => '09123456784', 'role' => 'پشتیبان'],
+            ['name' => 'admin', 'password' => '123456789' , 'role' => 'ادمین'],
+            ['name' => 'programmer','password' => '123456789' , 'role' => 'برنامه نویس']
         ];
 
         foreach ($users as $u) {
             $user = User::updateOrCreate(
-                ['email' => $u['email']],
                 [
                     'name' => $u['name'],
-                    'password' => Hash::make($u['password']),
-                    'phone' => $u['phone'],
+                    'password' => Hash::make($u['password'])
                 ]
             );
 

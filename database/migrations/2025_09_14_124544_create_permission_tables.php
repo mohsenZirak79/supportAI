@@ -33,6 +33,7 @@ return new class extends Migration
                 $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
             }
             $table->string('name');
+            $table->string('allow_ticket')->default('0');
             $table->string('guard_name');
             $table->timestamps();
 

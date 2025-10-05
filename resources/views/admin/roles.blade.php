@@ -10,7 +10,7 @@
           href="https://cdn.jsdelivr.net/npm/vanilla-datatables@latest/dist/vanilla-dataTables.min.css">
     <script src="https://cdn.jsdelivr.net/npm/vanilla-datatables@latest/dist/vanilla-dataTables.min.js"></script>
     <title>
-        Soft UI Dashboard by Creative Tim
+        لیست نقش ها
     </title>
     <!--     Fonts and icons     -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet"/>
@@ -194,10 +194,9 @@
     <!-- End Navbar -->
     <div class="container-fluid py-4">
         <div class="container-fluid py-4">
+            <h6 style="text-align: center">لیست نقش ها</h6>
             <div class="card">
-                <div class="card-header pb-0">
-                    <h6>لیست نقش ها</h6>
-                </div>
+
                 <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
                         <table class="table align-items-center mb-0 datatable">
@@ -219,6 +218,10 @@
                             </tr>
                             </thead>
                             <tbody>
+                            <button class="btn btn-sm btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#addRoleModal">
+                                افزودن نقش
+                            </button>
                             @foreach($roles as $role)
                                 <tr>
                                     <td style="text-align: center">
@@ -237,10 +240,10 @@
                                     <td class="text-center">
                                         <!-- دکمه ویرایش -->
                                         <button class="btn btn-sm btn-info" data-bs-toggle="modal"
-                                                data-bs-target="#editUserModal{{ $role->id }}">
+                                                data-bs-target="#editRoleModal{{ $role->id }}">
                                             ویرایش
                                         </button>
-                                        <form action="{{ route('users.destroy', $role->id) }}" method="POST"
+                                        <form action="{{ route('roles.destroy', $role->id) }}" method="POST"
                                               style="display:inline-block;"
                                               onsubmit="return confirm('آیا از حذف این کاربر مطمئن هستید؟');">
                                             @csrf
@@ -251,8 +254,73 @@
                                         </form>
                                     </td>
                                 </tr>
+                                <div class="modal fade" id="editRoleModal{{ $role->id }}" tabindex="-1"
+                                     aria-labelledby="editRoleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editRoleModalLabel">ویرایش نقش</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="بستن"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="POST" action="{{ route('roles.update', $role->id) }}">
+                                                    @csrf
+                                                    @method('PUT')
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">عنوان</label>
+                                                        <input type="text" name="name" class="form-control"
+                                                               value="{{ $role->name }}" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label"></label>
+                                                        <input type="checkbox" id="allowTicket" name="fav_language"
+                                                               value="{{ $role->allowTicket }}">
+                                                        <label for="allowTicket">امکان مشاهده و پاسخ به تیکت
+                                                            ها</label><br>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             @endforeach
+
+                                <!-- Modal افزودن نقش -->
+                                <div class="modal fade" id="addRoleModal" tabindex="-1"
+                                     aria-labelledby="addRoleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="addRoleModalLabel">افزودن نقش جدید</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="بستن"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="{{ route('roles.store') }}" method="POST">
+                                                    @csrf
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">عنوان</label>
+                                                        <input type="text" name="name" class="form-control" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label"></label>
+                                                        <input type="checkbox" id="allowTicket" name="allow_ticket">
+                                                        <label for="allowTicket">امکان مشاهده و پاسخ به تیکت
+                                                            ها</label><br>
+                                                    </div>
+
+                                                    <button type="submit" class="btn btn-primary">ثبت</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </tbody>
+
                         </table>
                     </div>
                 </div>
