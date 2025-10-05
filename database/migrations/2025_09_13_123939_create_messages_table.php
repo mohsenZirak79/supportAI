@@ -19,7 +19,6 @@ return new class extends Migration
             $table->enum('type', ['text', 'image', 'file', 'voice'])->default('text');
             $table->text('content')->nullable();
             $table->jsonb('metadata')->nullable();
-            $table->jsonb('attachments')->nullable();
             $table->timestamps();
             // 👇 index برای performance بالا
             $table->index(['conversation_id', 'created_at']);

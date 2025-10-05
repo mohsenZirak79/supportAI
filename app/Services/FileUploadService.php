@@ -2,21 +2,30 @@
 
 namespace App\Services;
 
+use App\Domains\Shared\Models\TempUpload;
 use Illuminate\Http\UploadedFile;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Illuminate\Support\Facades\Auth;
 
 class FileUploadService
 {
-    public function upload(UploadedFile $file, string $collection = 'default', ?string $disk = null): Media
+    public function upload(UploadedFile $file, string $collection = 'uploads')
     {
         // اعتبارسنجی اندازه (حداکثر 5MB)
         if ($file->getSize() > 5 * 1024 * 1024) {
             throw new \InvalidArgumentException('فایل بیش از 5 مگابایت است.');
         }
 
-        // ذخیره فایل
-        return auth()->user()->addMedia($file)
-            ->toMediaCollection($collection, $disk ?? config('filesystems.default'));
+
+        $temp = TempUpload::create(['user_id' => optional(Auth::user())->id]);
+
+        // 2) روی TempUpload ذخیره کن
+        $media = $temp
+            ->addMedia($file)
+            ->preservingOriginal()  // اختیاری
+            ->toMediaCollection('uploads'); // کالکشن ثابت temp
+
+        // 3) خروجی مورد نیاز فرانت
+        return $media;
     }
 
     public function finalize(string $fileId, array $metadata = []): Media

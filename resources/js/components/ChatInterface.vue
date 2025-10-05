@@ -43,8 +43,13 @@
                         class="message"
                         :class="{ 'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot' }"
                     >
-                        <div class="message-bubble">
+                        <div class="message-bubble" @click="onBubbleClick(message)">
                             {{ message.text }}
+
+                            <div v-if="message.voiceUrl" class="voice-player" @click.stop="playVoice(message.id)">
+                                <audio :ref="el => registerAudioRef(message.id, el)" :src="message.voiceUrl" preload="none" controls></audio>
+                            </div>
+
                             <div class="message-meta">
                                 <span class="timestamp">{{ formatDate(message.created_at) }}</span>
                                 <div class="message-actions">
@@ -229,47 +234,52 @@ const cleanupRecording = () => {
 
 const uploadVoice = async (blob) => {
     try {
-        // مرحله ۱: آپلود فایل
+        // 1) آپلود فایل
         const formData = new FormData();
         formData.append('file', blob, 'recording.webm');
-
-        const uploadRes = await fetch('/api/v1/files', {
-            method: 'POST',
-            body: formData
-        });
-
+        formData.append('collection', 'message_voices');
+        const uploadRes = await fetch('/api/v1/files', { method: 'POST', body: formData });
         if (!uploadRes.ok) throw new Error('آپلود فایل شکست خورد');
         const { file_id } = await uploadRes.json();
 
-        // مرحله ۲: ارسال پیام با فایل
+        // 2) ارسال پیام با media_ids
         const messageRes = await fetch(`/api/v1/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                content: '', // متن خالی
-                attachments: [file_id]
-            })
+            body: JSON.stringify({ content: '', media_ids: [file_id], media_kind: 'voice' })
+        });
+        if (!messageRes.ok) throw new Error('ارسال پیام شکست خورد');
+
+        const { user_message } = await messageRes.json(); // ← این مهم است
+        const chat = chats.value.find(c => c.id === activeChatId.value);
+        if (!chat) return;
+
+        // 3) پیام را به UI اضافه کن
+        chat.messages.push({
+            id: user_message.id,
+            sender: 'user',
+            text: user_message.content || '',
+            created_at: user_message.created_at
         });
 
-        if (!messageRes.ok) throw new Error('ارسال پیام شکست خورد');
-        const { message } = await messageRes.json();
-
-        // آپدیت UI
-        const activeChat = chats.value.find(c => c.id === activeChatId.value);
-        if (activeChat) {
-            activeChat.messages.push({
-                id: message.id,
-                sender: 'user',
-                type: 'voice',
-                attachments: message.attachments,
-                created_at: message.created_at
-            });
+        // 4) مدیای همین پیام را بگیر و voiceUrl ست کن
+        const r = await fetch(`/api/v1/messages/${user_message.id}/media`, { headers: { 'Accept': 'application/json' } });
+        if (r.ok) {
+            const { data: media } = await r.json();
+            const voice = (media || []).find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
+            if (voice) {
+                // پیدا کردن پیام تازه اضافه‌شده و تزریق voiceUrl
+                const msg = chat.messages.find(m => m.id === user_message.id);
+                if (msg) msg.voiceUrl = voice.url;
+            }
+            await nextTick(); // تا <audio> رندر شود و ref ثبت شود
         }
     } catch (error) {
         alert('خطا در ارسال صدا');
         console.error('Upload error:', error);
     }
 };
+
 
 // برای waveform پویا
 const getBarHeight = (index) => {
@@ -349,15 +359,36 @@ const loadMessages = async (chatId) => {
     try {
         const res = await fetch(`/api/v1/conversations/${chatId}/messages`);
         if (res.ok) {
-            const {data} = await res.json();
+            const { data } = await res.json();
             const chat = chats.value.find(c => c.id === chatId);
             if (chat) {
                 chat.messages = data.map(msg => ({
                     id: msg.id,
                     sender: msg.sender_type === 'ai' ? 'bot' : 'user',
                     text: msg.content,
-                    created_at: msg.created_at // برای نمایش تاریخ
+                    created_at: msg.created_at
                 }));
+
+                // ⬇️ همین بلاک را «اینجا» اضافه کن:
+                await Promise.all(
+                    (chat.messages || []).map(async (msg) => {
+                        try {
+                            const r = await fetch(`/api/v1/messages/${msg.id}/media`, { headers: { 'Accept': 'application/json' } });
+                            if (r.ok) {
+                                const { data: media } = await r.json();
+                                msg.media = media || [];
+                                const voice = msg.media.find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
+                                if (voice) {
+                                    msg.voiceUrl = voice.url;
+                                }
+                            } else {
+                                msg.media = [];
+                            }
+                        } catch {
+                            msg.media = [];
+                        }
+                    })
+                );
             }
         }
     } catch (e) {
@@ -511,23 +542,71 @@ const showHandoffModal = (message) => {
     selectedMessageForHandoff.value = message;
     isHandoffModalOpen.value = true;
 };
-const handleHandoffSubmit = async (data) => {  // ← این رو هم fix کن: modal رو ببند
+const handleHandoffSubmit = async (data) => {
     try {
-        const res = await fetch(`/api/v1/conversations/${selectedMessageForHandoff._rawValue.id}/handoff`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        if (res.ok) {
-            alert('ارجاع با موفقیت انجام شد!');
-            isHandoffModalOpen.value = false;  // ← اضافه کن: modal رو ببند
-        } else {
-            throw new Error('خطا در ارجاع');
+        if (!selectedMessageForHandoff.value?.id) {
+            alert('پیام انتخاب‌شده نامعتبر است.');
+            return;
         }
+
+        const res = await fetch(
+            `/api/v1/conversations/${selectedMessageForHandoff.value.id}/handoff`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data) // { target_role, reason }
+            }
+        );
+
+        if (!res.ok) throw new Error('خطا در ارجاع');
+
+        // موفق
+        alert('ارجاع با موفقیت انجام شد!');
+        isHandoffModalOpen.value = false;
+        selectedMessageForHandoff.value = null;
     } catch (e) {
         alert('خطا در ارجاع: ' + e.message);
     }
 };
+const audioRefs = ref({});
+let currentlyPlayingId = null;
+const registerAudioRef = (id, el) => {
+    if (el) audioRefs.value[id] = el;
+};
+const playVoice = async (id) => {
+    const el = audioRefs.value[id];
+    if (!el) return;
+
+    // توقف صدای قبلی
+    if (currentlyPlayingId && currentlyPlayingId !== id) {
+        const prev = audioRefs.value[currentlyPlayingId];
+        if (prev && !prev.paused) prev.pause();
+    }
+    currentlyPlayingId = id;
+
+    // آماده‌سازی برای پخش
+    if (el.readyState < 2) { // HAVE_CURRENT_DATA
+        el.load();
+        await new Promise(res => {
+            const onReady = () => { el.removeEventListener('canplay', onReady); res(); };
+            el.addEventListener('canplay', onReady, { once: true });
+        });
+    }
+    el.currentTime = 0;
+    try {
+        await el.play();
+    } catch (e) {
+        // بعضی مرورگرها سخت‌گیرند: اگر از روی bubble کلیک کردی و باز هم خطا داد،
+        // یک fallback: simulate click on the control
+        console.debug('play() failed, user gesture required?', e);
+    }
+};
+
+const onBubbleClick = (message) => {
+    if (message.voiceUrl) playVoice(message.id);
+};
+
+
 // --- Lifecycle ---
 onMounted(() => {
     loadChats();

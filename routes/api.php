@@ -5,7 +5,7 @@ use App\Domains\UserPanel\Controllers\TicketController;
 use Illuminate\Http\Request;
 use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Route;
-
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 //
 //Route::get('/user', function (Request $request) {
 //    return $request->user();
@@ -59,10 +59,11 @@ Route::prefix('v1')->middleware(['forceTestUser'])->group(function () {
     Route::post('tickets', [\App\Domains\UserPanel\Controllers\TicketController::class, 'store']); // ایجاد تیکت جدید
     Route::get('tickets/{rootId}', [\App\Domains\UserPanel\Controllers\TicketController::class, 'show']); // مشاهده تمام رفت‌و‌برگشت‌ها
     Route::post('tickets/{rootId}/messages', [\App\Domains\UserPanel\Controllers\TicketController::class, 'sendMessage']); // پاسخ کاربر
-//    Route::get('tickets_departments', [\App\Domains\UserPanel\Controllers\TicketController::class, 'getDepartments']);
     Route::get('agent/tickets', [AgentPanel\TicketController::class, 'index']); // لیست همه تیکت‌ها (فیلتر شده بر اساس نقش)
     Route::get('agent/tickets/{rootId}', [AgentPanel\TicketController::class, 'show']); // مشاهده رفت‌و‌برگشت‌ها
     Route::post('agent/tickets/{rootId}/messages', [AgentPanel\TicketController::class, 'sendMessage']); // پاسخ پشتیبان
+
+
 
     Route::post('files', function (Request $request, FileUploadService $uploadService) {
         $file = $request->file('file');
@@ -82,6 +83,38 @@ Route::prefix('v1')->middleware(['forceTestUser'])->group(function () {
     });
 
     Route::get('support-roles', [\App\Domains\Shared\Controllers\RoleController::class, 'getSupportRoles']);
+
+//    Route::get('messages/{message}/media', function (Message $message) {
+//        $items = $message->getMedia()->map(function (Media $m) {
+//            return [
+//                'id'         => $m->id,
+//                'collection' => $m->collection_name,
+//                'mime'       => $m->mime_type,
+//                'url'        => $m->getUrl(),     // ← خروجی نسبی /storage/...
+//                'name'       => $m->file_name,
+//                'size'       => $m->size,
+//            ];
+//        })->values();
+//
+//        return response()->json(['data' => $items]);
+//    });
+
+    Route::get('messages/{message}/media', function (\App\Domains\Shared\Models\Message $message) {
+        $media = $message->media()  // ← رابطه‌ی داخلی Spatie ML
+        ->whereIn('collection_name', ['message_files', 'message_voices'])
+            ->orderBy('id')
+            ->get()
+            ->map(fn($m) => [
+                'id'         => $m->id,
+                'name'       => $m->file_name,
+                'mime'       => $m->mime_type,
+                'size'       => $m->size,
+                'collection' => $m->collection_name,
+                'url'        => $m->getUrl(),
+            ]);
+
+        return response()->json(['data' => $media]);
+    });
 });
 // User Panel Routes
 //    Route::middleware(['auth:sanctum', \App\Http\Middleware\GuestChat::class, \App\Http\Middleware\IdleTimeout::class])->group(function () {

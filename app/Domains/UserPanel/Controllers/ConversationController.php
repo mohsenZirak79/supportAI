@@ -9,72 +9,273 @@ use App\Domains\Shared\Models\Message;
 use App\Domains\Shared\Services\PythonAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ConversationController extends Controller
 {
+//    public function sendMessage(Request $request, Conversation $conversation)
+//    {
+//        $user = Auth::user();
+//        abort_unless($user && $conversation->user_id === $user->id, 403);
+//
+//        $validated = $request->validate([
+//            'content'     => 'nullable|string|max:2000',
+//            'media_ids'   => 'nullable|array',
+//            'media_ids.*' => 'integer',
+//            'media_kind'  => 'nullable|in:file,voice', // ← فرانت برای ویس 'voice' بفرستد
+//        ]);
+//
+//        $isFirstMessage = $conversation->messages()->count() === 0;
+//
+//        $type = 'text';
+//        if (!empty($validated['media_ids'])) {
+//            $type = ($validated['media_kind'] ?? null) === 'voice' ? 'voice' : 'file';
+//        }
+//
+//        $userMessage = Message::create([
+//            'conversation_id' => $conversation->id,
+//            'sender_type'     => 'user',
+//            'sender_id'       => $user->id,
+//            'type'            => $type,
+//            'content'         => $validated['content'] ?? '',
+//            'metadata'        => null,
+//        ]);
+//        $targetCollection = $type === 'voice' ? 'message_voices' : 'message_files';
+//        // الصاق مدیاها (انتقال از TempUpload به Message)
+//        if (!empty($validated['media_ids'])) {
+//            Media::query()
+//                ->whereIn('id', $validated['media_ids'] ?? [])
+//                ->get()
+//                ->each(function (Media $m) use ($userMessage, $targetCollection) {
+//                    $m->model_type      = \App\Domains\Shared\Models\Message::class;
+//                    $m->model_id        = $userMessage->id;
+//                    $m->collection_name = $targetCollection;
+//                    $m->save(); // ← این save ایونت را تریگر می‌کند و با moves_media_on_update=true فایل را جابجا می‌کند
+//                });
+//        }
+//
+//        // تماس با AI
+//        $aiService = new PythonAIService();
+//        $aiResponse = $aiService->chat([
+//            'message'        => $request->content,
+//            'conversation_id'=> $conversation->id,
+//            'user_id'        => $user->id,
+//            'first_message'  => $isFirstMessage,
+//        ]);
+//
+//        // پیام AI (متن)
+//        $aiMessage = Message::create([
+//            'conversation_id' => $conversation->id,
+//            'sender_type'     => 'ai',
+//            'sender_id'       => null,
+//            'type'            => 'text', // بعداً اگر ویس هم داشت تغییر می‌دهیم
+//            'content'         => $aiResponse['reply'] ?? '',
+//        ]);
+//
+//        // اگر AI ویس برگرداند (اختیاری: voice_media_id یا voice_media_ids)
+//        if (!empty($aiResponse['voice_media_id'])) {
+//            DB::table('media')
+//                ->where('id', $aiResponse['voice_media_id'])
+//                ->update([
+//                    'model_type'     => \App\Domains\Shared\Models\Message::class,
+//                    'model_id'       => $aiMessage->id,
+//                    'collection_name'=> 'message_voices',
+//                    'updated_at'     => now(),
+//                ]);
+//            $aiMessage->update(['type' => 'voice']); // هم متن دارد هم ویس → اگر می‌خواهی 'text' بماند و صرفاً media داشته باشد، این خط را بردار.
+//        }
+//
+//        if (!empty($aiResponse['suggested_title'])
+//            && (!$conversation->title || $conversation->title === 'چت جدید')) {
+//            $conversation->update(['title' => $aiResponse['suggested_title']]);
+//        }
+//
+//        event(new \App\Domains\Shared\Events\MessageSent($aiMessage));
+//
+//        return response()->json([
+//            'user_message' => $userMessage->fresh(),   // ← به‌جای متن ساده، خود مدل
+//            'ai_message'   => $aiMessage,
+//            'conversation' => $conversation->fresh(),
+//        ]);
+//    }
+
+
     public function sendMessage(Request $request, Conversation $conversation)
     {
         $user = Auth::user();
         abort_unless($user && $conversation->user_id === $user->id, 403);
 
         $validated = $request->validate([
-            'content' => 'nullable|string|max:2000',
-            'attachments' => 'nullable|array',
-            'attachments.*' => 'exists:files,id' // ✅ اعتبارسنجی file_id
+            'content'     => 'nullable|string|max:2000',
+            'media_ids'   => 'nullable|array',
+            'media_ids.*' => 'integer',        // id جدول media در Spatie عددی است
+            'media_kind'  => 'nullable|in:file,voice',
         ]);
 
-        // بررسی اینکه آیا اولین پیام چت هست
         $isFirstMessage = $conversation->messages()->count() === 0;
-        $type = empty($validated['attachments']) ? 'text' : 'voice'; // یا 'file'
-        // ذخیره پیام کاربر
+
+        // نوع پیام کاربر
+        $type = 'text';
+        if (!empty($validated['media_ids'])) {
+            $type = ($validated['media_kind'] ?? null) === 'voice' ? 'voice' : 'file';
+        }
+
+        // 1) پیام کاربر را ثبت کن
         $userMessage = Message::create([
             'conversation_id' => $conversation->id,
-            'sender_type' => 'user',
-            'sender_id' => $user->id, // فقط برای user/agent
-            'type' => $type,
-            'content' => $validated['content'] ?? '',
-            'attachments' => $validated['attachments'] ?? [], // ✅ ذخیره به‌صورت آرایه
+            'sender_type'     => 'user',
+            'sender_id'       => $user->id,
+            'type'            => $type,
+            'content'         => $validated['content'] ?? '',
+            'metadata'        => null,
         ]);
-        if (!empty($validated['attachments'])) {
-            $userMessage->attachments()->attach($validated['attachments']);
+
+        // 2) مدیاها را از TempUpload به Message منتقل کن (همان روال فعلی)
+        if (!empty($validated['media_ids'])) {
+            DB::table('media')
+                ->whereIn('id', $validated['media_ids'])
+                ->update([
+                    'model_type'      => \App\Domains\Shared\Models\Message::class,
+                    'model_id'        => $userMessage->id,
+                    'collection_name' => $type === 'voice' ? 'message_voices' : 'message_files',
+                    'updated_at'      => now(),
+                ]);
         }
-        // ارسال به سرویس AI
-        $aiService = new PythonAIService();
-        $aiResponse = $aiService->chat([
-            'message' => $request->content,
-            'conversation_id' => $conversation->id,
-            'user_id' => $user->id,
-            'first_message' => $isFirstMessage,
-        ]);
 
-        // پیدا کردن کاربر AI
-//        $aiUser = User::firstOrCreate(
-//            ['email' => 'ai@system.local'],
-//            ['name' => 'ربات هوشمند', 'email' => 'ai@system.local']
-//        );
+        // 3) تماس با API جدید (متن یا ویس)
+        $aiReplyText = '';
+        $aiVoiceDataUrl = null;   // اگر API صوتِ base64 برگرداند (data URL یا base64 ساده)
 
-        // ذخیره پاسخ AI
+        try {
+            if ($type === 'voice') {
+                // فایل voice کاربر را از Media پیدا کن
+                /** @var \Spatie\MediaLibrary\MediaCollections\Models\Media|null $voiceMedia */
+                $voiceMedia = $userMessage->getMedia('message_voices')->first();
+
+                if ($voiceMedia) {
+                    // مسیر فایل روی دیسک local/public
+                    // در Spatie v10، getPath() مسیر کامل فایل را می‌دهد
+                    $absolutePath = $voiceMedia->getPath();
+
+                    // درخواست multipart
+                    $resp = Http::asMultipart()
+                        ->timeout(60)
+                        ->attach('file', fopen($absolutePath, 'r'), $voiceMedia->file_name)
+                        ->post('https://ai.mokhtal.xyz/api/voice-to-answer', [
+                            'user_type'     => 'new',
+                            'first_message' => $isFirstMessage ? 'true' : 'false',
+                        ]);
+
+                    if ($resp->successful()) {
+                        $json = $resp->json();
+
+                        // تلاش برای پیدا کردن متن پاسخ (کلیدهای احتمالی مختلف)
+                        $aiReplyText = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
+
+                        // اگر صوت برگشته باشد (هر یک از شکل‌های رایج)
+                        $aiVoiceDataUrl = $json['audio_data'] ?? $json['voice_base64'] ?? null;
+                    } else {
+                        $aiReplyText = 'خطا در سرویس voice-to-answer (' . $resp->status() . ')';
+                    }
+                } else {
+                    $aiReplyText = 'فایل صوتی کاربر پیدا نشد.';
+                }
+            } else {
+                // متن
+                $resp = Http::timeout(45)->post('https://ai.mokhtal.xyz/api/ask', [
+                    'question'      => $validated['content'] ?? '',
+                    'user_type'     => 'new',
+                    'first_message' => $isFirstMessage,
+                ]);
+
+                if ($resp->successful()) {
+                    $json = $resp->json();
+                    $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
+                    $aiVoiceDataUrl = $json['audio_data'] ?? $json['voice_base64'] ?? null;
+
+                    // اگر عنوان پیشنهاد داد
+                    if (!empty($json['suggested_title'])
+                        && (!$conversation->title || $conversation->title === 'چت جدید')) {
+                        $conversation->update(['title' => $json['suggested_title']]);
+                    }
+                } else {
+                    $aiReplyText = 'خطا در سرویس ask (' . $resp->status() . ')';
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::error('AI API error: '.$e->getMessage());
+            $aiReplyText = 'خطا در ارتباط با سرویس هوش مصنوعی.';
+        }
+
+        // 4) ثبت پیام AI (متن)
         $aiMessage = Message::create([
             'conversation_id' => $conversation->id,
-            'sender_type' => 'ai',    // ← مهم!
-            'sender_id' => null,      // ← null کاملاً مجازه
-            'type' => 'text',
-            'content' => $aiResponse['reply'],
+            'sender_type'     => 'ai',
+            'sender_id'       => null,
+            'type'            => 'text',       // متن همیشه هست
+            'content'         => $aiReplyText,
         ]);
 
-        // اگر عنوان پیشنهادی داده شده و چت هنوز عنوان نداره، آپدیت کن
-        if ($aiResponse['suggested_title'] && (!$conversation->title || $conversation->title === 'چت جدید')) {
-            $conversation->update(['title' => $aiResponse['suggested_title']]);
+        // 5) اگر پاسخ API صوت base64 هم داشت → به message_voices بچسبان
+        if ($aiVoiceDataUrl) {
+            try {
+                // هم data URL را پشتیبانی می‌کنیم هم base64 خالص
+                [$mime, $raw] = $this->splitDataUrlOrBase64($aiVoiceDataUrl);
+
+                $tmp = tmpfile();
+                $meta = stream_get_meta_data($tmp);
+                $tmpPath = $meta['uri'];
+                file_put_contents($tmpPath, base64_decode($raw));
+
+                $ext = $this->guessAudioExtension($mime);
+                $fileName = 'ai_reply.' . $ext;
+
+                $aiMessage
+                    ->addMedia($tmpPath)
+                    ->usingFileName($fileName)
+                    ->withCustomProperties(['source' => 'ai'])
+                    ->toMediaCollection('message_voices', 'public');
+            } catch (\Throwable $e) {
+                \Log::warning('Attach AI voice failed: '.$e->getMessage());
+            }
         }
 
         event(new \App\Domains\Shared\Events\MessageSent($aiMessage));
 
         return response()->json([
-            'user_message' => $request->content,
-            'ai_message' => $aiMessage,
-            'conversation' => $conversation->fresh(), // شامل عنوان جدید
+            'user_message' => $userMessage->fresh(),
+            'ai_message'   => $aiMessage->fresh(),
+            'conversation' => $conversation->fresh(),
         ]);
     }
+
+    private function splitDataUrlOrBase64(string $input): array
+    {
+        if (str_starts_with($input, 'data:')) {
+            // data:[mime];base64,[data]
+            if (preg_match('#^data:(.*?);base64,(.*)$#', $input, $m)) {
+                return [$m[1] ?: 'audio/webm', $m[2]];
+            }
+        }
+        // base64 خالص
+        return ['audio/webm', $input];
+    }
+
+    /** یک حدس ساده برای پسوند از روی mime */
+    private function guessAudioExtension(string $mime): string
+    {
+        return match ($mime) {
+            'audio/wav', 'audio/x-wav'   => 'wav',
+            'audio/mpeg'                 => 'mp3',
+            'audio/ogg'                  => 'ogg',
+            'audio/webm'                 => 'webm',
+            default                      => 'webm',
+        };
+    }
+
     // لیست چت‌ها (فقط active)
     public function index(Request $request)
     {
@@ -141,8 +342,7 @@ class ConversationController extends Controller
     }
     public function userReferrals(Request $request) {
         $user = Auth::user();
-        $query = Referral::forOrg($user->org_id)
-            ->where('user_id', $user->id)
+        $query = Referral::where('user_id', $user->id)
             ->with(['conversation', 'assignedAgent']) // No triggerMessage to avoid heavy load
             ->orderBy('created_at', 'desc')
             ->cursorPaginate(10); // Specs: cursor
@@ -164,27 +364,31 @@ class ConversationController extends Controller
         return response()->json($referral->fresh()->load(['user', 'conversation']));
     }
 
-    public function handoff(Request $request, Message $message) {
+    public function handoff(Request $request, Message $message)
+    {
+        $user = Auth::user();
+        abort_unless($user, 403);
 
-        $user = Auth::user(); // Assume Sanctum/JWT – add middleware later
-//        abort_unless($user && $message->sender_id === $user->id, 403);
         $validated = $request->validate([
-            'reason' => 'required|string|max:1000', // Reason
-//            'target_role' => 'required|string|in:support_agent,senior_agent,supervisor', // From RBAC
-        ], [
-//            'target_role.in' => 'نقش معتبر انتخاب کنید.',
+            'reason' => 'nullable|string|max:1000',     // ← اختیاری
+            'target_role' => 'required|string',         // ← نقش مقصد
         ]);
+
         $referral = Referral::create([
-            'conversation_id' => $message->id,
-            'trigger_message_id' => $request->trigger_message_id, // From Vue: selectedMessage.id
-            'user_id' => $user->id,
-            'assigned_role' => $validated['target_role'],
-            'assigned_agent_id' => null, // Assign later via queue/admin
-            'description' => $validated['reason'],
-            'status' => 'pending',
-//            'org_id' => $orgId,
+            'conversation_id'   => $message->conversation_id, // ← درست
+            'trigger_message_id'=> $message->id,              // ← همین پیام
+            'user_id'           => $user->id,
+            'assigned_role'     => $validated['target_role'],
+            'assigned_agent_id' => null,
+            'description'       => $validated['reason'] ?? '',
+            'status'            => 'pending',
         ]);
+
         event(new \App\Domains\Shared\Events\ReferralCreated($referral));
-        return response()->json($referral->load(['conversation']), 201); // Include conversation for UI refresh
+
+        return response()->json(
+            $referral->load(['conversation']),
+            201
+        );
     }
 }

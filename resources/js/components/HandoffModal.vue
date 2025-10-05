@@ -3,83 +3,154 @@
     <div v-if="isOpen" class="modal-overlay" @click="close">
         <div class="modal-content" @click.stop>
             <h2>ارجاع به پشتیبانی</h2>
+
             <div class="form-group">
                 <label>نقش پشتیبان:</label>
-                <select v-model="selectedRole" class="select-input">
+                <select
+                    v-model="selectedRoleId"
+                    class="select-input"
+                    :disabled="labelsLoading"
+                >
                     <option value="">انتخاب کنید...</option>
-                    <!-- v-for درست: key و value روی id، نمایش name -->
                     <option
                         v-for="role in roles"
-                        :key="role.id">
-                    {{ roleLabel(role) }}
+                        :key="role?.id ?? role"
+                        :value="role?.id ?? role"
+                    >
+                        {{ roleLabel(role) }}
                     </option>
                 </select>
+                <p v-if="labelsLoading" style="margin-top:8px;font-size:12px;color:#64748b">
+                    در حال بارگذاری لیبل نقش‌ها...
+                </p>
             </div>
+
             <div class="form-group">
                 <label>توضیحات (اختیاری):</label>
-                <textarea v-model="reason" placeholder="دلیل ارجاع را بنویسید..." class="text-input"></textarea>
+                <textarea
+                    v-model="reason"
+                    placeholder="دلیل ارجاع را بنویسید..."
+                    class="text-input"
+                ></textarea>
             </div>
+
             <div class="modal-actions">
                 <button @click="close" class="btn-cancel">لغو</button>
-                <button @click="submit" :disabled="!selectedRole" class="btn-submit">ارجاع</button>
+                <button
+                    @click="submit"
+                    :disabled="!selectedRoleId"
+                    class="btn-submit"
+                >
+                    ارجاع
+                </button>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref, defineProps, defineEmits, onMounted } from 'vue'
+import axios from 'axios'
 
+/**
+ * props:
+ * - isOpen: کنترل نمایش مودال
+ * - roles: آرایه‌ای از نقش‌ها که توسط parent پاس داده می‌شود
+ *   می‌تواند یکی از این دو فرمت باشد:
+ *   1) [{ id: 'support_sales', name: 'پشتیبانی فروش' }, ...]
+ *   2) ['support_sales', 'support_finance', ...]
+ */
 const props = defineProps({
-    isOpen: Boolean,
-    roles: Array  // array از objects مثل [{id: "...", name: "..."}]
-});
+    isOpen: { type: Boolean, default: false },
+    roles: { type: Array, default: () => [] }
+})
 
-const emit = defineEmits(['close', 'submit']);
+const emit = defineEmits(['close', 'submit'])
 
-const selectedRole = ref('');  // حالا id string ذخیره می‌کنه
-const reason = ref('');
+const selectedRoleId = ref('')
+const reason = ref('')
 
-// roleLabel آپدیت‌شده: اگر object باشه name رو برگردون، else old logic
+// Map برای نگهداری id => name که از کنترلر می‌گیریم
+const roleNameById = ref(new Map())
+const labelsLoading = ref(false)
+
+/**
+ * گرفتن لیبل نقش‌ها از کنترلر
+ * API expected: GET /api/v1/support-roles
+ * response: [{ id: 'support_sales', name: 'پشتیبانی فروش' }, ...]
+ */
+const fetchRoleLabels = async () => {
+    try {
+        labelsLoading.value = true
+        const { data } = await axios.get('/api/v1/support-roles')
+        const map = new Map()
+        if (Array.isArray(data)) {
+            for (const r of data) {
+                if (r && r.id && r.name) map.set(String(r.id), r.name)
+            }
+        }
+        roleNameById.value = map
+    } catch (e) {
+        // اینجا می‌تونی به سیستم toast خودت وصل کنی
+        console.error('خطا در بارگذاری لیبل نقش‌ها', e)
+    } finally {
+        labelsLoading.value = false
+    }
+}
+
+// در mount یک بار لیبل‌ها را بگیر
+onMounted(fetchRoleLabels)
+
+/**
+ * roleLabel:
+ * - اگر role آبجکت باشد و name داشته باشد => همان name
+ * - اگر role آبجکت با id یا فقط id/کلید باشد => از Map بخوان
+ * - اگر در Map نبود => fallback قدیمی
+ */
 const roleLabel = (role) => {
-    // اگر role object باشه (از API جدید)، name رو برگردون
-    if (typeof role === 'object' && role && role.name) {
-        return role.name;
+    if (role && typeof role === 'object') {
+        if (role.name) return role.name
+        if (role.id && roleNameById.value.has(String(role.id))) {
+            return roleNameById.value.get(String(role.id))
+        }
+        return String(role.id || '')
     }
 
-    // old logic برای string keys (اگر بعداً نیاز شد)
-    const labels = {
-        'support_sales': 'پشتیبانی فروش',
-        'support_finance': 'پشتیبانی مالی',
-        'support_technical': 'پشتیبانی فنی'
-    };
-    return labels[role] || role;
-};
+    // role رشته/کلید است
+    if (role && roleNameById.value.has(String(role))) {
+        return roleNameById.value.get(String(role))
+    }
 
-const close = () => emit('close');
+    // fallback قدیمی
+    // const labels = {
+    //     support_sales: 'پشتیبانی فروش',
+    //     support_finance: 'پشتیبانی مالی',
+    //     support_technical: 'پشتیبانی فنی'
+    // }
+    return  String(role || '')
+}
+
+const close = () => emit('close')
 
 const submit = () => {
-    // emit فقط id string و reason
-    emit('submit', { target_role: selectedRole.value, reason: reason.value });
-    close();
-    // اختیاری: reset form
-    selectedRole.value = '';
-    reason.value = '';
-};
+    emit('submit', {
+        target_role: selectedRoleId.value, // فقط id ارسال می‌شود
+        reason: reason.value
+    })
+    // reset ساده
+    selectedRoleId.value = ''
+    reason.value = ''
+    close()
+}
 </script>
 
 <style scoped>
-/* بدون تغییر - همون کد قبلی */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     z-index: 1000;
 }
 
@@ -91,9 +162,7 @@ const submit = () => {
     max-width: 500px;
 }
 
-.form-group {
-    margin-bottom: 16px;
-}
+.form-group { margin-bottom: 16px; }
 
 .form-group label {
     display: block;
