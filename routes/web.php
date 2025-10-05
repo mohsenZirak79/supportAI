@@ -23,12 +23,7 @@ Route::get('/ticket', function () {
     return View::make('tickets.index');
 });
 
-//    User::create([
-//
-//        'name' => 'کاربر تست',
-//        'email' => 'test@example.com',
-//        'password' => bcrypt('password'),
-//    ]);
+
 //    dd($user = User::first());
 //    dd(auth()->user());
 
@@ -61,16 +56,12 @@ Route::get('/test', function () {
 });
 
 
-Route::get('/chat', function () {
-    return View::make('chat.index');
-});
 
 
 Route::get('/login', [WebController::class, 'showLogin'])->name('login');
 Route::get('/register', [WebController::class, 'showRegister'])->name('register');
 Route::get('/admin', [WebController::class, 'showAdmin'])/*->middleware('auth:sanctum', 'role:admin')*/
 ;
-//Route::get('/chat', [WebController::class, 'showChat'])->middleware('auth:sanctum');
 
 Route::prefix('admin')->group(function () {
     Route::get('/', [WebController::class, 'showAdmin']);

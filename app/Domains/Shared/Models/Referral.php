@@ -7,13 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Database\Eloquent\Events\Retrieved; // Import for event
+use Illuminate\Support\Str;
 
 // For PII encryption
 
 class Referral extends Model
 {
     use HasFactory, SoftDeletes;
-
+    public $incrementing = false;  // چون id از نوع uuid است
+    protected $keyType = 'string'; // کلید اصلی رشته‌ای
     protected $fillable = [  // Match migration – no org_id/metadata for now
         'conversation_id', 'trigger_message_id', 'user_id', 'assigned_role',
         'assigned_agent_id', 'description', 'status', 'agent_response', 'response_visibility'
@@ -34,6 +36,11 @@ class Referral extends Model
     // Encryption: Use events instead of boot() for clarity (Laravel 11+ best practice)
     protected static function booted() {
         parent::booted();
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = (string) Str::uuid(); // ✅
+            }
+        });
         // Saving: encrypt before save
         static::saving(function ($model) {
             if ($model->description) $model->description = Crypt::encrypt($model->description);

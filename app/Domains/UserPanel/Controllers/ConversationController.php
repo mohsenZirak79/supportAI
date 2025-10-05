@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Domains\UserPanel\Controllers;
+
 use App\Domains\Shared\Models\Referral;
 use App\Domains\Shared\Models\User;
 use App\Http\Controllers\Controller;
@@ -109,10 +110,10 @@ class ConversationController extends Controller
         abort_unless($user && $conversation->user_id === $user->id, 403);
 
         $validated = $request->validate([
-            'content'     => 'nullable|string|max:2000',
-            'media_ids'   => 'nullable|array',
+            'content' => 'nullable|string|max:2000',
+            'media_ids' => 'nullable|array',
             'media_ids.*' => 'integer',        // id جدول media در Spatie عددی است
-            'media_kind'  => 'nullable|in:file,voice',
+            'media_kind' => 'nullable|in:file,voice',
         ]);
 
         $isFirstMessage = $conversation->messages()->count() === 0;
@@ -126,11 +127,11 @@ class ConversationController extends Controller
         // 1) پیام کاربر را ثبت کن
         $userMessage = Message::create([
             'conversation_id' => $conversation->id,
-            'sender_type'     => 'user',
-            'sender_id'       => $user->id,
-            'type'            => $type,
-            'content'         => $validated['content'] ?? '',
-            'metadata'        => null,
+            'sender_type' => 'user',
+            'sender_id' => $user->id,
+            'type' => $type,
+            'content' => $validated['content'] ?? '',
+            'metadata' => null,
         ]);
 
         // 2) مدیاها را از TempUpload به Message منتقل کن (همان روال فعلی)
@@ -138,10 +139,10 @@ class ConversationController extends Controller
             DB::table('media')
                 ->whereIn('id', $validated['media_ids'])
                 ->update([
-                    'model_type'      => \App\Domains\Shared\Models\Message::class,
-                    'model_id'        => $userMessage->id,
+                    'model_type' => \App\Domains\Shared\Models\Message::class,
+                    'model_id' => $userMessage->id,
                     'collection_name' => $type === 'voice' ? 'message_voices' : 'message_files',
-                    'updated_at'      => now(),
+                    'updated_at' => now(),
                 ]);
         }
 
@@ -165,7 +166,7 @@ class ConversationController extends Controller
                         ->timeout(60)
                         ->attach('file', fopen($absolutePath, 'r'), $voiceMedia->file_name)
                         ->post('https://ai.mokhtal.xyz/api/voice-to-answer', [
-                            'user_type'     => 'new',
+                            'user_type' => 'new',
                             'first_message' => $isFirstMessage ? 'true' : 'false',
                         ]);
 
@@ -186,14 +187,14 @@ class ConversationController extends Controller
             } else {
                 // متن
                 $resp = Http::timeout(45)->post('https://ai.mokhtal.xyz/api/ask', [
-                    'question'      => $validated['content'] ?? '',
-                    'user_type'     => 'new',
+                    'question' => $validated['content'] ?? '',
+                    'user_type' => 'new',
                     'first_message' => $isFirstMessage,
                 ]);
 
                 if ($resp->successful()) {
                     $json = $resp->json();
-                    $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
+                    $aiReplyText = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                     $aiVoiceDataUrl = $json['audio_data'] ?? $json['voice_base64'] ?? null;
 
                     // اگر عنوان پیشنهاد داد
@@ -206,17 +207,17 @@ class ConversationController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            \Log::error('AI API error: '.$e->getMessage());
+            \Log::error('AI API error: ' . $e->getMessage());
             $aiReplyText = 'خطا در ارتباط با سرویس هوش مصنوعی.';
         }
 
         // 4) ثبت پیام AI (متن)
         $aiMessage = Message::create([
             'conversation_id' => $conversation->id,
-            'sender_type'     => 'ai',
-            'sender_id'       => null,
-            'type'            => 'text',       // متن همیشه هست
-            'content'         => $aiReplyText,
+            'sender_type' => 'ai',
+            'sender_id' => null,
+            'type' => 'text',       // متن همیشه هست
+            'content' => $aiReplyText,
         ]);
 
         // 5) اگر پاسخ API صوت base64 هم داشت → به message_voices بچسبان
@@ -239,15 +240,22 @@ class ConversationController extends Controller
                     ->withCustomProperties(['source' => 'ai'])
                     ->toMediaCollection('message_voices', 'public');
             } catch (\Throwable $e) {
-                \Log::warning('Attach AI voice failed: '.$e->getMessage());
+                \Log::warning('Attach AI voice failed: ' . $e->getMessage());
             }
         }
 
-        event(new \App\Domains\Shared\Events\MessageSent($aiMessage));
+        try {
+            event(new \App\Domains\Shared\Events\MessageSent($aiMessage));
+        } catch (\Throwable $e) {
+            \Log::warning('Broadcast failed: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+            ]);
+            // ادامه بده؛ پاسخ HTTP را عادی برگردان
+        }
 
         return response()->json([
             'user_message' => $userMessage->fresh(),
-            'ai_message'   => $aiMessage->fresh(),
+            'ai_message' => $aiMessage->fresh(),
             'conversation' => $conversation->fresh(),
         ]);
     }
@@ -268,11 +276,11 @@ class ConversationController extends Controller
     private function guessAudioExtension(string $mime): string
     {
         return match ($mime) {
-            'audio/wav', 'audio/x-wav'   => 'wav',
-            'audio/mpeg'                 => 'mp3',
-            'audio/ogg'                  => 'ogg',
-            'audio/webm'                 => 'webm',
-            default                      => 'webm',
+            'audio/wav', 'audio/x-wav' => 'wav',
+            'audio/mpeg' => 'mp3',
+            'audio/ogg' => 'ogg',
+            'audio/webm' => 'webm',
+            default => 'webm',
         };
     }
 
@@ -340,7 +348,9 @@ class ConversationController extends Controller
         $conversation->delete(); // soft delete
         return response()->json(['message' => 'چت با موفقیت حذف شد.']);
     }
-    public function userReferrals(Request $request) {
+
+    public function userReferrals(Request $request)
+    {
         $user = Auth::user();
         $query = Referral::where('user_id', $user->id)
             ->with(['conversation', 'assignedAgent']) // No triggerMessage to avoid heavy load
@@ -348,7 +358,9 @@ class ConversationController extends Controller
             ->cursorPaginate(10); // Specs: cursor
         return response()->json(['data' => $query->items(), 'meta' => ['next_cursor' => $query->nextCursor()]]);
     }
-    public function respond(Request $request, Referral $referral) {
+
+    public function respond(Request $request, Referral $referral)
+    {
         abort_unless(auth()->user()->hasRole('support_agent'), 403); // RBAC
         $validated = $request->validate([
             'agent_response' => 'required|string|max:2000',
@@ -373,17 +385,37 @@ class ConversationController extends Controller
             'reason' => 'nullable|string|max:1000',     // ← اختیاری
             'target_role' => 'required|string',         // ← نقش مقصد
         ]);
+//        $validated = $request->validate([
+//            'reason' => 'nullable|string|max:1000',
+//            'target_role' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedRoles)],
+//        ]);
+        $conversation = \App\Domains\Shared\Models\Conversation::findOrFail($message->conversation_id);
+        abort_unless($conversation->user_id === $user->id, 403);
 
+        // جلوگیری از ارجاع تکراری روی همان پیام وقتی هنوز باز است
+        $exists = \App\Domains\Shared\Models\Referral::query()
+            ->where('trigger_message_id', $message->id)
+            ->whereIn('status', ['pending', 'assigned'])
+            ->exists();
+        if ($exists) {
+            return response()->json([
+                'message' => 'برای این پیام قبلاً ارجاع باز وجود دارد.'
+            ], 422);
+        }
         $referral = Referral::create([
-            'conversation_id'   => $message->conversation_id, // ← درست
-            'trigger_message_id'=> $message->id,              // ← همین پیام
-            'user_id'           => $user->id,
-            'assigned_role'     => $validated['target_role'],
+            'conversation_id' => $message->conversation_id,
+            'trigger_message_id' => $message->id,
+            'user_id' => $user->id,
+            'assigned_role' => $validated['target_role'],
             'assigned_agent_id' => null,
-            'description'       => $validated['reason'] ?? '',
-            'status'            => 'pending',
+            'description' => $validated['reason'] ?? '',
+            'status' => 'pending',
         ]);
-
+        try {
+            $conversation->update(['status' => 'handoff_pending']);
+        } catch (\Throwable $e) {
+            \Log::warning('Failed to update conversation status after handoff', ['id' => $conversation->id]);
+        }
         event(new \App\Domains\Shared\Events\ReferralCreated($referral));
 
         return response()->json(

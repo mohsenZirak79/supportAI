@@ -46,7 +46,7 @@ Route::prefix('v1')->middleware(['forceTestUser'])->group(function () {
     Route::delete('conversations/{conversation}', [ConversationController::class, 'destroy']);
     Route::post('conversations/{conversation}/messages', [ConversationController::class, 'sendMessage']);
     Route::get('conversations/{conversation}/messages', [ConversationController::class, 'messages']);
-    Route::post('conversations/{message}/handoff', [ConversationController::class, 'handoff']);
+    Route::post('messages/{message}/handoff', [ConversationController::class, 'handoff']);
 
 //    Route::get('tickets', [TicketController::class, 'index']);
 //    Route::post('conversations/{conversation}/handoff', [TicketController::class, 'handoff']);

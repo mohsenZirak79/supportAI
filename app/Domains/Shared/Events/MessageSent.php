@@ -6,28 +6,47 @@ use App\Domains\Shared\Models\Message;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\InteractsWithSockets;
 
 class MessageSent implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable, InteractsWithSockets;
 
-    public function __construct(public Message $message) {}
+    public string $id;
+    public string $conversationId;
+    public ?string $senderId;
+    public string $type;
+    public string $createdAt;
+
+    public function __construct(Message $message)
+    {
+        $this->id            = (string) $message->id;
+        $this->conversationId= (string) $message->conversation_id;
+        $this->senderId      = $message->sender_id ? (string) $message->sender_id : null;
+        $this->type          = (string) $message->type;
+        $this->createdAt     = optional($message->created_at)->toISOString() ?? now()->toISOString();
+    }
 
     public function broadcastOn()
     {
-        return new PresenceChannel('conversation.' . $this->message->conversation_id);
+        // اگر حضور (presence) لازم داری همان بماند
+        return new PresenceChannel('conversation.' . $this->conversationId);
     }
 
-    public function broadcastWith()
+    public function broadcastAs(): string
     {
+        return 'message.sent';
+    }
+
+    public function broadcastWith(): array
+    {
+        // بدون content، بدون media؛ فقط کمینه‌ی لازم
         return [
-            'id' => $this->message->id,
-            'sender_id' => $this->message->sender_id,
-            'type' => $this->message->type,
-            'content' => $this->message->content,
-            'created_at' => $this->message->created_at->toISOString(),
+            'id'              => $this->id,
+            'conversation_id' => $this->conversationId,
+            'sender_id'       => $this->senderId,
+            'type'            => $this->type,
+            'created_at'      => $this->createdAt,
         ];
     }
 }

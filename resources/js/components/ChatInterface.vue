@@ -1,10 +1,12 @@
 <template>
+
     <HandoffModal
         :is-open="isHandoffModalOpen"
         :roles="availableRoles"
         @close="isHandoffModalOpen = false"
         @submit="handleHandoffSubmit"
     />
+
     <div class="chat-app" dir="rtl">
         <!-- نوار بالا -->
         <header class="chat-header">
@@ -47,7 +49,8 @@
                             {{ message.text }}
 
                             <div v-if="message.voiceUrl" class="voice-player" @click.stop="playVoice(message.id)">
-                                <audio :ref="el => registerAudioRef(message.id, el)" :src="message.voiceUrl" preload="none" controls></audio>
+                                <audio :ref="el => registerAudioRef(message.id, el)" :src="message.voiceUrl"
+                                       preload="none" controls></audio>
                             </div>
 
                             <div class="message-meta">
@@ -92,12 +95,12 @@
                         ref="textarea"
                         :disabled="loading"
                     ></textarea>
-                                        <div class="input-actions">
-                                            <button type="button" @click="startRecording" class="mic-btn" :disabled="loading">🎤</button>
-                                            <button type="submit" :disabled="!inputMessage.trim() || loading">ارسال</button>
-                                        </div>
-                                    </div>
-                                </form>
+                        <div class="input-actions">
+                            <button type="button" @click="startRecording" class="mic-btn" :disabled="loading">🎤</button>
+                            <button type="submit" :disabled="!inputMessage.trim() || loading">ارسال</button>
+                        </div>
+                    </div>
+                </form>
                 <!--          <textarea-->
                 <!--              v-model="inputMessage"-->
                 <!--              placeholder="پیام خود را بنویسید..."-->
@@ -120,11 +123,17 @@
             </main>
         </div>
     </div>
+    <ToastContainer />
 </template>
 
+
 <script setup>
+import ToastContainer from './ToastContainer.vue'
 import {ref, computed, nextTick, onMounted, onUnmounted} from 'vue';
 import HandoffModal from './HandoffModal.vue';
+import {toast} from '@/lib/toast'
+toast.add('ارجاع با موفقیت ثبت شد.', 'success')
+toast.add('asdasda', 'error')
 const isHandoffModalOpen = ref(false);
 const selectedMessageForHandoff = ref(null);
 // --- State ---
@@ -137,7 +146,7 @@ const availableRoles = ref([]);
 const fetchDepartments = async () => {  // ← این تابع رو کامل اضافه کن
     try {
         const response = await fetch('/api/v1/support-roles', {
-            headers: { 'Accept': 'application/json' }
+            headers: {'Accept': 'application/json'}
         });
         if (response.ok) {
             const data = await response.json();  // یا data.data اگر API فرق داره
@@ -177,7 +186,7 @@ let aiUserId = null;
 // --- Methods ---
 const startRecording = async () => {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({audio: true});
         mediaRecorder.value = new MediaRecorder(stream);
         audioChunks.value = [];
 
@@ -186,7 +195,7 @@ const startRecording = async () => {
         };
 
         mediaRecorder.value.onstop = async () => {
-            const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' });
+            const audioBlob = new Blob(audioChunks.value, {type: 'audio/webm'});
             await uploadVoice(audioBlob);
         };
 
@@ -238,19 +247,19 @@ const uploadVoice = async (blob) => {
         const formData = new FormData();
         formData.append('file', blob, 'recording.webm');
         formData.append('collection', 'message_voices');
-        const uploadRes = await fetch('/api/v1/files', { method: 'POST', body: formData });
+        const uploadRes = await fetch('/api/v1/files', {method: 'POST', body: formData});
         if (!uploadRes.ok) throw new Error('آپلود فایل شکست خورد');
-        const { file_id } = await uploadRes.json();
+        const {file_id} = await uploadRes.json();
 
         // 2) ارسال پیام با media_ids
         const messageRes = await fetch(`/api/v1/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: '', media_ids: [file_id], media_kind: 'voice' })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: '', media_ids: [file_id], media_kind: 'voice'})
         });
         if (!messageRes.ok) throw new Error('ارسال پیام شکست خورد');
 
-        const { user_message } = await messageRes.json(); // ← این مهم است
+        const {user_message} = await messageRes.json(); // ← این مهم است
         const chat = chats.value.find(c => c.id === activeChatId.value);
         if (!chat) return;
 
@@ -263,9 +272,9 @@ const uploadVoice = async (blob) => {
         });
 
         // 4) مدیای همین پیام را بگیر و voiceUrl ست کن
-        const r = await fetch(`/api/v1/messages/${user_message.id}/media`, { headers: { 'Accept': 'application/json' } });
+        const r = await fetch(`/api/v1/messages/${user_message.id}/media`, {headers: {'Accept': 'application/json'}});
         if (r.ok) {
-            const { data: media } = await r.json();
+            const {data: media} = await r.json();
             const voice = (media || []).find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
             if (voice) {
                 // پیدا کردن پیام تازه اضافه‌شده و تزریق voiceUrl
@@ -359,7 +368,7 @@ const loadMessages = async (chatId) => {
     try {
         const res = await fetch(`/api/v1/conversations/${chatId}/messages`);
         if (res.ok) {
-            const { data } = await res.json();
+            const {data} = await res.json();
             const chat = chats.value.find(c => c.id === chatId);
             if (chat) {
                 chat.messages = data.map(msg => ({
@@ -373,9 +382,9 @@ const loadMessages = async (chatId) => {
                 await Promise.all(
                     (chat.messages || []).map(async (msg) => {
                         try {
-                            const r = await fetch(`/api/v1/messages/${msg.id}/media`, { headers: { 'Accept': 'application/json' } });
+                            const r = await fetch(`/api/v1/messages/${msg.id}/media`, {headers: {'Accept': 'application/json'}});
                             if (r.ok) {
-                                const { data: media } = await r.json();
+                                const {data: media} = await r.json();
                                 msg.media = media || [];
                                 const voice = msg.media.find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
                                 if (voice) {
@@ -545,29 +554,37 @@ const showHandoffModal = (message) => {
 const handleHandoffSubmit = async (data) => {
     try {
         if (!selectedMessageForHandoff.value?.id) {
-            alert('پیام انتخاب‌شده نامعتبر است.');
-            return;
+            toast.add('پیام انتخاب‌شده نامعتبر است.', 'error')
+            return
         }
 
         const res = await fetch(
-            `/api/v1/conversations/${selectedMessageForHandoff.value.id}/handoff`,
+            `/api/v1/messages/${selectedMessageForHandoff.value.id}/handoff`,
             {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data) // { target_role, reason }
+                headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+                body: JSON.stringify(data)
             }
-        );
+        )
 
-        if (!res.ok) throw new Error('خطا در ارجاع');
+        if (!res.ok) {
+            let msg = 'خطا در ارجاع'
+            try {
+                const j = await res.json();
+                msg = j?.message || j?.error || msg
+            } catch {
+            }
+            toast.add(msg, 'error')
+            return
+        }
 
-        // موفق
-        alert('ارجاع با موفقیت انجام شد!');
-        isHandoffModalOpen.value = false;
-        selectedMessageForHandoff.value = null;
+        toast.add('ارجاع با موفقیت ثبت شد.', 'success')
+        isHandoffModalOpen.value = false
+        selectedMessageForHandoff.value = null
     } catch (e) {
-        alert('خطا در ارجاع: ' + e.message);
+        toast.add('خطا در ارجاع: ' + (e?.message || 'نامشخص'), 'error')
     }
-};
+}
 const audioRefs = ref({});
 let currentlyPlayingId = null;
 const registerAudioRef = (id, el) => {
@@ -588,8 +605,11 @@ const playVoice = async (id) => {
     if (el.readyState < 2) { // HAVE_CURRENT_DATA
         el.load();
         await new Promise(res => {
-            const onReady = () => { el.removeEventListener('canplay', onReady); res(); };
-            el.addEventListener('canplay', onReady, { once: true });
+            const onReady = () => {
+                el.removeEventListener('canplay', onReady);
+                res();
+            };
+            el.addEventListener('canplay', onReady, {once: true});
         });
     }
     el.currentTime = 0;
@@ -775,9 +795,16 @@ onMounted(() => {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     animation: fadeInUp 0.3s ease;
 }
+
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 
@@ -911,7 +938,7 @@ onMounted(() => {
 }*/
 .bar {
     background: linear-gradient(to top, #2575fc, #6a11cb);
-    box-shadow: 0 0 8px rgba(37,117,252,0.4);
+    box-shadow: 0 0 8px rgba(37, 117, 252, 0.4);
 }
 
 .recording-controls {
@@ -946,6 +973,7 @@ onMounted(() => {
     font-size: 0.875rem;
     color: #64748b;
 }
+
 .input-form button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -1113,10 +1141,12 @@ onMounted(() => {
     font-size: 0.875rem;
     color: #64748b;
 }
+
 .bot-message .message-bubble::before {
     content: "🤖";
     margin-left: 6px;
 }
+
 .header-content {
     display: flex;
     justify-content: space-between;
