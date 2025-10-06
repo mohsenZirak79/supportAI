@@ -13,9 +13,9 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         // 1. نقش‌ها
-        $roles = ['برنامه نویس', 'ادمین'];
+        $roles = ['برنامه نویس', 'ادمین' , 'کاربر عادی'];
         foreach ($roles as $role) {
-            Role::firstOrCreate(['name' => $role, 'guard_name' => 'web' , 'allow_ticket' => '1']);
+            Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
 
         // 2. پرمیشن‌ها

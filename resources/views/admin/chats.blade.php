@@ -210,7 +210,7 @@
         <div class="container-fluid py-4">
             <div class="card">
                 <div class="card-header pb-0">
-                    <h6>لیست تیکت ها</h6>
+                    <h6>لیست مکالمات</h6>
                 </div>
                 <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
@@ -223,11 +223,11 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($tickets as $ticket)
+                            @foreach($conversation as $chat)
                                 <tr>
-                                    <td>{{ $ticket->title }}</td>
-                                    <td>{{ $ticket->sender->name }}</td>
-                                    <td>{{ \Morilog\Jalali\Jalalian::fromDateTime($ticket->created_at)->format('Y/m/d') }}</td>
+                                    <td>{{ $chat->title }}</td>
+                                    <td>{{ $chat->user->name }}</td>
+                                    <td>{{ \Morilog\Jalali\Jalalian::fromDateTime($chat->created_at)->format('Y/m/d') }}</td>
                                 </tr>
                             @endforeach
                             </tbody>

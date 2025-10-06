@@ -18,7 +18,7 @@ Route::get('/test', function (){
 
 Route::get('/chat', function () {
     return View::make('chat.index');
-});
+})->name('chat');
 Route::get('/ticket', function () {
     return View::make('tickets.index');
 });
@@ -68,6 +68,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/users', [WebController::class, 'showUsers'])->name('admin.users');
     Route::get('/roles', [WebController::class, 'showRoles'])->name('admin.roles');
     Route::get('/tickets', [WebController::class, 'showTickets'])->name('admin.tickets');
+    Route::get('/chats', [WebController::class, 'showChats'])->name('admin.chats');
     Route::post('/', [WebController::class, 'showAdmin']);
     Route::put('/{id}', [WebController::class, 'showAdmin']);
     Route::delete('/{id}', [WebController::class, 'showAdmin']);

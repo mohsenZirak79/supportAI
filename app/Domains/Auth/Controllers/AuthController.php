@@ -235,10 +235,9 @@ class AuthController
         // 4️⃣ تعیین مقصد لاگین بر اساس نقش و پرمیشن
         if ($roles->contains('ادمین')) {
             $redirect = 'admin.users';
-        } elseif ($user->roles->pluck('id')->contains(5)) { // کاربر عادی
-            $redirect = '/chat';
-        } elseif ($user->can('create-ticket') && $user->can('read-ticket') &&
-            $user->can('update-ticket') && $user->can('delete-ticket')) {
+        } elseif ($user->roles->pluck('id')->contains(3)) { // کاربر عادی
+            $redirect = 'chat';
+        } elseif ($user->roles()->where('allow_ticket', 1)->exists()) {
             $redirect = route('admin.tickets');
         } else {
             return response()->json([
@@ -248,14 +247,14 @@ class AuthController
                 ]
             ], 403);
         }
+//        return redirect()->route($redirect);
 
-        redirect()->route($redirect);
-        // پاسخ نهایی (فرانت می‌تونه redirect انجام بده یا بر اساس نیاز)
-        /*return [
-            'message' => 'Login successful',
-            'roles' => $roles,
-            'redirect_to' => $redirect
-        ];*/
+        return response()->json([
+            'access_token' => $token,
+            'primary_role' => $user->roles->pluck('name'),
+            'redirect_url' => route($redirect),
+        ]);
+
     }
 
     public function logout(Request $request)
