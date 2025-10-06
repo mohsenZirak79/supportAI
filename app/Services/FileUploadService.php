@@ -10,22 +10,16 @@ class FileUploadService
 {
     public function upload(UploadedFile $file, string $collection = 'uploads')
     {
-        // اعتبارسنجی اندازه (حداکثر 5MB)
         if ($file->getSize() > 5 * 1024 * 1024) {
             throw new \InvalidArgumentException('فایل بیش از 5 مگابایت است.');
         }
 
-
         $temp = TempUpload::create(['user_id' => optional(Auth::user())->id]);
 
-        // 2) روی TempUpload ذخیره کن
-        $media = $temp
+        return $temp
             ->addMedia($file)
-            ->preservingOriginal()  // اختیاری
-            ->toMediaCollection('uploads'); // کالکشن ثابت temp
-
-        // 3) خروجی مورد نیاز فرانت
-        return $media;
+            ->preservingOriginal()
+            ->toMediaCollection($collection, 'public'); // ← هم کالکشن، هم دیسک
     }
 
     public function finalize(string $fileId, array $metadata = []): Media

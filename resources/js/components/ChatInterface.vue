@@ -46,22 +46,51 @@
                         :class="{ 'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot' }"
                     >
                         <div class="message-bubble" @click="onBubbleClick(message)">
-                            {{ message.text }}
 
+                            <!-- بات: متن + دکمه‌های پخش -->
+                            <template v-if="message.sender === 'bot' && message.text">
+                                <AiAnswer :text="message.text" lang="fa-IR" />
+                            </template>
+
+                            <!-- کاربر: اگر متن دارد همان را، وگرنه اگر voice است یک برچسب نشان بده -->
+                            <template v-else>
+                                <span v-if="message.text && message.text.trim()">{{ message.text }}</span>
+                                <span v-else-if="message.voiceUrl">🎤 پیام صوتی</span>
+                                <span v-else>‌</span>
+                            </template>
+
+                            <!-- پخش صدا (همان قبلی) -->
                             <div v-if="message.voiceUrl" class="voice-player" @click.stop="playVoice(message.id)">
-                                <audio :ref="el => registerAudioRef(message.id, el)" :src="message.voiceUrl"
-                                       preload="none" controls></audio>
+                                <audio :ref="el => registerAudioRef(message.id, el)" :src="message.voiceUrl" preload="none" controls></audio>
                             </div>
 
                             <div class="message-meta">
                                 <span class="timestamp">{{ formatDate(message.created_at) }}</span>
-                                <div class="message-actions">
-                                    <button @click="copyText(message.text)" title="کپی متن">📋</button>
-                                    <button @click="showHandoffModal(message)" title="ارجاع به پشتیبانی">📤</button>
+                                <div class="msg-actions">
+                                    <button
+                                        class="msg-action copy"
+                                        @click="copyText(message.text)"
+                                        aria-label="کپی متن"
+                                        title="کپی متن"
+                                    >
+                                        <!-- آیکن کپی -->
+                                        <svg viewBox="0 0 24 24" class="icon"><path d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                    </button>
+
+                                    <button
+                                        class="msg-action handoff"
+                                        @click="showHandoffModal(message)"
+                                        aria-label="ارجاع به پشتیبانی"
+                                        title="ارجاع به پشتیبانی"
+                                    >
+                                        <!-- آیکن ارجاع/ارسال -->
+                                        <svg viewBox="0 0 24 24" class="icon"><path d="M4 12v8h16v-8h2v10H2V12h2zm8-9 6 6h-4v6h-4V9H6l6-6z"/></svg>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                     <div v-if="loading" class="message bot-message">
                         <div class="message-bubble loading">
                             <span></span>
@@ -70,6 +99,7 @@
                         </div>
                     </div>
                 </div>
+
 
                 <!-- فرم ارسال پیام -->
                 <form @submit.prevent="sendMessage" class="input-form">
@@ -123,17 +153,15 @@
             </main>
         </div>
     </div>
-    <ToastContainer />
 </template>
 
 
 <script setup>
-import ToastContainer from './ToastContainer.vue'
 import {ref, computed, nextTick, onMounted, onUnmounted} from 'vue';
 import HandoffModal from './HandoffModal.vue';
-import {toast} from '@/lib/toast'
-toast.add('ارجاع با موفقیت ثبت شد.', 'success')
-toast.add('asdasda', 'error')
+import AiAnswer from './AiAnswer.vue'
+import { useToast } from 'vue-toast-notification'
+const toast = useToast();
 const isHandoffModalOpen = ref(false);
 const selectedMessageForHandoff = ref(null);
 // --- State ---
@@ -541,7 +569,7 @@ const deleteChat = async (chatId) => {
 };
 const copyText = (text) => {
     navigator.clipboard.writeText(text).then(() => {
-        // نمایش toast موفقیت (اختیاری)
+        toast.info('متن کپی شد')
     });
 };
 const goToTickets = () => {
@@ -554,7 +582,7 @@ const showHandoffModal = (message) => {
 const handleHandoffSubmit = async (data) => {
     try {
         if (!selectedMessageForHandoff.value?.id) {
-            toast.add('پیام انتخاب‌شده نامعتبر است.', 'error')
+            toast.error('پیام انتخاب‌شده نامعتبر است.');
             return
         }
 
@@ -574,15 +602,14 @@ const handleHandoffSubmit = async (data) => {
                 msg = j?.message || j?.error || msg
             } catch {
             }
-            toast.add(msg, 'error')
+            toast.error(msg);
             return
         }
-
-        toast.add('ارجاع با موفقیت ثبت شد.', 'success')
+        toast.success('ارجاع با موفقیت ثبت شد.');
         isHandoffModalOpen.value = false
         selectedMessageForHandoff.value = null
     } catch (e) {
-        toast.add('خطا در ارجاع: ' + (e?.message || 'نامشخص'), 'error')
+        toast.error('خطا در ارجاع: ' + (e?.message || 'نامشخص'), 'error');
     }
 }
 const audioRefs = ref({});
@@ -632,6 +659,90 @@ onMounted(() => {
     loadChats();
     fetchDepartments();
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+const synth = window.speechSynthesis;
+const isSpeaking = ref(false);
+let currentUtter = null;
+let voices = [];
+
+const loadVoices = () => {
+    voices = synth.getVoices();
+};
+onMounted(() => {
+    loadVoices();
+    if (typeof speechSynthesis !== 'undefined') {
+        speechSynthesis.onvoiceschanged = loadVoices; // کروم صداها رو async لود می‌کنه
+    }
+});
+
+// انتخاب بهترین صدای فارسی موجود
+const pickFaVoice = () => {
+    if (!voices || voices.length === 0) return null;
+    // اولویت با fa-IR
+    let v = voices.find(v => (v.lang || '').toLowerCase().startsWith('fa'));
+    if (v) return v;
+    // بعضی سیستم‌ها اسم فارسی رو متفاوت میارن (مثلاً Google فارسی)
+    v = voices.find(v => /fa|farsi|فارسی/i.test(v.name));
+    return v || voices[0]; // اگر نبود، هرچی هست
+};
+
+const chunkText = (text, size = 200) => {
+    // تقسیم متن بلند به تکه‌های کوچک‌تر (مرورگرها برای تکه‌های خیلی بزرگ اذیت می‌شن)
+    const parts = [];
+    let t = text.replace(/\s+/g, ' ').trim();
+    while (t.length) {
+        let cut = t.slice(0, size);
+        // سعی کن روی فاصله یا نقطه ببُری
+        const lastSpace = cut.lastIndexOf(' ');
+        if (lastSpace > size * 0.6) cut = cut.slice(0, lastSpace);
+        parts.push(cut);
+        t = t.slice(cut.length).trim();
+    }
+    return parts;
+};
+
+const speak = (text) => {
+    stopSpeak(); // هر چیزی هست متوقف کن
+    const faVoice = pickFaVoice();
+    const parts = chunkText(text, 220);
+
+    const playPart = (i) => {
+        if (i >= parts.length) { isSpeaking.value = false; currentUtter = null; return; }
+        const u = new SpeechSynthesisUtterance(parts[i]);
+        if (faVoice) u.voice = faVoice;
+        u.lang = faVoice?.lang || 'fa-IR';  // مهم برای جهت/تلفظ
+        u.rate = 1;    // سرعت (0.1 تا 10) — قابل تنظیم
+        u.pitch = 1;   // زیروبمی (0 تا 2)
+        u.volume = 1;  // بلندی (0 تا 1)
+
+        u.onend = () => playPart(i + 1);
+        u.onerror = () => playPart(i + 1);
+
+        currentUtter = u;
+        isSpeaking.value = true;
+        synth.speak(u);
+    };
+
+    playPart(0);
+};
+
+const stopSpeak = () => {
+    if (synth.speaking || synth.pending) synth.cancel();
+    isSpeaking.value = false;
+    currentUtter = null;
+};
 </script>
 
 <style scoped>
@@ -1169,5 +1280,79 @@ onMounted(() => {
 .nav-btn:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
+}
+
+
+.msg-actions {
+    display: inline-flex;
+    gap: 8px;
+    opacity: 0;
+    transform: translateY(2px);
+    transition: opacity .18s ease, transform .18s ease;
+}
+
+/* نمایش هنگام هاور روی حباب پیام */
+.message-bubble:hover .msg-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* دکمه‌ها: کپسولی با افکت شیشه‌ای سبک */
+.msg-action {
+    --bg: rgba(241,245,249,.9);      /* slate-100/90 */
+    --bd: rgba(203,213,225,.9);      /* slate-300/90 */
+    --fg: #334155;                   /* slate-700 */
+    --hover: rgba(226,232,240,1);    /* slate-200 */
+    --ring: rgba(99,102,241,.25);    /* indigo ring */
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 32px;
+    border-radius: 999px;
+    border: 1px solid var(--bd);
+    background: var(--bg);
+    color: var(--fg);
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+    box-shadow: 0 2px 6px rgba(15,23,42,.06);
+    backdrop-filter: blur(4px);
+}
+
+.msg-action:hover {
+    background: var(--hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(15,23,42,.10);
+}
+
+.msg-action:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(15,23,42,.06);
+}
+
+.msg-action:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--ring);
+}
+
+/* آیکن‌ها */
+.msg-action .icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    display: block;
+}
+
+/* واریانت‌ها (در صورت نیاز به تفاوت رنگی) */
+.msg-action.copy {
+    --fg: #0f172a; /* تیره‌تر برای کپی */
+}
+
+.msg-action.handoff {
+    --fg: #4338ca; /* ایندیگو */
+    --bd: rgba(165,180,252,.7);
+    --bg: rgba(238,242,255,.85);
+    --hover: rgba(224,231,255,1);
 }
 </style>

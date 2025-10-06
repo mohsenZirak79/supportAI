@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+use Symfony\Component\Process\Process;
 
 class ConversationController extends Controller
 {
@@ -152,37 +156,104 @@ class ConversationController extends Controller
 
         try {
             if ($type === 'voice') {
-                // فایل voice کاربر را از Media پیدا کن
                 /** @var \Spatie\MediaLibrary\MediaCollections\Models\Media|null $voiceMedia */
                 $voiceMedia = $userMessage->getMedia('message_voices')->first();
 
-                if ($voiceMedia) {
-                    // مسیر فایل روی دیسک local/public
-                    // در Spatie v10، getPath() مسیر کامل فایل را می‌دهد
-                    $absolutePath = $voiceMedia->getPath();
-
-                    // درخواست multipart
-                    $resp = Http::asMultipart()
-                        ->timeout(60)
-                        ->attach('file', fopen($absolutePath, 'r'), $voiceMedia->file_name)
-                        ->post('https://ai.mokhtal.xyz/api/voice-to-answer', [
-                            'user_type' => 'new',
-                            'first_message' => $isFirstMessage ? 'true' : 'false',
-                        ]);
-
-                    if ($resp->successful()) {
-                        $json = $resp->json();
-
-                        // تلاش برای پیدا کردن متن پاسخ (کلیدهای احتمالی مختلف)
-                        $aiReplyText = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
-
-                        // اگر صوت برگشته باشد (هر یک از شکل‌های رایج)
-                        $aiVoiceDataUrl = $json['audio_data'] ?? $json['voice_base64'] ?? null;
-                    } else {
-                        $aiReplyText = 'خطا در سرویس voice-to-answer (' . $resp->status() . ')';
-                    }
-                } else {
+                if (!$voiceMedia) {
                     $aiReplyText = 'فایل صوتی کاربر پیدا نشد.';
+                } else {
+                    $srcPath = $voiceMedia->getPath();               // .../recording.webm
+                    $srcMime = $voiceMedia->mime_type ?? 'audio/webm';
+
+                    // 1) اگر webm/ogg بود، به wav تبدیل کن (16kHz mono)
+                    $tmpWav = null;
+                    $needsConv = in_array($srcMime, ['audio/webm','audio/ogg','audio/opus'], true)
+                        || str_ends_with(strtolower($srcPath), '.webm')
+                        || str_ends_with(strtolower($srcPath), '.ogg');
+                    if ($needsConv) {
+                        $tmpWav = sys_get_temp_dir().'/'.uniqid('ai_', true).'.wav';
+                        // ffmpeg -y -i input -ac 1 -ar 16000 -f wav output
+                        $process = new Process([
+                            '/usr/bin/ffmpeg','-y','-i',$srcPath,'-ac','1','-ar','16000','-f','wav',$tmpWav
+                        ]);
+                        $process->setTimeout(30);
+                        $process->run();
+
+                        if (!$process->isSuccessful() || !file_exists($tmpWav) || filesize($tmpWav) === 0) {
+                            Log::warning('Voice convert failed', [
+                                'exit_code' => $process->getExitCode(),
+                                'error'     => $process->getErrorOutput(),
+                                'src_mime'  => $srcMime,
+                                'src_path'  => $srcPath,
+                            ]);
+                            // اگر تبدیل شکست خورد، همون فایل اصلی رو می‌فرستیم (شاید سرویس قبول کنه)
+                            $tmpWav = null;
+                        }
+                    }
+
+                    // تابع کوچک برای لاگِ پاسخ ناموفق
+                    $logHttpError = function ($label, \Illuminate\Http\Client\Response $resp) use ($srcMime, $srcPath, $tmpWav) {
+                        Log::warning("AI API {$label} failed", [
+                            'status'   => $resp->status(),
+                            'body'     => $resp->body(),
+                            'src_mime' => $srcMime,
+                            'src_path' => $srcPath,
+                            'sent_as'  => $tmpWav ? 'wav' : 'original',
+                        ]);
+                    };
+
+                    // 2) تلاش اول: multipart (اگر wav داریم، همون را بفرست)
+                    try {
+                        $filePath = $tmpWav ?: $srcPath;
+                        $fileName = $tmpWav ? 'audio.wav' : basename($srcPath);
+
+                        $resp1 = Http::asMultipart()
+                            ->timeout(60)
+                            ->attach('file', fopen($filePath, 'r'), $fileName)
+                            ->post('https://ai.mokhtal.xyz/api/voice-to-answer', [
+                                'user_type'     => 'new',
+                                'first_message' => $isFirstMessage ? 'true' : 'false',
+                            ]);
+
+                        if ($resp1->successful()) {
+                            $json = $resp1->json();
+                            $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
+                            $aiVoiceDataUrl= $json['audio_data'] ?? $json['voice_base64'] ?? null;
+                        } else {
+                            $logHttpError('multipart', $resp1);
+
+                            // 3) تلاش دوم: JSON/base64 (اگر هنوز جواب نگرفتیم)
+                            $sendPath = $tmpWav ?: $srcPath;
+                            $mimeForJson = $tmpWav ? 'audio/wav' : ($srcMime ?: 'application/octet-stream');
+                            $b64 = base64_encode(file_get_contents($sendPath));
+                            $dataUrl = "data:{$mimeForJson};base64,{$b64}";
+
+                            $resp2 = Http::timeout(60)->post('https://ai.mokhtal.xyz/api/voice-to-answer', [
+                                'audio_data'    => $dataUrl,
+                                'user_type'     => 'new',
+                                'first_message' => $isFirstMessage,
+                            ]);
+
+                            if ($resp2->successful()) {
+                                $json = $resp2->json();
+                                $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
+                                $aiVoiceDataUrl= $json['audio_data'] ?? $json['voice_base64'] ?? null;
+                            } else {
+                                $logHttpError('json_base64', $resp2);
+                                $aiReplyText = 'خطا در سرویس voice-to-answer ('
+                                    .$resp1->status().'/'.$resp2->status().')';
+                            }
+                        }
+                    } catch (ConnectionException|RequestException $e) {
+                        Log::error('AI voice call exception', [
+                            'msg'      => $e->getMessage(),
+                            'src_path' => $srcPath,
+                            'converted'=> (bool)$tmpWav,
+                        ]);
+                        $aiReplyText = 'خطا در ارتباط با سرویس هوش مصنوعی.';
+                    } finally {
+                        if ($tmpWav && file_exists($tmpWav)) @unlink($tmpWav);
+                    }
                 }
             } else {
                 // متن
