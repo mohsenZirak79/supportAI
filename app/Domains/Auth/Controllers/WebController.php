@@ -3,6 +3,7 @@
 namespace App\Domains\Auth\Controllers;
 
 use App\Domains\Role\Models\Role;
+use App\Domains\Shared\Models\Conversation;
 use App\Domains\Shared\Models\Ticket;
 use App\Domains\Shared\Models\User;
 use Illuminate\Http\Request;
@@ -35,6 +36,16 @@ class WebController
 
         return view('admin.tickets', compact('tickets', 'users', 'roles'));
     }
+    public function showChats()
+    {
+        // همه چت‌ها با یوزر و پیام‌ها
+        $conversation = Conversation::with(['user', 'messages'])
+            ->latest()
+            ->get();
+
+        return view('admin.chats', compact('conversation'));
+    }
+
     public function showUsers()
     {
         $users = User::with('roles')->get();

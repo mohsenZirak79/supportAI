@@ -129,6 +129,7 @@
     // ارسال OTP
     document.getElementById('otpForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+
         const otpForm = document.getElementById('otpForm');
         const phone = otpForm.querySelector('input[name="phone"]').value;
         const otp = otpForm.querySelector('input[name="otp"]').value;
@@ -136,14 +137,18 @@
         try {
             const response = await axios.post('/api/v1/auth/verify-login-otp', { phone, otp });
 
+            // ذخیره توکن
             localStorage.setItem('token', response.data.access_token);
-            const primaryRole = response.data.primary_role;
-            window.location.href = primaryRole === 'admin' ? '/admin' : '/chat';
+
+            // ریدایرکت بر اساس مسیر برگشتی از بک‌اند
+            window.location.href = response.data.redirect_url;
 
         } catch (error) {
-            document.getElementById('error').innerText = error.response?.data?.error?.message || 'خطا در تایید OTP';
+            document.getElementById('error').innerText =
+                error.response?.data?.error?.message || 'خطا در تایید OTP';
         }
     });
+
 </script>
 
 </body>
