@@ -1,7 +1,7 @@
 <template>
     <div class="ticket-app" dir="rtl">
         <!-- Toast Container -->
-        <div class="toast-container">
+<!--        <div class="toast-container">
             <div
                 v-for="toast in toasts"
                 :key="toast.id"
@@ -23,7 +23,7 @@
                 </svg>
                 <span>{{ toast.message }}</span>
             </div>
-        </div>
+        </div>-->
 
         <!-- Header -->
         <header class="bg-white shadow-sm border-b">
@@ -82,7 +82,7 @@
                     <div class="flex items-center">
                         <div
                             class="icon-wrap bg-gradient-to-br from-blue-100 to-cyan-100 p-3 rounded-xl ring-1 ring-blue-200/50">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-10 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
@@ -98,7 +98,7 @@
                     <div class="flex items-center">
                         <div
                             class="icon-wrap bg-gradient-to-br from-amber-100 to-yellow-100 p-3 rounded-xl ring-1 ring-amber-200/50">
-                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-10 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
@@ -114,7 +114,7 @@
                     <div class="flex items-center">
                         <div
                             class="icon-wrap bg-gradient-to-br from-emerald-100 to-green-100 p-3 rounded-xl ring-1 ring-emerald-200/50">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-10 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M5 13l4 4L19 7"></path>
                             </svg>
@@ -130,7 +130,7 @@
                     <div class="flex items-center">
                         <div
                             class="icon-wrap bg-gradient-to-br from-rose-100 to-red-100 p-3 rounded-xl ring-1 ring-rose-200/50">
-                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-10 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
@@ -239,7 +239,7 @@
                                     <span
                                         class="absolute inset-0 rounded-lg blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity bg-white/30"></span>
                                     <span class="relative flex items-center space-x-2 space-x-reverse">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-10 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                     </svg>
@@ -536,7 +536,8 @@ import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
 import axios from 'axios';
 
 // --- State ---
-const toasts = ref([]);
+import { useToast } from 'vue-toast-notification'
+const toast = useToast();
 const showNewTicketForm = ref(false);
 const loading = ref(true);
 const selectedThread = ref(null);
@@ -589,14 +590,6 @@ onUnmounted(() => {
 });
 
 // --- Toasts ---
-const addToast = (message, type = 'success') => {
-    const id = Date.now();
-    toasts.value.push({id, message, type});
-    setTimeout(() => removeToast(id), 5000);
-};
-const removeToast = (id) => {
-    toasts.value = toasts.value.filter(t => t.id !== id);
-};
 
 // --- Fetch Data ---
 const fetchDepartments = async () => {
@@ -604,7 +597,7 @@ const fetchDepartments = async () => {
         const response = await axios.get('/api/v1/support-roles');
         departments.value = response.data;
     } catch (error) {
-        addToast('خطا در بارگذاری بخش‌ها', 'error');
+        toast.error('خطا در بارگذاری بخش‌ها');
     }
 };
 
@@ -614,7 +607,7 @@ const fetchTickets = async () => {
         const response = await axios.get('/api/v1/tickets');
         tickets.value = response.data.data;
     } catch (error) {
-        addToast('خطا در بارگذاری تیکت‌ها', 'error');
+        toast.error('خطا در بارگذاری تیکت‌ها');
     } finally {
         loading.value = false;
     }
@@ -627,7 +620,7 @@ const viewThread = async (rootId) => {
         selectedThread.value = response.data.ticket;
         threadMessages.value = response.data.messages;
     } catch (error) {
-        addToast('خطا در بارگذاری گفتگو', 'error');
+        toast.error('خطا در بارگذاری گفتگو');
     }
 };
 
@@ -654,12 +647,12 @@ const submitThreadReply = async () => {
         await axios.post(`/api/v1/tickets/${selectedThread.value.id}/messages`, formData, {
             headers: {'Content-Type': 'multipart/form-data'}
         });
-        addToast('پاسخ شما ارسال شد');
+        toast.success('پاسخ شما ارسال شد');
         await viewThread(selectedThread.value.id);
         threadReplyMessage.value = '';
         replyFiles.value = [];
     } catch (error) {
-        addToast('خطا در ارسال پاسخ', 'error');
+        toast.error('خطا در ارسال پاسخ');
     }
 };
 
@@ -693,9 +686,9 @@ const submitNewTicket = async () => {
 
         tickets.value.unshift(response.data);
         closeNewTicketForm();
-        addToast(`تیکت شما با موفقیت ثبت شد. شماره پیگیری: #${response.data.id}`);
+        toast.success('تیکت شما با موفقیت ثبت شد.');
     } catch (error) {
-        addToast('خطا در ثبت تیکت', 'error');
+        toast.error('خطا در ثبت تیکت');
     } finally {
         isSubmittingTicket.value = false;
     }
@@ -713,11 +706,11 @@ const addFiles = (files, targetRef) => {
     const maxSize = 5 * 1024 * 1024;
     files.forEach(file => {
         if (targetRef.value.length >= maxFiles) {
-            addToast('حداکثر 10 فایل مجاز است', 'warning');
+            toast.warning('حداکثر 10 فایل مجاز است');
             return;
         }
         if (file.size > maxSize) {
-            addToast(`فایل ${file.name} بیش از 5 مگابایت است`, 'warning');
+            toast.warning(`فایل ${file.name} بیش از 5 مگابایت است`);
             return;
         }
         targetRef.value.push(file);
@@ -842,7 +835,7 @@ onMounted(() => {
 }
 
 /* ---------- Toast ---------- */
-.toast-container {
+/*.toast-container {
     position: fixed;
     top: 20px;
     left: 50%;
@@ -890,7 +883,7 @@ onMounted(() => {
 
 .toast-warning {
     background: linear-gradient(135deg, #f59e0b, #fbbf24);
-}
+}*/
 
 /* ---------- Cards (glossy + gradient edge) ---------- */
 .glossy {
