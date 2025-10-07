@@ -3,6 +3,7 @@
 use App\Domains\Auth\Controllers\WebController;
 use App\Domains\Shared\Models\User;
 use App\Domains\Shared\Controllers\UserController;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use App\Domains\Role\Controllers\RoleController;
@@ -10,9 +11,70 @@ use App\Domains\Permission\Controllers\PermissionController;
 
 use App\Domains\Auth\Controllers\AuthController;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
-Route::get('/test', function (){
-    return view('user.index');
+Route::get('/', function () {
+//    User::create([
+//      'phone'=>'09129876543',
+//      'name'=>'محسن',
+//      'family'=>'زیرک',
+//      'email'=>'mohsen@gmail.com'
+//    ]);
+
+
+//    $roles = ['برنامه نویس', 'ادمین' , 'کاربر عادی'];
+//    foreach ($roles as $role) {
+//        Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
+//    }
+//
+//    // 2. پرمیشن‌ها
+//    $permissions = [
+//        // CRUD یوزر
+//        'create-user', 'read-user', 'update-user', 'delete-user',
+//        // CRUD تیکت
+//        'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket',
+//        // چت
+//        'create-chat', 'read-chat', 'update-chat', 'delete-chat',
+//        // Role
+//        'create-role', 'read-role', 'update-role', 'delete-role',
+//    ];
+//
+//    foreach ($permissions as $permission) {
+//        Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+//    }
+//
+//    // 3. تخصیص پرمیشن‌ها به رول‌ها
+//    $programmer = Role::where('name', 'برنامه نویس')->first();
+//    $programmer->syncPermissions(Permission::all());
+//
+//    $admin = Role::where('name', 'ادمین')->first();
+//    $admin->syncPermissions(Permission::all());
+//
+//    /*$support = Role::where('name', 'پشتیبان')->first();
+//    $support->syncPermissions([
+//        'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket',
+//        'create-chat', 'read-chat', 'update-chat', 'delete-chat',
+//    ]);*/
+//
+//    // 4. یوزرهای تستی + assign role
+//    $users = [
+//        ['name' => 'admin', 'password' => '123456789' , 'role' => 'ادمین'],
+//        ['name' => 'programmer','password' => '123456789' , 'role' => 'برنامه نویس']
+//    ];
+//
+//    foreach ($users as $u) {
+//        $user = User::updateOrCreate(
+//            [
+//                'name' => $u['name'],
+//                'password' => Hash::make($u['password'])
+//            ]
+//        );
+//
+//        // اتصال یوزر به نقش
+//        $user->assignRole($u['role']);
+//        }
+    return redirect()->route('login');
 });
 
 
@@ -42,7 +104,6 @@ Route::get('/admin', [WebController::class, 'showAdmin'])->middleware('auth:sanc
 //Route::get('/chat', [WebController::class, 'showChat'])->middleware('auth:sanctum');
 
 
-
 Route::view('/register', 'auth.register')->name('register');
 Route::view('/login', 'auth.login')->name('login');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -50,12 +111,9 @@ Route::post('/login', [AuthController::class, 'register'])->name('register');
 Route::post('/activate', [AuthController::class, 'activate'])->name('activate');
 
 
-
 Route::get('/test', function () {
     return view('user.index');
 });
-
-
 
 
 Route::get('/login', [WebController::class, 'showLogin'])->name('login');

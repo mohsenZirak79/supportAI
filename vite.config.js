@@ -26,9 +26,11 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/css/auth.css',
                 'resources/css/user.css',
+                'resources/css/admin.css',   // ← اضافه
                 'resources/js/app.js',
                 'resources/js/chat.js',
                 'resources/js/tickets.js',
+                'resources/js/admin.js',     // ← اضافه
             ],
             refresh: true,
         }),

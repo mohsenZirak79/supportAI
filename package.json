@@ -19,10 +19,15 @@
     },
     "dependencies": {
         "@popperjs/core": "^2.11.8",
+        "datatables.net-buttons": "^3.2.5",
+        "datatables.net-buttons-dt": "^3.2.5",
+        "datatables.net-dt": "^2.3.4",
         "jquery": "^3.7.1",
+        "jszip": "^3.10.1",
         "markdown-it": "^14.1.0",
         "markdown-it-anchor": "^9.2.0",
         "markdown-it-toc-done-right": "^4.2.0",
+        "pdfmake": "^0.2.20",
         "vue": "^3.5.21",
         "vue-router": "^4.5.1",
         "vue-toast-notification": "^3.1.3"
