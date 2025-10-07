@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use function Symfony\Component\String\u;
 
 class AuthController
 {
@@ -199,6 +200,7 @@ class AuthController
 //        }
 //        return response()->json(['error' => ['code' => 'OTP_INVALID', 'message' => 'Invalid OTP']], 400);
 //    }
+
     public function verifyLoginOtp(LoginOtpRequest $request)
     {
         $user = User::where('phone', $request->phone)->first();
@@ -224,21 +226,24 @@ class AuthController
 
         // 2️⃣ ساخت JWT و ذخیره در Cache
         $token = JWTAuth::fromUser($user);
-        Cache::put('jwt_token_'.$user->id, $token, now()->addHours(2));
+        Cache::put('jwt_token_' . $user->id, $token, now()->addHours(2));
 
         // حذف OTP بعد از استفاده
         Cache::forget('otp_login_' . $request->phone);
 
-        // 3️⃣ نقش‌ها و پرمیشن‌ها
-        $roles = $user->roles->pluck('name');
+        // ✅ اینجا کاربر رو در سشن لاگین کن
+        Auth::login($user);
+        session()->regenerate(); // 🔒 برای امنیت
+        session()->save();
 
-        // 4️⃣ تعیین مقصد لاگین بر اساس نقش و پرمیشن
+        // 3️⃣ نقش‌ها و مسیر
+        $roles = $user->roles->pluck('name');
         if ($roles->contains('ادمین')) {
             $redirect = 'admin.users';
-        } elseif ($user->roles->pluck('id')->contains(3)) { // کاربر عادی
+        } elseif ($user->roles->pluck('id')->contains(3)) {
             $redirect = 'chat';
         } elseif ($user->roles()->where('allow_ticket', 1)->exists()) {
-            $redirect = route('admin.tickets');
+            $redirect = 'admin.tickets';
         } else {
             return response()->json([
                 'error' => [
@@ -247,25 +252,20 @@ class AuthController
                 ]
             ], 403);
         }
-//        return redirect()->route($redirect);
 
         return response()->json([
             'access_token' => $token,
             'primary_role' => $user->roles->pluck('name'),
             'redirect_url' => route($redirect),
         ]);
-
     }
 
-    public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
-        return ['message' => 'Logged out'];
-    }
+
     public function twoFaVerify(Request $request)
     {
         // Verify 2FA code
     }
+
     public function activate(RegisterOtpRequest $request) // جدید: فعال‌سازی با OTP
     {
         if (Cache::get('otp_register_' . $request->phone) == $request->otp) {
@@ -276,5 +276,15 @@ class AuthController
             return ['access_token' => $token->plainTextToken];
         }
         return response()->json(['error' => ['code' => 'OTP_INVALID', 'message' => 'Invalid OTP']], 400);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout(); // خروج کاربر از سشن
+
+        $request->session()->invalidate(); // حذف کامل داده‌های سشن
+        $request->session()->regenerateToken(); // جلوگیری از CSRF بعد از logout
+
+        return redirect('/login')->with('success', 'با موفقیت خارج شدید.');
     }
 }

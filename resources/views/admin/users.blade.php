@@ -173,7 +173,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link " href="../pages/sign-in.html">
+                <a class="nav-link" href="#" id="logout-link">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center ms-2 d-flex align-items-center justify-content-center">
                         <svg width="12px" height="12px" viewBox="0 0 40 44" version="1.1"
@@ -195,7 +195,23 @@
                     </div>
                     <span class="nav-link-text me-1">خروج</span>
                 </a>
+
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
             </li>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const link = document.getElementById('logout-link');
+                    if (link) {
+                        link.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            document.getElementById('logout-form').submit();
+                        });
+                    }
+                });
+            </script>
         </ul>
     </div>
 </aside>
@@ -283,174 +299,176 @@
                                     </td>
                                 </tr>
 
-                            <!-- Modal ویرایش -->
-                            <div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1"
-                                 aria-labelledby="editUserModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="editUserModalLabel">ویرایش کاربر</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="بستن"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form method="POST" action="{{ route('users.update', $user->id) }}">
-                                                @csrf
-                                                @method('PUT')
+                                <!-- Modal ویرایش -->
+                                <div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1"
+                                     aria-labelledby="editUserModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editUserModalLabel">ویرایش کاربر</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="بستن"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="POST" action="{{ route('users.update', $user->id) }}">
+                                                    @csrf
+                                                    @method('PUT')
 
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">نام</label>
-                                                        <input type="text" name="name" class="form-control"
-                                                               value="{{ $user->name }}" required>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">نام</label>
+                                                            <input type="text" name="name" class="form-control"
+                                                                   value="{{ $user->name }}" required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">نام خانوادگی</label>
+                                                            <input type="text" name="family" class="form-control"
+                                                                   value="{{ $user->family }}" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">کد ملی</label>
+                                                            <input type="text" name="national_id" class="form-control"
+                                                                   value="{{ $user->national_id }}" required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">تاریخ تولد</label>
+                                                            <input type="date" name="birth_date" class="form-control"
+                                                                   value="{{ $user->birth_date }}" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">ایمیل</label>
+                                                            <input type="text" name="email" class="form-control"
+                                                                   value="{{ $user->email }}" required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">شماره تلفن</label>
+                                                            <input type="number" name="phone" class="form-control"
+                                                                   value="{{ $user->phone }}" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">کد پستی</label>
+                                                            <input type="number" name="postal_code" class="form-control"
+                                                                   value="{{ $user->postal_code }}" required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">آدرس</label>
+                                                            <input type="text" name="address"
+                                                                   value="{{ $user->address }}" class="form-control">
+                                                        </div>
                                                     </div>
                                                     <div class="col-md-6 mb-3">
-                                                        <label class="form-label">نام خانوادگی</label>
-                                                        <input type="text" name="family" class="form-control"
-                                                               value="{{ $user->family }}" required>
+                                                        <label for="role" class="form-label">نقش کاربر</label>
+                                                        <select name="role" id="role" class="form-select" required>
+                                                            <option value="" disabled selected>انتخاب نقش...</option>
+                                                            @foreach($roles as $role)
+                                                                <option
+                                                                    value="{{ $role->id }}">{{ $role->name }}</option>
+                                                            @endforeach
+                                                        </select>
                                                     </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">کد ملی</label>
-                                                        <input type="text" name="national_id" class="form-control"
-                                                               value="{{ $user->national_id }}" required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">تاریخ تولد</label>
-                                                        <input type="date" name="birth_date" class="form-control"
-                                                               value="{{ $user->birth_date }}" required>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">ایمیل</label>
-                                                        <input type="text" name="email" class="form-control"
-                                                               value="{{ $user->email }}" required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">شماره تلفن</label>
-                                                        <input type="number" name="phone" class="form-control"
-                                                               value="{{ $user->phone }}" required>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">کد پستی</label>
-                                                        <input type="number" name="postal_code" class="form-control"
-                                                               value="{{ $user->postal_code }}" required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">آدرس</label>
-                                                        <input type="text" name="address"
-                                                               value="{{ $user->address }}" class="form-control">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="role" class="form-label">نقش کاربر</label>
-                                                    <select name="role" id="role" class="form-select" required>
-                                                        <option value="" disabled selected>انتخاب نقش...</option>
-                                                        @foreach($roles as $role)
-                                                            <option value="{{ $role->id }}">{{ $role->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
-                                            </form>
+                                                    <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Modal افزودن کاربر -->
-                            <div class="modal fade" id="addUserModal" tabindex="-1"
-                                 aria-labelledby="addUserModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="addUserModalLabel">افزودن کاربر جدید</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="بستن"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form action="{{ route('users.store') }}" method="POST">
-                                                @csrf
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">نام</label>
-                                                        <input type="text" name="name" class="form-control"
-                                                               required>
+                                <!-- Modal افزودن کاربر -->
+                                <div class="modal fade" id="addUserModal" tabindex="-1"
+                                     aria-labelledby="addUserModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="addUserModalLabel">افزودن کاربر جدید</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="بستن"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="{{ route('users.store') }}" method="POST">
+                                                    @csrf
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">نام</label>
+                                                            <input type="text" name="name" class="form-control"
+                                                                   required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">نام خانوادگی</label>
+                                                            <input type="text" name="family" class="form-control"
+                                                                   required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">کد ملی</label>
+                                                            <input type="text" name="national_id" class="form-control"
+                                                                   required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">تاریخ تولد</label>
+                                                            <input type="date" name="birth_date" class="form-control"
+                                                                   required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">ایمیل</label>
+                                                            <input type="text" name="email" class="form-control"
+                                                                   required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">شماره تلفن</label>
+                                                            <input type="number" name="phone" class="form-control"
+                                                                   required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">رمز عبور</label>
+                                                            <input type="password" name="password" class="form-control"
+                                                                   required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">تکرار رمز عبور</label>
+                                                            <input type="password" name="password_confirmation  "
+                                                                   class="form-control">
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">کد پستی</label>
+                                                            <input type="number" name="postal_code" class="form-control"
+                                                                   required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">آدرس</label>
+                                                            <input type="text" name="address"
+                                                                   class="form-control">
+                                                        </div>
                                                     </div>
                                                     <div class="col-md-6 mb-3">
-                                                        <label class="form-label">نام خانوادگی</label>
-                                                        <input type="text" name="family" class="form-control"
-                                                               required>
+                                                        <label for="role" class="form-label">نقش کاربر</label>
+                                                        <select name="role" id="role" class="form-select" required>
+                                                            <option value="" disabled selected>انتخاب نقش...</option>
+                                                            @foreach($roles as $role)
+                                                                <option
+                                                                    value="{{ $role->id }}">{{ $role->name }}</option>
+                                                            @endforeach
+                                                        </select>
                                                     </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">کد ملی</label>
-                                                        <input type="text" name="national_id" class="form-control"
-                                                               required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">تاریخ تولد</label>
-                                                        <input type="date" name="birth_date" class="form-control"
-                                                               required>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">ایمیل</label>
-                                                        <input type="text" name="email" class="form-control"
-                                                               required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">شماره تلفن</label>
-                                                        <input type="number" name="phone" class="form-control"
-                                                               required>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">رمز عبور</label>
-                                                        <input type="password" name="password" class="form-control"
-                                                               required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">تکرار رمز عبور</label>
-                                                        <input type="password" name="password_confirmation  "
-                                                               class="form-control">
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">کد پستی</label>
-                                                        <input type="number" name="postal_code" class="form-control"
-                                                               required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">آدرس</label>
-                                                        <input type="text" name="address"
-                                                               class="form-control">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="role" class="form-label">نقش کاربر</label>
-                                                    <select name="role" id="role" class="form-select" required>
-                                                        <option value="" disabled selected>انتخاب نقش...</option>
-                                                        @foreach($roles as $role)
-                                                            <option value="{{ $role->id }}">{{ $role->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
 
-                                                <button type="submit" class="btn btn-primary">ثبت</button>
-                                            </form>
+                                                    <button type="submit" class="btn btn-primary">ثبت</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                             @endforeach
 
                             </tbody>

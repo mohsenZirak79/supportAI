@@ -165,3 +165,5 @@ Route::prefix('permissions')->group(function () {
     Route::delete('/{id}', [PermissionController::class, 'destroy']);
 });
 
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+

@@ -177,7 +177,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link " href="../pages/sign-in.html">
+                <a class="nav-link" href="#" id="logout-link">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center ms-2 d-flex align-items-center justify-content-center">
                         <svg width="12px" height="12px" viewBox="0 0 40 44" version="1.1"
@@ -199,7 +199,23 @@
                     </div>
                     <span class="nav-link-text me-1">خروج</span>
                 </a>
+
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
             </li>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const link = document.getElementById('logout-link');
+                    if (link) {
+                        link.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            document.getElementById('logout-form').submit();
+                        });
+                    }
+                });
+            </script>
         </ul>
     </div>
 </aside>
