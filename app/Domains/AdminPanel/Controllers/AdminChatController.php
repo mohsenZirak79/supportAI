@@ -9,6 +9,7 @@ use App\Domains\Shared\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class AdminChatController extends Controller
 {
@@ -115,19 +116,17 @@ class AdminChatController extends Controller
             ->orderBy('created_at','asc')
             ->get()
             ->map(function ($m) {
-                // گرفتن مدیاهای پیام (صوت/فایل)
-                $media = \DB::table('media')
-                    ->where('model_type', \App\Domains\Shared\Models\Message::class)
+                $media = Media::query()
+                    ->where('model_type', Message::class)
                     ->where('model_id', $m->id)
-                    ->select('id','collection_name as collection','mime_type as mime','file_name','custom_properties')
                     ->get()
-                    ->map(function ($mm) {
+                    ->map(function (Media $med) {
                         return [
-                            'id'        => $mm->id,
-                            'collection'=> $mm->collection,
-                            'mime'      => $mm->mime,
-                            'name'      => $mm->file_name,
-                            'url'       => \Storage::disk('public')->url($mm->id.'/'.$mm->file_name),
+                            'id'        => $med->id,
+                            'collection'=> $med->collection_name,
+                            'mime'      => $med->mime_type,
+                            'name'      => $med->file_name,
+                            'url'       => $med->getUrl(),   // ✅ درست
                         ];
                     });
 
