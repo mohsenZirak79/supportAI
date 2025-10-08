@@ -26,9 +26,12 @@
 
 
 @if(session('success'))
-    <div class="alert alert-success">
+    <div class="alert alert-success" style="text-align: center">
         {{ session('success') }}
     </div>
+    <script>
+        window.__toast.success({{ session('success') }})
+    </script>
 @endif
 <main class="main-content mt-0">
     <section>
@@ -99,6 +102,9 @@
 </footer>
 
 <script>
+    // window.__toast.success('test')
+    // console.log('injam')
+
     // ارسال شماره
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         console.log(1111111111111);
@@ -135,7 +141,8 @@
         const otp = otpForm.querySelector('input[name="otp"]').value;
 
         try {
-            const response = await axios.post('/api/v1/auth/verify-login-otp', { phone, otp });
+            const response = await axios.post('/login', { phone, otp }, { withCredentials: true });
+
 
             // ذخیره توکن
             localStorage.setItem('token', response.data.access_token);

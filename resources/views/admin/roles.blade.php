@@ -309,16 +309,38 @@
                                                     @method('PUT')
 
                                                     <div class="col-md-6 mb-3">
-                                                        <label class="form-label">عنوان</label>
+                                                        <label class="form-label">عنوان نقش</label>
                                                         <input type="text" name="name" class="form-control"
                                                                value="{{ $role->name }}" required>
                                                     </div>
+                                                    <hr>
                                                     <div class="col-md-6 mb-3">
                                                         <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowTicket" name="fav_language"
+                                                        <input type="checkbox" id="allowTicket" name="allow_ticket"
                                                                value="{{ $role->allowTicket }}">
                                                         <label for="allowTicket">امکان مشاهده و پاسخ به تیکت
                                                             ها</label><br>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label"></label>
+                                                        <input type="checkbox" id="allowChat" name="allow_chat">
+                                                        <label for="allowChat">امکان مشاهده و پاسخ به چت ها
+                                                            </label><br>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label"></label>
+                                                        <input type="checkbox" id="allowUsers" name="allow_users">
+                                                        <label for="allowUsers">امکان مشاهده و مدیریت کاربران
+                                                            </label><br>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label"></label>
+                                                        <input type="checkbox" id="allowRoles" name="allow_role">
+                                                        <label for="allowRoles">امکان مشاهده و مدیریت نقش ها
+                                                            </label><br>
                                                     </div>
                                                     <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
                                                 </form>
@@ -343,14 +365,37 @@
                                                     @csrf
 
                                                     <div class="col-md-6 mb-3">
-                                                        <label class="form-label">عنوان</label>
+                                                        <label class="form-label">عنوان نقش</label>
                                                         <input type="text" name="name" class="form-control" required>
                                                     </div>
+                                                    <hr>
+
                                                     <div class="col-md-6 mb-3">
                                                         <label class="form-label"></label>
                                                         <input type="checkbox" id="allowTicket" name="allow_ticket">
                                                         <label for="allowTicket">امکان مشاهده و پاسخ به تیکت
                                                             ها</label><br>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label"></label>
+                                                        <input type="checkbox" id="allowChat" name="allow_chat">
+                                                        <label for="allowChat">امکان مشاهده و پاسخ به چت ها
+                                                        </label><br>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label"></label>
+                                                        <input type="checkbox" id="allowUsers" name="allow_users">
+                                                        <label for="allowUsers">امکان مشاهده و مدیریت کاربران
+                                                        </label><br>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label"></label>
+                                                        <input type="checkbox" id="allowRoles" name="allow_role">
+                                                        <label for="allowRoles">امکان مشاهده و مدیریت نقش ها
+                                                        </label><br>
                                                     </div>
 
                                                     <button type="submit" class="btn btn-primary">ثبت</button>

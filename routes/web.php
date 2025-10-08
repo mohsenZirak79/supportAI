@@ -4,6 +4,8 @@ use App\Domains\AdminPanel\Controllers\AdminChatController;
 use App\Domains\Auth\Controllers\WebController;
 use App\Domains\Shared\Models\User;
 use App\Domains\Shared\Controllers\UserController;
+use App\Domains\AdminPanel\Controllers\ProfileController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
@@ -158,17 +160,28 @@ Route::prefix('role')->name('roles.')->group(function () {
 
 Route::view('/register', 'auth.register')->name('register');
 Route::view('/login', 'auth.login')->name('login');
+Route::post('/login', [AuthController::class, 'verifyLoginOtp'])->name('login.verify');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 //Route::post('/login', [AuthController::class, 'register'])->name('register');
 Route::post('/activate', [AuthController::class, 'activate'])->name('activate');
 
-
-Route::prefix('permissions')->group(function () {
-    Route::get('/', [PermissionController::class, 'index']);
-    Route::post('/', [PermissionController::class, 'store']);
-    Route::put('/{id}', [PermissionController::class, 'update']);
-    Route::delete('/{id}', [PermissionController::class, 'destroy']);
-});
-
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile');
+Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+
+Route::get('/check-login', function () {
+    dd(Auth::user());
+    return Auth::check()
+        ? '👤 Logged in as: ' . Auth::user()->phone
+        : '❌ Not logged in';
+});
+
+
+Route::get('/fake-login', function () {
+    $user = User::first();
+    Auth::guard('web')->login($user);
+    session()->regenerate();
+    return '✅ Logged in as: ' . $user->name;
+});
