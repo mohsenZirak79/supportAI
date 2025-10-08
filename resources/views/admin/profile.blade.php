@@ -1,18 +1,41 @@
+<!--
+=========================================================
+* Soft UI Dashboard - v1.0.3
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/soft-ui-dashboard
+* Copyright 2021 Creative Tim (https://www.creative-tim.com)
+* Licensed under MIT (https://www.creative-tim.com/license)
+
+* Coded by Creative Tim
+
+=========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+-->
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="ar" dir="rtl">
 
 <head>
-    <meta charset="utf-8"/>
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-    @vite(['resources/css/admin.css', 'resources/js/admin.js'])
-    <style>
-
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-datatables@latest/dist/vanilla-dataTables.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-datatables@latest/dist/vanilla-dataTables.min.js"></script>
     <title>
-        نقش ها
+        حساب کاربری
     </title>
+    <!--     Fonts and icons     -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+    <!-- Nucleo Icons -->
+    <link href="../assets/css/nucleo-icons.css" rel="stylesheet" />
+    <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
+    <!-- Font Awesome Icons -->
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
+    <!-- CSS Files -->
+    <link id="pagestyle" href="../assets/css/soft-ui-dashboard.css?v=1.0.3" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show rtl bg-gray-100">
@@ -211,199 +234,103 @@
     </div>
 </aside>
 
-<main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ">
-    <!-- Navbar -->
-    <!-- End Navbar -->
+<main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg">
     <div class="container-fluid py-4">
-        <div class="container-fluid py-4">
-            <h6 style="text-align: center">لیست نقش ها</h6>
-            <div class="card">
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <strong>خطا در ارسال فرم:</strong>
-                        <ul class="mt-2 mb-0">
-                            @foreach ($errors->all() as $error)
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <h6>ویرایش اطلاعات کاربری</h6>
+                    </div>
+                    <div class="card-body px-4 pt-4 pb-2">
+                        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">نام</label>
+                                    <input type="text" name="name" class="form-control"
+                                           value="{{ old('name', $user->name) }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">نام خانوادگی</label>
+                                    <input type="text" name="family" class="form-control"
+                                           value="{{ old('family', $user->family) }}" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">ایمیل</label>
+                                    <input type="email" name="email" class="form-control"
+                                           value="{{ old('email', $user->email) }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">شماره موبایل</label>
+                                    <input type="text" name="phone" class="form-control"
+                                           value="{{ old('phone', $user->phone) }}">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">کد ملی</label>
+                                    <input type="text" name="national_id" class="form-control"
+                                           value="{{ old('national_id', $user->national_id) }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">کد پستی</label>
+                                    <input type="text" name="postal_code" class="form-control"
+                                           value="{{ old('postal_code', $user->postal_code) }}">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">تاریخ تولد</label>
+                                    <input type="date" name="birth_date" class="form-control"
+                                           value="{{ old('birth_date', $user->birth_date) }}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">آدرس</label>
+                                <textarea name="address" class="form-control" rows="2">{{ old('address', $user->address) }}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">رمز عبور جدید (اختیاری)</label>
+                                <input type="password" name="password" class="form-control" placeholder="در صورت تمایل رمز جدید وارد کنید">
+                            </div>
+
+                            <div class="text-end mt-4">
+                                <button type="submit" class="btn bg-gradient-primary">ذخیره تغییرات</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                @if(session('success'))
+                    <div class="alert alert-success mt-3">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="alert alert-danger mt-3">
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
                 @endif
-
-                <div class="card-body px-0 pt-0 pb-2">
-                    <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0 datatable">
-                            <thead>
-                            <tr>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                    عنوان نقش
-                                </th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                    تعداد کاربران
-                                </th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                    ایجاد شده در تاریخ
-                                </th>
-
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                    عملیات
-                                </th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <button class="btn btn-sm btn-success" data-bs-toggle="modal"
-                                    data-bs-target="#addRoleModal">
-                                افزودن نقش
-                            </button>
-                            @foreach($roles as $role)
-                                <tr>
-                                    <td style="text-align: center">
-                                        <h6 class="mb-0 text-sm">{{ $role->name }}</h6>
-                                    </td>
-                                    <td style="text-align: center">
-                                        <span class="badge bg-primary">{{ $role->users_count }}</span>
-                                    </td>
-
-                                    <td style="text-align: center">
-                                <span class="text-secondary text-xs font-weight-bold">
-
-                                        {{ $role->created_at_jalali }}
-                                </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <!-- دکمه ویرایش -->
-                                        <button class="btn btn-sm btn-info" data-bs-toggle="modal"
-                                                data-bs-target="#editRoleModal{{ $role->id }}">
-                                            ویرایش
-                                        </button>
-                                        <form action="{{ route('roles.destroy', $role->id) }}" method="POST"
-                                              style="display:inline-block;"
-                                              onsubmit="return confirm('آیا از حذف این کاربر مطمئن هستید؟');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                حذف
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                <div class="modal fade" id="editRoleModal{{ $role->id }}" tabindex="-1"
-                                     aria-labelledby="editRoleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="editRoleModalLabel">ویرایش نقش</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="بستن"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form method="POST" action="{{ route('roles.update', $role->id) }}">
-                                                    @csrf
-                                                    @method('PUT')
-
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">عنوان نقش</label>
-                                                        <input type="text" name="name" class="form-control"
-                                                               value="{{ $role->name }}" required>
-                                                    </div>
-                                                    <hr>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowTicket" name="allow_ticket">
-                                                        <label for="allowTicket">امکان مشاهده و پاسخ به تیکت
-                                                            ها</label><br>
-                                                    </div>
-
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowChat" name="allow_chat">
-                                                        <label for="allowChat">امکان مشاهده و پاسخ به چت ها
-                                                            </label><br>
-                                                    </div>
-
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowUsers" name="allow_users">
-                                                        <label for="allowUsers">امکان مشاهده و مدیریت کاربران
-                                                            </label><br>
-                                                    </div>
-
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowRoles" name="allow_role">
-                                                        <label for="allowRoles">امکان مشاهده و مدیریت نقش ها
-                                                            </label><br>
-                                                    </div>
-                                                    <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-
-                                <!-- Modal افزودن نقش -->
-                                <div class="modal fade" id="addRoleModal" tabindex="-1"
-                                     aria-labelledby="addRoleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="addRoleModalLabel">افزودن نقش جدید</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="بستن"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form action="{{ route('roles.store') }}" method="POST">
-                                                    @csrf
-
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">عنوان نقش</label>
-                                                        <input type="text" name="name" class="form-control" required>
-                                                    </div>
-                                                    <hr>
-
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowTicket" name="allow_ticket">
-                                                        <label for="allowTicket">امکان مشاهده و پاسخ به تیکت
-                                                            ها</label><br>
-                                                    </div>
-
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowChat" name="allow_chat">
-                                                        <label for="allowChat">امکان مشاهده و پاسخ به چت ها
-                                                        </label><br>
-                                                    </div>
-
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowUsers" name="allow_users">
-                                                        <label for="allowUsers">امکان مشاهده و مدیریت کاربران
-                                                        </label><br>
-                                                    </div>
-
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowRoles" name="allow_role">
-                                                        <label for="allowRoles">امکان مشاهده و مدیریت نقش ها
-                                                        </label><br>
-                                                    </div>
-
-                                                    <button type="submit" class="btn btn-primary">ثبت</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </tbody>
-
-                        </table>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 </main>
+
 <div class="fixed-plugin">
     <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
         <i class="fa fa-cog py-2"> </i>
@@ -429,16 +356,12 @@
             </div>
             <a href="javascript:void(0)" class="switch-trigger background-color">
                 <div class="badge-colors my-2 text-start">
-                    <span class="badge filter bg-gradient-primary active" data-color="primary"
-                          onclick="sidebarColor(this)"></span>
+                    <span class="badge filter bg-gradient-primary active" data-color="primary" onclick="sidebarColor(this)"></span>
                     <span class="badge filter bg-gradient-dark" data-color="dark" onclick="sidebarColor(this)"></span>
                     <span class="badge filter bg-gradient-info" data-color="info" onclick="sidebarColor(this)"></span>
-                    <span class="badge filter bg-gradient-success" data-color="success"
-                          onclick="sidebarColor(this)"></span>
-                    <span class="badge filter bg-gradient-warning" data-color="warning"
-                          onclick="sidebarColor(this)"></span>
-                    <span class="badge filter bg-gradient-danger" data-color="danger"
-                          onclick="sidebarColor(this)"></span>
+                    <span class="badge filter bg-gradient-success" data-color="success" onclick="sidebarColor(this)"></span>
+                    <span class="badge filter bg-gradient-warning" data-color="warning" onclick="sidebarColor(this)"></span>
+                    <span class="badge filter bg-gradient-danger" data-color="danger" onclick="sidebarColor(this)"></span>
                 </div>
             </a>
             <!-- Sidenav Type -->
@@ -447,12 +370,8 @@
                 <p class="text-sm">Choose between 2 different sidenav types.</p>
             </div>
             <div class="d-flex">
-                <button class="btn bg-gradient-primary w-100 px-3 mb-2 active" data-class="bg-transparent"
-                        onclick="sidebarType(this)">Transparent
-                </button>
-                <button class="btn bg-gradient-primary w-100 px-3 mb-2 ms-2" data-class="bg-white"
-                        onclick="sidebarType(this)">White
-                </button>
+                <button class="btn bg-gradient-primary w-100 px-3 mb-2 active" data-class="bg-transparent" onclick="sidebarType(this)">Transparent</button>
+                <button class="btn bg-gradient-primary w-100 px-3 mb-2 ms-2" data-class="bg-white" onclick="sidebarType(this)">White</button>
             </div>
             <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
             <!-- Navbar Fixed -->
@@ -460,26 +379,18 @@
                 <h6 class="mb-0">Navbar Fixed</h6>
             </div>
             <div class="form-check form-switch ps-0">
-                <input class="form-check-input mt-1 ms-auto" type="checkbox" id="navbarFixed"
-                       onclick="navbarFixed(this)">
+                <input class="form-check-input mt-1 ms-auto" type="checkbox" id="navbarFixed" onclick="navbarFixed(this)">
             </div>
             <hr class="horizontal dark my-sm-4">
-            <a class="btn bg-gradient-dark w-100" href="https://www.creative-tim.com/product/soft-ui-dashboard-pro">Free
-                Download</a>
-            <a class="btn btn-outline-dark w-100"
-               href="https://www.creative-tim.com/learning-lab/bootstrap/license/soft-ui-dashboard">View
-                documentation</a>
+            <a class="btn bg-gradient-dark w-100" href="https://www.creative-tim.com/product/soft-ui-dashboard-pro">Free Download</a>
+            <a class="btn btn-outline-dark w-100" href="https://www.creative-tim.com/learning-lab/bootstrap/license/soft-ui-dashboard">View documentation</a>
             <div class="w-100 text-center">
-                <a class="github-button" href="https://github.com/creativetimofficial/soft-ui-dashboard"
-                   data-icon="octicon-star" data-size="large" data-show-count="true"
-                   aria-label="Star creativetimofficial/soft-ui-dashboard on GitHub">Star</a>
+                <a class="github-button" href="https://github.com/creativetimofficial/soft-ui-dashboard" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star creativetimofficial/soft-ui-dashboard on GitHub">Star</a>
                 <h6 class="mt-3">Thank you for sharing!</h6>
-                <a href="https://twitter.com/intent/tweet?text=Check%20Soft%20UI%20Dashboard%20made%20by%20%40CreativeTim%20%23webdesign%20%23dashboard%20%23bootstrap5&amp;url=https%3A%2F%2Fwww.creative-tim.com%2Fproduct%2Fsoft-ui-dashboard"
-                   class="btn btn-dark mb-0 me-2" target="_blank">
+                <a href="https://twitter.com/intent/tweet?text=Check%20Soft%20UI%20Dashboard%20made%20by%20%40CreativeTim%20%23webdesign%20%23dashboard%20%23bootstrap5&amp;url=https%3A%2F%2Fwww.creative-tim.com%2Fproduct%2Fsoft-ui-dashboard" class="btn btn-dark mb-0 me-2" target="_blank">
                     <i class="fab fa-twitter me-1" aria-hidden="true"></i> Tweet
                 </a>
-                <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.creative-tim.com/product/soft-ui-dashboard"
-                   class="btn btn-dark mb-0 me-2" target="_blank">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.creative-tim.com/product/soft-ui-dashboard" class="btn btn-dark mb-0 me-2" target="_blank">
                     <i class="fab fa-facebook-square me-1" aria-hidden="true"></i> Share
                 </a>
             </div>
@@ -487,6 +398,84 @@
     </div>
 </div>
 <!--   Core JS Files   -->
+<script src="../assets/js/core/popper.min.js"></script>
+<script src="../assets/js/core/bootstrap.min.js"></script>
+<script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
+<script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+<script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+        var options = {
+            damping: '0.5'
+        }
+        Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.querySelector(".datatable");
+        new DataTable(table, {
+            labels: {
+                placeholder: "جستجو...",
+                perPage: "{select} رکورد در هر صفحه",
+                noRows: "هیچ داده‌ای پیدا نشد",
+                info: "نمایش {start} تا {end} از {rows} رکورد"
+            },
+            perPage: 5, // تعداد رکورد پیش‌فرض
+            perPageSelect: [5, 10, 20, 50]
+        });
+    });
+</script>
+<!-- Github buttons -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+<!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
+<script src="../assets/js/soft-ui-dashboard.min.js?v=1.0.3"></script>
 </body>
+<style>
+    /* استایل جستجو */
+    .dataTable-input {
+        border-radius: 25px;
+        border: 1px solid #ced4da;
+        padding: 6px 14px;
+        width: 250px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+    }
+    .dataTable-input:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+        outline: none;
+    }
+
+    /* استایل جدول */
+    table.dataTable-table {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    /* استایل دکمه‌های صفحه‌بندی */
+    .dataTable-pagination a {
+        border-radius: 6px;
+        padding: 6px 12px;
+        margin: 0 2px;
+        text-decoration: none;
+        border: 1px solid #dee2e6;
+        color: #0d6efd;
+    }
+    .dataTable-pagination a:hover {
+        background: #0d6efd;
+        color: #fff;
+    }
+    .dataTable-pagination .active a {
+        background: #0d6efd;
+        color: #fff;
+        border-color: #0d6efd;
+    }
+
+    /* تعداد رکورد در صفحه */
+    .dataTable-selector {
+        border-radius: 8px;
+        padding: 4px 8px;
+    }
+</style>
 
 </html>

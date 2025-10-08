@@ -5,6 +5,7 @@ use App\Domains\Auth\Controllers\WebController;
 use App\Domains\Shared\Models\User;
 use App\Domains\Shared\Controllers\UserController;
 use App\Domains\AdminPanel\Controllers\ProfileController;
+use App\Http\Middleware\CheckPermissionForRoute;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -103,7 +104,6 @@ Route::get('/ticket', function () {
 //    ]);
 Route::get('/login', [WebController::class, 'showLogin'])->name('login');
 Route::get('/register', [WebController::class, 'showRegister'])->name('register');
-Route::get('/admin', [WebController::class, 'showAdmin'])->middleware('auth:sanctum', 'role:admin');
 //Route::get('/chat', [WebController::class, 'showChat'])->middleware('auth:sanctum');
 
 
@@ -121,22 +121,22 @@ Route::get('/test', function () {
 
 Route::get('/login', [WebController::class, 'showLogin'])->name('login');
 Route::get('/register', [WebController::class, 'showRegister'])->name('register');
-Route::get('/admin', [WebController::class, 'showAdmin'])/*->middleware('auth:sanctum', 'role:admin')*/
 ;
 
-Route::prefix('admin')->group(function () {
-    Route::get('/', [WebController::class, 'showAdmin']);
-    Route::get('/users', [WebController::class, 'showUsers'])->name('admin.users');
-    Route::get('/roles', [WebController::class, 'showRoles'])->name('admin.roles');
-    Route::get('/tickets', [WebController::class, 'showTickets'])->name('admin.tickets');
+Route::middleware([CheckPermissionForRoute::class])->group(function () {
+    Route::prefix('admin')->group(function () {
 
-    Route::get('/chats', [AdminChatController::class, 'index'])->name('admin.chats');
+        Route::get('/users', [WebController::class, 'showUsers'])->name('admin.users');
+        Route::get('/roles', [WebController::class, 'showRoles'])->name('admin.roles');
+        Route::get('/tickets', [WebController::class, 'showTickets'])->name('admin.tickets');
+        Route::get('/chats', [AdminChatController::class, 'index'])->name('admin.chats');
+    });
+});
+
+Route::prefix('admin')->group(function () {
     Route::get('/chats/{conversation}/detail', [AdminChatController::class, 'detail'])->name('admin.chats.detail');
     Route::post('/referrals/{referral}/respond', [AdminChatController::class, 'respond'])->name('admin.referrals.respond');
     Route::post('/referrals/{referral}/assign-me', [AdminChatController::class, 'assignMe'])->name('admin.referrals.assign_me');
-    Route::post('/', [WebController::class, 'showAdmin']);
-    Route::put('/{id}', [WebController::class, 'showAdmin']);
-    Route::delete('/{id}', [WebController::class, 'showAdmin']);
 });
 
 Route::prefix('user')->name('users.')->group(function () {
@@ -169,19 +169,3 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile');
 Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-
-
-Route::get('/check-login', function () {
-    dd(Auth::user());
-    return Auth::check()
-        ? '👤 Logged in as: ' . Auth::user()->phone
-        : '❌ Not logged in';
-});
-
-
-Route::get('/fake-login', function () {
-    $user = User::first();
-    Auth::guard('web')->login($user);
-    session()->regenerate();
-    return '✅ Logged in as: ' . $user->name;
-});

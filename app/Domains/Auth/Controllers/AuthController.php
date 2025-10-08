@@ -148,7 +148,7 @@ class AuthController
     {
         // 1. ولیدیشن
         $request->validate([
-            'phone' => ['required', 'regex:/^(\+98|0)?9\d{9}$/', 'exists:users,phone'],
+            'phone' => ['required', 'regex:/^(\+98|0)?9\d{9}$/'],
         ]);
 
         // 2. جلوگیری از حملات brute-force
@@ -165,6 +165,9 @@ class AuthController
 
         // 3. پیدا کردن یوزر
         $user = User::where('phone', $request->phone)->first();
+        if (!$user){
+            return response()->json(['message' => 'شماره تلفن یافت نشد'] , 404);
+        }
 
         // 4. ساخت OTP
         $otp = rand(100000, 999999);
