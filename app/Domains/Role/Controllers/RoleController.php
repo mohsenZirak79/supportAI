@@ -28,6 +28,9 @@ class RoleController
         // 2️⃣ تعیین مقدار allow_ticket
         $data = $request->all();
         $data['allow_ticket'] = $request->has('allow_ticket') ? 1 : 0;
+        $data['allow_chat'] = $request->has('allow_chat') ? 1 : 0;
+        $data['allow_users'] = $request->has('allow_users') ? 1 : 0;
+        $data['allow_role'] = $request->has('allow_role') ? 1 : 0;
 
         // 3️⃣ ایجاد رول
         $role = Role::create($data);
@@ -35,8 +38,22 @@ class RoleController
         // 4️⃣ اگر allow_ticket فعال بود، پرمیشن‌ها رو سینک کن
         if ($data['allow_ticket']) {
             $role->syncPermissions([
-                'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket',
+                'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket'
+            ]);
+        }
+        if ($data['allow_chat']) {
+            $role->syncPermissions([
                 'create-chat', 'read-chat', 'update-chat', 'delete-chat',
+            ]);
+        }
+        if ($data['allow_users']) {
+            $role->syncPermissions([
+                'create-user', 'read-user', 'update-user', 'delete-user',
+            ]);
+        }
+        if ($data['allow_role']) {
+            $role->syncPermissions([
+                'create-role', 'read-role', 'update-role', 'delete-role',
             ]);
         }
 

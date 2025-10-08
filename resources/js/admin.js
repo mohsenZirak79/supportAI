@@ -77,3 +77,23 @@ document.addEventListener('DOMContentLoaded', () => {
         makeDataTable(el);
     });
 });
+
+
+import VueToast from 'vue-toast-notification'
+// تم زیباتر از default
+
+// ایجاد اپ Vue
+const app = createApp(ChatInterface)
+
+// ثبت Toast به‌صورت پلاگین
+app.use(VueToast, {
+    position: 'bottom-left',
+    duration: 4000,
+    dismissible: true,
+})
+
+// دسترسی سراسری (برای استفاده در کنسول یا فایل JS دیگر)
+window.__toast = app.config.globalProperties.$toast
+
+// mount به #app در layout اصلی
+app.mount('#app')

@@ -37,7 +37,7 @@ Route::prefix('v1')->middleware(['forceTestUser'])->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/activate', [AuthController::class, 'activate']);
     Route::post('/auth/login', [AuthController::class, 'login']);
-    Route::post('/auth/verify-login-otp', [AuthController::class, 'verifyLoginOtp']);
+//    Route::post('/auth/verify-login-otp', [AuthController::class, 'verifyLoginOtp']);
     Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
     Route::get('conversations', [ConversationController::class, 'index']);

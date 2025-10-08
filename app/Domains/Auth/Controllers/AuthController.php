@@ -230,11 +230,8 @@ class AuthController
 
         // حذف OTP بعد از استفاده
         Cache::forget('otp_login_' . $request->phone);
-
-        // ✅ اینجا کاربر رو در سشن لاگین کن
         Auth::login($user);
-        session()->regenerate(); // 🔒 برای امنیت
-        session()->save();
+        session()->regenerate();
 
         // 3️⃣ نقش‌ها و مسیر
         $roles = $user->roles->pluck('name');
