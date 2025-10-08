@@ -20,10 +20,6 @@ class WebController
         return view('auth.register');
     }
 
-    public function showAdmin()
-    {
-        return view('admin.dashboard');
-    }
     public function showTickets()
     {
         $tickets = Ticket::with('sender')->latest()->get();

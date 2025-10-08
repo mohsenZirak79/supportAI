@@ -33,29 +33,30 @@ class RoleController
         $data['allow_role'] = $request->has('allow_role') ? 1 : 0;
 
         // 3️⃣ ایجاد رول
-        $role = Role::create($data);
+        $permissions = [];
 
-        // 4️⃣ اگر allow_ticket فعال بود، پرمیشن‌ها رو سینک کن
         if ($data['allow_ticket']) {
-            $role->syncPermissions([
+            $permissions = array_merge($permissions, [
                 'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket'
             ]);
         }
         if ($data['allow_chat']) {
-            $role->syncPermissions([
+            $permissions = array_merge($permissions, [
                 'create-chat', 'read-chat', 'update-chat', 'delete-chat',
             ]);
         }
         if ($data['allow_users']) {
-            $role->syncPermissions([
+            $permissions = array_merge($permissions, [
                 'create-user', 'read-user', 'update-user', 'delete-user',
             ]);
         }
         if ($data['allow_role']) {
-            $role->syncPermissions([
+            $permissions = array_merge($permissions, [
                 'create-role', 'read-role', 'update-role', 'delete-role',
             ]);
         }
+
+        $role->syncPermissions($permissions);
 
         return redirect()->route('admin.roles');
     }
@@ -75,25 +76,38 @@ class RoleController
 
         // 3️⃣ آماده‌سازی داده‌ها
         $data = $request->all();
-
         $data['allow_ticket'] = $request->has('allow_ticket') ? 1 : 0;
+        $data['allow_chat'] = $request->has('allow_chat') ? 1 : 0;
+        $data['allow_users'] = $request->has('allow_users') ? 1 : 0;
+        $data['allow_role'] = $request->has('allow_role') ? 1 : 0;
 
         // 4️⃣ بروزرسانی نقش
         $role->update($data);
+        $permissions = [];
 
-        // 5️⃣ بروزرسانی پرمیشن‌ها در صورت نیاز
         if ($data['allow_ticket']) {
-            $role->syncPermissions([
-                'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket',
-                'create-chat', 'read-chat', 'update-chat', 'delete-chat',
+            $permissions = array_merge($permissions, [
+                'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket'
             ]);
-        } else {
-            // اگر allow_ticket غیرفعال شد، پرمیشن‌های مرتبط حذف شوند
-            $role->revokePermissionTo([
-                'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket',
+        }
+        if ($data['allow_chat']) {
+            $permissions = array_merge($permissions, [
                 'create-chat', 'read-chat', 'update-chat', 'delete-chat',
             ]);
         }
+        if ($data['allow_users']) {
+            $permissions = array_merge($permissions, [
+                'create-user', 'read-user', 'update-user', 'delete-user',
+            ]);
+        }
+        if ($data['allow_role']) {
+            $permissions = array_merge($permissions, [
+                'create-role', 'read-role', 'update-role', 'delete-role',
+            ]);
+        }
+
+        $role->syncPermissions($permissions);
+
 
         // 6️⃣ بازگشت به صفحه لیست نقش‌ها با پیام موفقیت
         return redirect()->route('admin.roles')->with('success', 'نقش با موفقیت بروزرسانی شد.');

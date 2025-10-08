@@ -107,7 +107,6 @@
 
     // ارسال شماره
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        console.log(1111111111111);
         e.preventDefault();
         const phoneInput = document.querySelector('#loginForm input[name="phone"]');
         const phone = phoneInput.value.trim();
@@ -127,8 +126,8 @@
             }
 
         } catch (error) {
-            console.log(error)
-            document.getElementById('error').innerText = error.response?.data?.error?.message || 'خطا در ارسال شماره';
+            console.log(error['response']['data']['message'])
+            document.getElementById('error').innerText = error['response']['data']['message'] || 'خطا در ارسال شماره';
         }
     });
 

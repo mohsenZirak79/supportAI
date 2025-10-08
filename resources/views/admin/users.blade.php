@@ -28,6 +28,7 @@
 </head>
 
 <body class="g-sidenav-show rtl bg-gray-100">
+
 <aside
     class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-end me-3 rotate-caret"
     id="sidenav-main">
@@ -36,13 +37,13 @@
            aria-hidden="true" id="iconSidenav"></i>
         <a class="navbar-brand m-0" href="https://demos.creative-tim.com/soft-ui-dashboard/pages/dashboard.html"
            target="_blank">
-            <img src="../../../assets/img/logo-ct.png" class="navbar-brand-img h-100" alt="main_logo">
             <span class="me-1 font-weight-bold">پنل مدیریت</span>
         </a>
     </div>
     <hr class="horizontal dark mt-0">
     <div class="collapse navbar-collapse px-0 w-auto  max-height-vh-100 h-100" id="sidenav-collapse-main">
         <ul class="navbar-nav">
+            @can('read-user')
             <li class="nav-item">
                 <a class="nav-link " href="{{ route('admin.users') }}">
                     <div
@@ -67,6 +68,8 @@
                     <span class="nav-link-text me-1">مدیریت کاربران</span>
                 </a>
             </li>
+            @endcan
+                @can('read-role')
             <li class="nav-item">
                 <a class="nav-link " href="{{ route('admin.roles') }}">
                     <div
@@ -91,6 +94,8 @@
                     <span class="nav-link-text me-1">مدیریت نقش ها</span>
                 </a>
             </li>
+                @endcan
+                @can('read-ticket')
             <li class="nav-item">
                 <a class="nav-link " href="{{ route('admin.tickets') }}">
                     <div
@@ -117,6 +122,8 @@
                     <span class="nav-link-text me-1">مدیریت تیکت ها</span>
                 </a>
             </li>
+                @endcan
+                @can('read-chat')
 
             <li class="nav-item">
                 <a class="nav-link " href="{{ route('admin.chats') }}">
@@ -144,10 +151,11 @@
                     <span class="nav-link-text me-1">مدیریت چت ها</span>
                 </a>
             </li>
+                @endcan
             <hr class="horizontal dark mt-0">
 
             <li class="nav-item">
-                <a class="nav-link " href="../pages/profile.html">
+                <a class="nav-link " href="{{ route('profile') }}">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center ms-2 d-flex align-items-center justify-content-center">
                         <svg width="12px" height="12px" viewBox="0 0 46 42" version="1.1"
@@ -216,6 +224,21 @@
     </div>
 </aside>
 <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ">
+
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show mt-3 shadow-sm border-0" role="alert">
+            <div class="d-flex align-items-center mb-2">
+                <i class="fas fa-exclamation-circle fa-lg me-2"></i>
+                <strong>خطا در ورود اطلاعات:</strong>
+            </div>
+            <ul class="mb-0 ps-4">
+                @foreach ($errors->all() as $error)
+                    <li class="mb-1">{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="بستن"></button>
+        </div>
+    @endif
     <!-- Navbar -->
     <!-- End Navbar -->
     <div class="container-fluid py-4">
@@ -436,7 +459,7 @@
                                                         </div>
                                                         <div class="col-md-6 mb-3">
                                                             <label class="form-label">تکرار رمز عبور</label>
-                                                            <input type="password" name="password_confirmation  "
+                                                            <input type="password" name="password_confirmation"
                                                                    class="form-control">
                                                         </div>
                                                     </div>
