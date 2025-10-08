@@ -242,14 +242,30 @@
                                 <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                     تاریخ ثبت
                                 </th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    عملیات
+                                </th>
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($conversation as $chat)
+                            @foreach($conversations as $chat)
                                 <tr>
                                     <td>{{ $chat->title }}</td>
                                     <td>{{ $chat->user->name }}</td>
                                     <td>{{ \Morilog\Jalali\Jalalian::fromDateTime($chat->created_at)->format('Y/m/d') }}</td>
+                                    <td class="text-center">
+                                        <button
+                                            class="btn btn-sm btn-primary btn-view-conv"
+                                            data-title="{{ $chat->title }}"
+                                            data-url="{{ route('admin.chats.detail', $chat->id) }}"
+                                            data-conv="{{ $chat->id }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#convModal"
+                                            type="button"
+                                        >
+                                            مشاهده
+                                        </button>
+                                    </td>
                                 </tr>
                             @endforeach
                             </tbody>
@@ -260,6 +276,8 @@
         </div>
     </div>
 </main>
+
+
 <div class="fixed-plugin">
     <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
         <i class="fa fa-cog py-2"> </i>
@@ -342,9 +360,295 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="convModal" tabindex="-1" aria-labelledby="convModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content" style="max-height: 90vh;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="convModalLabel">مکالمه</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+            </div>
+            <div class="modal-body">
+                <div id="convMeta" class="mb-3 text-sm text-muted"></div>
+
+                <div class="mb-4">
+                    <h6 class="mb-2">پیام‌ها</h6>
+                    <div id="msgList" class="list-group" style="max-height: 45vh; overflow-y: auto; border:1px solid #eee;"></div>
+                </div>
+
+                <div class="mt-4">
+                    <h6 class="mb-2">ارجاع‌ها</h6>
+                    <div id="refList" class="d-flex flex-column gap-3"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    (function () {
+        const titleEl = document.getElementById('convModalLabel')
+        const msgList = document.getElementById('msgList')
+        const refList = document.getElementById('refList')
+        const convMeta = document.getElementById('convMeta')
 
+        document.querySelectorAll('.btn-view-conv').forEach(btn => {
+            btn.addEventListener('click', () => openConversation(btn))
+        })
 
+        async function openConversation(btn) {
+            const url   = btn.getAttribute('data-url')
+            const title = btn.getAttribute('data-title') || 'مکالمه'
+            const convId = btn.getAttribute('data-conv')
+
+            titleEl.textContent = title
+            convMeta.innerHTML = ''
+            msgList.innerHTML = '<div class="text-center text-muted py-2">در حال بارگذاری…</div>'
+            refList.innerHTML = ''
+
+            try {
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' }})
+                if (!res.ok) {
+                    const t = await res.text().catch(()=> '')
+                    console.error('detail fetch failed', res.status, t)
+                    window.toast?.error('خطا در بارگذاری جزئیات')
+                    throw new Error('LOAD_FAILED')
+                }
+                renderAll(await res.json())
+            } catch (e) {
+                msgList.innerHTML = '<div class="text-danger">خطا در بارگذاری مکالمه.</div>'
+            }
+        }
+
+        function renderAll(data) {
+            convMeta.innerHTML = `
+      <div>کاربر: <strong>${escapeHtml(data.conversation?.user?.name || '-')}</strong></div>
+      <div>عنوان: <span>${escapeHtml(data.conversation?.title || '-')}</span></div>
+    `
+
+            // پیام‌ها + ویس/فایل‌ها
+            msgList.innerHTML = ''
+            ;(data.messages || []).forEach(m => {
+                const side = m.sender_type === 'ai' ? 'end' : 'start'
+                const item = document.createElement('div')
+                item.className = 'list-group-item'
+                item.id = 'msg-' + m.id
+
+                let mediaHtml = ''
+                const media = m.media || []
+                const voices = media.filter(mm => (mm.mime||'').startsWith('audio/'))
+                const files  = media.filter(mm => !((mm.mime||'').startsWith('audio/')))
+
+                if (voices.length) {
+                    mediaHtml += '<div class="mt-2 d-flex flex-column gap-2">'
+                    voices.forEach(v => { mediaHtml += `
+          <audio controls preload="none" style="width:100%">
+            <source src="${v.url}" type="${v.mime}">
+            مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
+          </audio>` })
+                    mediaHtml += '</div>'
+                }
+                if (files.length) {
+                    mediaHtml += '<div class="mt-2 small">فایل‌ها: '
+                    files.forEach((f,idx) => {
+                        mediaHtml += `<a href="${f.url}" class="me-2" target="_blank" rel="noopener">${escapeHtml(f.name||('file'+(idx+1)))}</a>`
+                    })
+                    mediaHtml += '</div>'
+                }
+
+                item.innerHTML = `
+        <div class="d-flex justify-content-${side}">
+          <div class="p-2 rounded ${side==='end' ? 'bg-light' : 'bg-white'}" style="max-width: 90%;">
+            <div class="small text-muted mb-1">${m.sender_type === 'ai' ? '🤖 هوش مصنوعی' : '👤 کاربر'}</div>
+            <div>${escapeHtml(m.content || '')}</div>
+            ${mediaHtml}
+            <div class="mt-1 text-muted" style="font-size:12px">${fmtDate(m.created_at)}</div>
+          </div>
+        </div>
+      `
+                msgList.appendChild(item)
+            })
+
+            renderReferrals(data)
+        }
+
+        function renderReferrals(data) {
+            refList.innerHTML = ''
+            const conversationId = data.conversation?.id
+
+            // داده سرور already asc است؛ اگر لازم شد دوباره sort:
+            const refs = (data.referrals || []).slice().sort((a,b) =>
+                new Date(a.created_at||0) - new Date(b.created_at||0)
+            )
+
+            refs.forEach(r => {
+                const card = document.createElement('div')
+                card.className = 'card'
+
+                // دکمه تخصیص
+                const assignBtnHtml = (!r.assigned_agent_id && r.can_assign_me) ? `
+        <button class="btn btn-sm btn-outline-primary assign-me-btn" data-ref="${r.id}">
+          تخصیص به من
+        </button>` : ''
+
+                // فایل‌های ارجاع (نمایش)
+                let refFilesHtml = ''
+                if ((r.files||[]).length) {
+                    refFilesHtml = '<div class="mt-2 small">فایل‌های پیوست پشتیبان: '
+                    r.files.forEach((f,idx) => {
+                        refFilesHtml += `<a href="${f.url}" target="_blank" rel="noopener" class="me-2">${escapeHtml(f.name||('file'+(idx+1)))}</a>`
+                    })
+                    refFilesHtml += '</div>'
+                }
+
+                // فرم پاسخ + فایل
+                const respondFormHtml = (!r.agent_response && r.can_respond) ? `
+        <form class="mt-3 referral-reply-form" data-ref="${r.id}">
+          <div class="mb-2">
+            <label class="form-label small">پاسخ شما</label>
+            <textarea name="agent_response" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small d-block">فایل‌های پیوست (اختیاری)</label>
+            <input type="file" name="files[]" class="form-control form-control-sm" multiple />
+            <div class="form-text">PDF, تصویر، صوت و … (حداکثر 20MB برای هر فایل)</div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">نوع پاسخ</label>
+            <select name="response_visibility" class="form-select form-select-sm">
+              <option value="public" selected>نمایش برای کاربر</option>
+              <option value="internal">فقط داخلی</option>
+            </select>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-success">ثبت پاسخ</button>
+            ${assignBtnHtml}
+          </div>
+        </form>
+      ` : `
+        <div class="d-flex gap-2">
+          ${assignBtnHtml}
+        </div>
+      `
+
+                card.innerHTML = `
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong>ارجاع به: ${escapeHtml(r.assigned_role || '-')}</strong>
+            <span class="badge bg-${badgeColor(r.status)}">${r.status}</span>
+          </div>
+
+          <div class="mb-2">
+            <div class="text-muted small mb-1">توضیحات کاربر:</div>
+            <div>${escapeHtml(r.description || '-')}</div>
+          </div>
+
+          ${r.agent_response ? `
+            <div class="mt-3 p-2 bg-light rounded">
+              <div class="text-muted small mb-1">پاسخ پشتیبان:</div>
+              <div>${escapeHtml(r.agent_response)}</div>
+              ${refFilesHtml}
+            </div>
+          ` : ''}
+
+          ${respondFormHtml}
+        </div>
+      `
+                refList.appendChild(card)
+
+                // هایلایت پیام trigger
+                if (r.trigger_message_id) {
+                    const el = document.getElementById('msg-' + r.trigger_message_id)
+                    if (el) {
+                        el.style.outline = '2px solid #0d6efd'
+                        el.scrollIntoView({behavior: 'smooth', block: 'center'})
+                        setTimeout(()=> el.style.outline = 'none', 2000)
+                    }
+                }
+            })
+
+            // لیسنرها
+            refList.querySelectorAll('.referral-reply-form').forEach(form => {
+                form.addEventListener('submit', (e) => onSubmitResponse(e, conversationId))
+            })
+            refList.querySelectorAll('.assign-me-btn').forEach(btn => {
+                btn.addEventListener('click', () => onAssignMe(btn, conversationId))
+            })
+        }
+
+        async function onAssignMe(btn, conversationId) {
+            const refId = btn.getAttribute('data-ref')
+            const old = btn.innerText
+            btn.disabled = true; btn.innerText = 'در حال تخصیص...'
+            try {
+                const resp = await fetch(`/admin/referrals/${refId}/assign-me`, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': getCsrfToken() }
+                })
+                if (!resp.ok) {
+                    const t = await resp.text().catch(()=> '')
+                    console.error('assign failed', resp.status, t)
+                    window.toast?.error('خطا در تخصیص')
+                    btn.disabled = false; btn.innerText = old
+                    return
+                }
+                window.toast?.success('برای شما تخصیص داده شد.')
+                await reloadDetails(conversationId)
+            } catch (e) {
+                window.toast?.error('خطای شبکه در تخصیص')
+                btn.disabled = false; btn.innerText = old
+            }
+        }
+
+        async function onSubmitResponse(e, conversationId) {
+            e.preventDefault()
+            const form = e.currentTarget
+            const refId = form.getAttribute('data-ref')
+
+            const btn = form.querySelector('button[type="submit"]')
+            const old = btn.innerText
+            btn.disabled = true; btn.innerText = 'در حال ثبت...'
+
+            try {
+                const fd = new FormData(form) // شامل متن + فایل‌ها + visibility
+                const resp = await fetch(`/admin/referrals/${refId}/respond`, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': getCsrfToken() },
+                    body: fd
+                })
+                if (!resp.ok) {
+                    const t = await resp.text().catch(()=> '')
+                    console.error('respond failed', resp.status, t)
+                    window.toast?.error('ثبت پاسخ ناموفق بود.')
+                    btn.disabled = false; btn.innerText = old
+                    return
+                }
+                window.toast?.success('پاسخ ثبت شد.')
+                await reloadDetails(conversationId)
+            } catch (err) {
+                window.toast?.error('خطای شبکه در ثبت پاسخ')
+                btn.disabled = false; btn.innerText = old
+            }
+        }
+
+        async function reloadDetails(conversationId) {
+            const btn = document.querySelector(`.btn-view-conv[data-conv="${conversationId}"]`)
+            const url = btn ? btn.getAttribute('data-url') : `/admin/chats/${conversationId}/detail`
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } })
+            const data = await res.json()
+            renderAll(data)
+        }
+
+        // Helpers
+        function badgeColor(status){switch(status){case'pending':return'warning';case'assigned':return'info';case'responded':return'success';case'closed':return'secondary';default:return'light'}}
+        function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+        function fmtDate(iso){try{return new Date(iso).toLocaleString('fa-IR')}catch{return iso||''}}
+        function getCsrfToken(){const el=document.querySelector('meta[name="csrf-token"]');return el?el.getAttribute('content'):'{{ csrf_token() }}'}
+    })();
 </script>
+
 </body>
 </html>

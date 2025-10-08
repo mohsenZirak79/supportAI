@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 class Conversation extends Model
 {
     use HasFactory, SoftDeletes;
+
     protected $keyType = 'string';
     public $incrementing = false;
     protected $fillable = ['user_id', 'title', 'status'];
@@ -24,6 +25,7 @@ class Conversation extends Model
     {
         return $this->hasMany(Message::class)->orderBy('created_at');
     }
+
     protected static function boot()
     {
         parent::boot();
@@ -32,5 +34,10 @@ class Conversation extends Model
                 $model->id = Str::uuid(); // تولید UUID خودکار هنگام ایجاد
             }
         });
+    }
+
+    public function referrals()
+    {
+        return $this->hasMany(\App\Domains\Shared\Models\Referral::class, 'conversation_id');
     }
 }

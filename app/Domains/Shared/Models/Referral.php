@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Database\Eloquent\Events\Retrieved; // Import for event
 use Illuminate\Support\Str;
-
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 // For PII encryption
 
-class Referral extends Model
+class Referral extends Model implements HasMedia
 {
+    use InteractsWithMedia;
     use HasFactory, SoftDeletes;
     public $incrementing = false;  // چون id از نوع uuid است
     protected $keyType = 'string'; // کلید اصلی رشته‌ای
@@ -26,7 +28,11 @@ class Referral extends Model
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime'
     ];
-
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('referral_files')
+            ->useDisk('public'); // همون دیسکی که برای message_files داری
+    }
     // Relations
     public function conversation() { return $this->belongsTo(Conversation::class); }
     public function triggerMessage() { return $this->belongsTo(Message::class, 'trigger_message_id'); }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\AdminPanel\Controllers\AdminChatController;
 use App\Domains\Auth\Controllers\WebController;
 use App\Domains\Shared\Models\User;
 use App\Domains\Shared\Controllers\UserController;
@@ -126,7 +127,11 @@ Route::prefix('admin')->group(function () {
     Route::get('/users', [WebController::class, 'showUsers'])->name('admin.users');
     Route::get('/roles', [WebController::class, 'showRoles'])->name('admin.roles');
     Route::get('/tickets', [WebController::class, 'showTickets'])->name('admin.tickets');
-    Route::get('/chats', [WebController::class, 'showChats'])->name('admin.chats');
+
+    Route::get('/chats', [AdminChatController::class, 'index'])->name('admin.chats');
+    Route::get('/chats/{conversation}/detail', [AdminChatController::class, 'detail'])->name('admin.chats.detail');
+    Route::post('/referrals/{referral}/respond', [AdminChatController::class, 'respond'])->name('admin.referrals.respond');
+    Route::post('/referrals/{referral}/assign-me', [AdminChatController::class, 'assignMe'])->name('admin.referrals.assign_me');
     Route::post('/', [WebController::class, 'showAdmin']);
     Route::put('/{id}', [WebController::class, 'showAdmin']);
     Route::delete('/{id}', [WebController::class, 'showAdmin']);
