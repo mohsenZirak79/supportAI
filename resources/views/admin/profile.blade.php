@@ -17,25 +17,11 @@
 <html lang="ar" dir="rtl">
 
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-datatables@latest/dist/vanilla-dataTables.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/vanilla-datatables@latest/dist/vanilla-dataTables.min.js"></script>
-    <title>
-        حساب کاربری
-    </title>
-    <!--     Fonts and icons     -->
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-    <!-- Nucleo Icons -->
-    <link href="../assets/css/nucleo-icons.css" rel="stylesheet" />
-    <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
-    <!-- Font Awesome Icons -->
-    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-    <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
-    <!-- CSS Files -->
-    <link id="pagestyle" href="../assets/css/soft-ui-dashboard.css?v=1.0.3" rel="stylesheet" />
+    @vite(['resources/css/admin.css', 'resources/js/admin.js'])
 </head>
 
 <body class="g-sidenav-show rtl bg-gray-100">
@@ -397,85 +383,5 @@
         </div>
     </div>
 </div>
-<!--   Core JS Files   -->
-<script src="../assets/js/core/popper.min.js"></script>
-<script src="../assets/js/core/bootstrap.min.js"></script>
-<script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-<script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
-<script>
-    var win = navigator.platform.indexOf('Win') > -1;
-    if (win && document.querySelector('#sidenav-scrollbar')) {
-        var options = {
-            damping: '0.5'
-        }
-        Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const table = document.querySelector(".datatable");
-        new DataTable(table, {
-            labels: {
-                placeholder: "جستجو...",
-                perPage: "{select} رکورد در هر صفحه",
-                noRows: "هیچ داده‌ای پیدا نشد",
-                info: "نمایش {start} تا {end} از {rows} رکورد"
-            },
-            perPage: 5, // تعداد رکورد پیش‌فرض
-            perPageSelect: [5, 10, 20, 50]
-        });
-    });
-</script>
-<!-- Github buttons -->
-<script async defer src="https://buttons.github.io/buttons.js"></script>
-<!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-<script src="../assets/js/soft-ui-dashboard.min.js?v=1.0.3"></script>
 </body>
-<style>
-    /* استایل جستجو */
-    .dataTable-input {
-        border-radius: 25px;
-        border: 1px solid #ced4da;
-        padding: 6px 14px;
-        width: 250px;
-        margin-bottom: 15px;
-        transition: all 0.3s;
-    }
-    .dataTable-input:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
-        outline: none;
-    }
-
-    /* استایل جدول */
-    table.dataTable-table {
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    /* استایل دکمه‌های صفحه‌بندی */
-    .dataTable-pagination a {
-        border-radius: 6px;
-        padding: 6px 12px;
-        margin: 0 2px;
-        text-decoration: none;
-        border: 1px solid #dee2e6;
-        color: #0d6efd;
-    }
-    .dataTable-pagination a:hover {
-        background: #0d6efd;
-        color: #fff;
-    }
-    .dataTable-pagination .active a {
-        background: #0d6efd;
-        color: #fff;
-        border-color: #0d6efd;
-    }
-
-    /* تعداد رکورد در صفحه */
-    .dataTable-selector {
-        border-radius: 8px;
-        padding: 4px 8px;
-    }
-</style>
-
 </html>

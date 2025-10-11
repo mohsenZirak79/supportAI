@@ -13,19 +13,54 @@ use Illuminate\Support\Facades\DB;
 class TicketController extends Controller
 {
     // GET /api/v1/tickets
+//    public function index()
+//    {
+//        $tickets = Ticket::where('sender_id', auth()->id())
+//            ->whereNull('parent_id')
+//            ->withCount([
+//                'media as attachments_count' => fn($q) =>
+//                $q->where('collection_name', 'ticket-attachments')
+//            ])
+//            ->latest()
+//            ->cursorPaginate(20);
+//
+//        return TicketResource::collection($tickets);
+//    }
     public function index()
     {
-        $tickets = Ticket::where('sender_id', auth()->id())
+        $tickets = Ticket::query()
+            ->where('sender_id', auth()->id())
             ->whereNull('parent_id')
+            // تعداد پیوست‌ها
             ->withCount([
                 'media as attachments_count' => fn($q) =>
                 $q->where('collection_name', 'ticket-attachments')
             ])
+            // ⬇️ وضعیت مؤثر = وضعیت آخرین پیام کل رشته (خود ریشه یا زیرمجموعه‌ها)
+            ->select('tickets.*')
+            ->selectSub(function ($q) {
+                $q->from('tickets as t2')
+                    ->select('t2.status')
+                    ->whereColumn('t2.root_id', 'tickets.id')
+                    ->orWhereColumn('t2.id', 'tickets.id')
+                    ->orderByDesc('t2.created_at')
+                    ->limit(1);
+            }, 'effective_status')
+            // برای UI مفید است بدانیم آخرین فرستنده چه نقشی بوده:
+            ->selectSub(function ($q) {
+                $q->from('tickets as t3')
+                    ->select('t3.sender_type')
+                    ->whereColumn('t3.root_id', 'tickets.id')
+                    ->orWhereColumn('t3.id', 'tickets.id')
+                    ->orderByDesc('t3.created_at')
+                    ->limit(1);
+            }, 'last_sender_type')
             ->latest()
             ->cursorPaginate(20);
 
         return TicketResource::collection($tickets);
     }
+
 
     // POST /api/v1/tickets
     public function store(Request $request)
@@ -121,6 +156,55 @@ class TicketController extends Controller
     }
 
 
+//    public function show(string $rootId)
+//    {
+//        $rootTicket = Ticket::where('id', $rootId)
+//            ->where('sender_type', 'user')
+//            ->where('sender_id', auth()->id())
+//            ->firstOrFail();
+//
+//    $messages = Ticket::where('root_id', $rootId)
+//        ->with('media')
+//            ->orderBy('created_at')
+//        ->get()
+//        ->map(function ($m) {
+//            $attachments = $m->media
+//                ->where('collection_name', 'ticket-attachments')
+//                ->map(function ($med) {
+//                    return [
+//                        'id'   => $med->id,
+//                        'name' => $med->file_name,
+//                        'mime' => $med->mime_type,
+//                        'size' => (int) $med->size,
+//                        'url'  => $med->getFullUrl(), // ✅ لینک مستقیم
+//                    ];
+//                })->values();
+//
+//            return [
+//                'id'          => $m->id,
+//                'message'     => $m->message,
+//                'sender_type' => $m->sender_type, // user|admin|support|...
+//                'status'      => $m->status,
+//                'created_at'  => $m->created_at,
+//                'attachments' => $attachments,
+//            ];
+//        });
+//
+//    $last = $messages->last();
+//        $supportSenders = ['admin', 'support', 'agent', 'staff', 'operator'];
+//    $canUserReply = $last && in_array(strtolower($last['sender_type']), $supportSenders, true);
+//
+//        $rootTicket->loadCount([
+//            'media as attachments_count' => fn($q) =>
+//            $q->where('collection_name', 'ticket-attachments')
+//        ]);
+//
+//        return response()->json([
+//            'ticket'          => $rootTicket,
+//            'messages'        => $messages,
+//            'can_user_reply'  => $canUserReply,
+//        ]);
+//    }
     public function show(string $rootId)
     {
         $rootTicket = Ticket::where('id', $rootId)
@@ -128,46 +212,38 @@ class TicketController extends Controller
             ->where('sender_id', auth()->id())
             ->firstOrFail();
 
-    $messages = Ticket::where('root_id', $rootId)
-        ->with('media')
+        // ⬇️ هم خود ریشه و هم زیرمجموعه‌ها
+        $messages = Ticket::where(function($q) use ($rootId) {
+            $q->where('root_id', $rootId)->orWhere('id', $rootId);
+        })
+            ->with('media')
             ->orderBy('created_at')
-        ->get()
-        ->map(function ($m) {
-            $attachments = $m->media
-                ->where('collection_name', 'ticket-attachments')
-                ->map(function ($med) {
-                    return [
-                        'id'   => $med->id,
-                        'name' => $med->file_name,
-                        'mime' => $med->mime_type,
-                        'size' => (int) $med->size,
-                        'url'  => $med->getFullUrl(), // ✅ لینک مستقیم
-                    ];
-                })->values();
+            ->get()
+            ->map(function ($m) {
+                return [
+                    'id'          => $m->id,
+                    'message'     => $m->message,
+                    'sender_type' => $m->sender_type, // user | admin | support | ...
+                    'status'      => $m->status,
+                    'created_at'  => $m->created_at,
+                    'attachments' => $m->media
+                        ->where('collection_name','ticket-attachments')
+                        ->map(fn($med)=>[
+                            'id'=>$med->id,'name'=>$med->file_name,'mime'=>$med->mime_type,
+                            'size'=>(int)$med->size,'url'=>$med->getFullUrl()
+                        ])->values(),
+                ];
+            });
 
-            return [
-                'id'          => $m->id,
-                'message'     => $m->message,
-                'sender_type' => $m->sender_type, // user|admin|support|...
-                'status'      => $m->status,
-                'created_at'  => $m->created_at,
-                'attachments' => $attachments,
-            ];
-        });
+        $last = $messages->last();
+        $canUserReply = $last && in_array(strtolower($last['sender_type']), ['admin','support','agent','staff','operator'], true);
 
-    $last = $messages->last();
-        $supportSenders = ['admin', 'support', 'agent', 'staff', 'operator'];
-    $canUserReply = $last && in_array(strtolower($last['sender_type']), $supportSenders, true);
-
-        $rootTicket->loadCount([
-            'media as attachments_count' => fn($q) =>
-            $q->where('collection_name', 'ticket-attachments')
-        ]);
+        $rootTicket->loadCount(['media as attachments_count'=>fn($q)=>$q->where('collection_name','ticket-attachments')]);
 
         return response()->json([
-            'ticket'          => $rootTicket,
-            'messages'        => $messages,
-            'can_user_reply'  => $canUserReply,
+            'ticket'         => $rootTicket,
+            'messages'       => $messages,       // شامل پیام ریشه است
+            'can_user_reply' => $canUserReply,
         ]);
     }
 

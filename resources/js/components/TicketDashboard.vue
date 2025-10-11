@@ -1,29 +1,29 @@
 <template>
     <div class="ticket-app" dir="rtl">
         <!-- Toast Container -->
-<!--        <div class="toast-container">
-            <div
-                v-for="toast in toasts"
-                :key="toast.id"
-                :class="`toast toast-${toast.type}`"
-                @click="removeToast(toast.id)"
-            >
-                <svg v-if="toast.type === 'success'" class="w-5 h-5" fill="none" stroke="currentColor"
-                     viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                <svg v-else-if="toast.type === 'error'" class="w-5 h-5" fill="none" stroke="currentColor"
-                     viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                </svg>
-                <span>{{ toast.message }}</span>
-            </div>
-        </div>-->
+        <!--        <div class="toast-container">
+                    <div
+                        v-for="toast in toasts"
+                        :key="toast.id"
+                        :class="`toast toast-${toast.type}`"
+                        @click="removeToast(toast.id)"
+                    >
+                        <svg v-if="toast.type === 'success'" class="w-5 h-5" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <svg v-else-if="toast.type === 'error'" class="w-5 h-5" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <span>{{ toast.message }}</span>
+                    </div>
+                </div>-->
 
         <!-- Header -->
         <header class="bg-white shadow-sm border-b">
@@ -66,7 +66,8 @@
                             class="absolute inset-0 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity bg-white/10"></span>
                         <span class="relative flex items-center space-x-2 space-x-reverse">
                           <svg class="w-10 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 4v16m8-8H4"></path>
                           </svg>
                           <span>تیکت جدید</span>
             </span>
@@ -264,67 +265,82 @@
         </div>
 
         <!-- Thread Modal -->
+        <!-- Thread Modal -->
         <transition name="fade">
             <div
                 v-if="selectedThread"
-                class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50"
+                class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
                 @click.self="closeThreadModal"
             >
+                <!-- ظرف مدال: سه ردیف -->
                 <div
-                    class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[85vh] overflow-hidden relative"
+                    class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] overflow-hidden grid grid-rows-[auto,1fr,auto] relative"
                     @click.stop
                 >
-                    <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-                        <div class="flex justify-between items-center">
-                            <h2 class="text-xl font-bold text-gray-900">گفتگوی تیکت: {{ selectedThread.title }}</h2>
-                            <button
-                                @click="closeThreadModal"
-                                class="absolute top-4 left-4 text-red-500 hover:text-red-700 transition-transform transform hover:scale-110 close-btn"
-                                aria-label="close"
-                                style="width: 36px; height: 36px;"
-                            >
-                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                          d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-
-                        </div>
+                    <!-- Header -->
+                    <div class="p-5 border-b border-gray-200 flex items-center justify-center relative">
+                        <button
+                            @click="closeThreadModal"
+                            class="absolute top-4 left-4 close-btn text-red-500 hover:text-red-700"
+                            aria-label="close"
+                        >
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        <h2 class="text-lg md:text-xl font-extrabold text-gray-900 text-center">
+                            گفتگوی تیکت: {{ selectedThread.title }}
+                        </h2>
                     </div>
 
-                    <div class="p-6 space-y-6 max-h-[65vh] overflow-y-auto bg-gray-50">
-                        <div v-for="msg in threadMessages" :key="msg.id" class="flex items-start">
-                            <div class="flex-shrink-0 mt-1">
-                                <div :class="[
-                                          'w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium',
-                                          isSupport(msg.sender_type) ? 'bg-green-500' : 'bg-blue-500'
-                                        ]">
+                    <!-- Messages Scroll Area -->
+                    <div class="overflow-y-auto bg-gray-50 p-4 md:p-6" id="thread-scroll">
+                        <div v-for="msg in threadMessages" :key="msg.id" class="mb-4">
+                            <div class="flex items-start gap-3" :class="isSupport(msg.sender_type) ? 'flex-row' : 'flex-row-reverse'">
+                                <!-- آواتار ساده: «پشتیبان» یا «شما» -->
+                                <div
+                                    class="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                                    :class="isSupport(msg.sender_type) ? 'bg-emerald-500' : 'bg-blue-500'"
+                                >
                                     {{ isSupport(msg.sender_type) ? 'پشتیبان' : 'شما' }}
                                 </div>
-                            </div>
-                            <div class="ml-4 flex-1">
+
+                                <!-- بابل پیام -->
                                 <div
-                                    :class="msg.sender_type === 'user' ? 'bg-blue-50 border border-blue-200 text-blue-800' : 'bg-green-50 border border-green-200 text-green-800'"
-                                    class="rounded-lg p-4 shadow-sm">
-                                    <p>{{ msg.message }}</p>
-                                    <div v-if="msg.attachments && msg.attachments.length" class="mt-2 text-sm text-gray-600">
-                                        <div v-for="file in msg.attachments" :key="file.id" class="flex items-center gap-2">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                                            </svg>
-                                            <a :href="file.url" target="_blank" class="hover:underline">{{ file.name || 'فایل پیوست' }}</a>
-                                            <span class="text-xs text-gray-400">{{ prettySize(file.size) }}</span>
-                                        </div>
+                                    class="max-w-[80%] rounded-lg border p-4"
+                                    :class="isSupport(msg.sender_type)
+                      ? 'bg-green-50 border-green-200 text-green-800'
+                      : 'bg-blue-50 border-blue-200 text-blue-800'"
+                                >
+                                    <p class="leading-7 whitespace-pre-wrap break-words">{{ msg.message }}</p>
+
+                                    <!-- پیوست‌ها (چیپ‌های جمع‌وجور) -->
+                                    <div v-if="msg.attachments && msg.attachments.length" class="mt-3 flex flex-wrap gap-2">
+                                        <template v-for="att in (msg.showAllAtt ? msg.attachments : msg.attachments.slice(0,6))" :key="att.id">
+                                            <a :href="att.url" target="_blank" class="file-chip file-chip-link" :title="att.name">
+                                                <span class="mr-1">{{ getFileEmoji(att.mime) }}</span>
+                                                <span class="truncate max-w-[140px] inline-block align-middle">{{ att.name || 'فایل' }}</span>
+                                            </a>
+                                        </template>
+                                        <button
+                                            v-if="msg.attachments.length > 6"
+                                            class="file-chip file-chip-muted"
+                                            @click="msg.showAllAtt = !msg.showAllAtt"
+                                        >
+                                            {{ msg.showAllAtt ? 'کمتر' : `+${msg.attachments.length - 6} بیشتر` }}
+                                        </button>
                                     </div>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1">{{ formatDate(msg.created_at) }}</p>
                             </div>
+
+                            <p class="text-xs text-gray-400 mt-1" :class="isSupport(msg.sender_type) ? 'text-left' : 'text-right'">
+                                {{ formatDate(msg.created_at) }}
+                            </p>
                         </div>
                     </div>
 
-                    <!-- Reply Form -->
-                    <div v-if="canReplyToThread" class="p-4 md:p-6 border-t bg-white">
+                    <!-- Reply Composer (همیشه در دید) -->
+                    <div v-if="canReplyToThread" class="border-t bg-white p-4 md:p-6">
                         <form @submit.prevent="submitThreadReply" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">پاسخ شما</label>
@@ -363,21 +379,19 @@
                                 >
                             </div>
 
-                            <!-- File chips (compact) -->
-                            <div v-if="replyFiles.length" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                            <!-- فایل‌های انتخاب‌شده به‌صورت چیپ -->
+                            <div v-if="replyFiles.length" class="flex flex-wrap gap-2 max-h-28 overflow-y-auto">
                                 <template v-for="(file, idx) in replyFilesLimited" :key="file.name + idx">
-        <span class="file-chip" :title="file.name">
-          <span class="mr-1">{{ getFileEmoji(file.type) }}</span>
-          <span class="truncate max-w-[160px] inline-block align-middle">{{ file.name }}</span>
-          <button type="button" class="chip-x" @click="removeReplyFile(idx)" aria-label="remove">×</button>
-        </span>
+              <span class="file-chip" :title="file.name">
+                <span class="mr-1">{{ getFileEmoji(file.type) }}</span>
+                <span class="truncate max-w-[160px] inline-block align-middle">{{ file.name }}</span>
+                <button type="button" class="chip-x" @click="removeReplyFile(idx)" aria-label="remove">×</button>
+              </span>
                                 </template>
-
-                                <!-- +N more -->
                                 <span v-if="replyFilesMoreCount > 0" class="file-chip file-chip-muted cursor-pointer"
                                       @click="showAllReplyFiles = !showAllReplyFiles">
-        +{{ replyFilesMoreCount }} فایل دیگر
-      </span>
+              +{{ replyFilesMoreCount }} فایل دیگر
+            </span>
                             </div>
 
                             <div class="flex justify-end gap-3">
@@ -389,16 +403,18 @@
                                     type="submit"
                                     :disabled="isSubmittingReply || !threadReplyMessage.trim()"
                                     class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
-               text-white px-5 py-2 rounded-lg font-medium disabled:opacity-50"
+                     text-white px-5 py-2 rounded-lg font-medium disabled:opacity-50"
                                 >
                                     {{ isSubmittingReply ? 'در حال ارسال...' : 'ارسال پاسخ' }}
                                 </button>
                             </div>
                         </form>
                     </div>
+                    <!-- /Composer -->
                 </div>
             </div>
         </transition>
+
 
         <!-- New Ticket Modal -->
         <transition name="fade">
@@ -544,7 +560,8 @@ import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
 import axios from 'axios';
 
 // --- State ---
-import { useToast } from 'vue-toast-notification'
+import {useToast} from 'vue-toast-notification'
+
 const toast = useToast();
 const showNewTicketForm = ref(false);
 const loading = ref(true);
@@ -559,6 +576,8 @@ const isSubmittingReply = ref(false);
 const statusFilter = ref('');
 const departmentFilter = ref('');
 const searchQuery = ref('');
+const showAllReplyFiles = ref(false);
+const replyPreviewLimit = 12; // حداکثر چیپ‌های اولیه
 const newTicket = ref({
     title: '',
     message: '',
@@ -571,15 +590,30 @@ const departments = ref([]);
 const tickets = ref([]);
 
 const anyModalOpen = computed(() => !!selectedThread.value || !!showNewTicketForm.value);
+const replyFilesLimited = computed(() =>
+    showAllReplyFiles.value ? replyFiles.value : replyFiles.value.slice(0, replyPreviewLimit)
+);
+const replyFilesMoreCount = computed(() =>
+    Math.max(0, replyFiles.value.length - replyPreviewLimit)
+);
 const handleEsc = (e) => {
     if (e.key === 'Escape') {
         if (selectedThread.value) closeThreadModal();
         if (showNewTicketForm.value) closeNewTicketForm();
     }
 };
+const getFileEmoji = (mimeOrType = '') => {
+    const t = String(mimeOrType).toLowerCase();
+    if (t.startsWith('image/')) return '🖼️';
+    if (t.includes('pdf')) return '📄';
+    if (t.includes('word') || t.includes('doc')) return '📝';
+    if (t.includes('zip') || t.includes('rar')) return '📦';
+    if (t.includes('sheet') || t.includes('excel') || t.includes('csv')) return '📊';
+    return '📎';
+};
 const prettySize = (bytes) => {
     if (!bytes) return '';
-    const k = 1024, sizes = ['بایت','کیلوبایت','مگابایت','گیگابایت'];
+    const k = 1024, sizes = ['بایت', 'کیلوبایت', 'مگابایت', 'گیگابایت'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
 };
@@ -628,7 +662,7 @@ const fetchDepartments = async () => {
 const fetchTickets = async () => {
     loading.value = true;
     try {
-        const { data } = await axios.get('/api/v1/tickets');
+        const {data} = await axios.get('/api/v1/tickets');
         tickets.value = data?.data ?? data ?? [];
     } catch (e) {
         toast.error('خطا در بارگذاری تیکت‌ها');
@@ -642,8 +676,12 @@ const viewThread = async (rootId) => {
     try {
         const { data } = await axios.get(`/api/v1/tickets/${rootId}`);
         selectedThread.value = data.ticket;
-        threadMessages.value = data.messages || [];      // شامل پیام ریشه هم هست
-        canUserReply.value   = !!data.can_user_reply;    // اجازه پاسخ از بک‌اند
+        threadMessages.value = (data.messages || []).map(m => ({ ...m, showAllAtt: false }));
+        canUserReply.value   = !!data.can_user_reply;
+
+        // اسکرول به بالا یا پایین؟ (اینجا اجازه می‌دهیم کاربر از ابتدا بخواند)
+        // اگر خواستی پایین برود:
+        // nextTick(()=>{ const el = document.getElementById('thread-scroll'); if(el) el.scrollTop = el.scrollHeight; });
     } catch (e) {
         toast.error('خطا در بارگذاری گفتگو');
     }
@@ -707,7 +745,7 @@ const submitThreadReply = async () => {
     try {
         const formData = new FormData();
         formData.append('message', threadReplyMessage.value);
-        replyFiles.value.forEach(f => formData.append('files[]', f)); // بک‌اند جدید files[] را می‌خواند
+        replyFiles.value.forEach(f => formData.append('files[]', f)); // بک‌اند files[] را می‌پذیرد
 
         await axios.post(`/api/v1/tickets/${selectedThread.value.id}/messages`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
@@ -716,7 +754,10 @@ const submitThreadReply = async () => {
         toast.success('پاسخ شما ارسال شد');
         threadReplyMessage.value = '';
         replyFiles.value = [];
-        await viewThread(selectedThread.value.id); // رفرش گفتگو
+        showAllReplyFiles.value = false;
+
+        // رفرش گفتگو (آخرین پاسخ پشتیبان بعداً اجازه را تغییر می‌دهد)
+        await viewThread(selectedThread.value.id);
     } catch (e) {
         const msg = e?.response?.data?.message || 'خطا در ارسال پاسخ';
         toast.error(msg);
@@ -762,7 +803,7 @@ const submitNewTicket = async () => {
         });
 
         closeNewTicketForm();
-        newTicket.value = { title: '', message: '', department: '', priority: 'normal' };
+        newTicket.value = {title: '', message: '', department: '', priority: 'normal'};
         selectedFiles.value = [];
 
         toast.success('تیکت شما با موفقیت ثبت شد.');
@@ -1157,4 +1198,46 @@ header.bg-white {
 .close-btn:hover {
     transform: rotate(90deg) scale(1.1);
 }
+
+.file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    max-width: 220px;
+    padding: .35rem .6rem;
+    border-radius: 9999px;
+    font-size: .78rem;
+    line-height: 1;
+    background: #f1f5f9;       /* slate-100 */
+    color: #334155;            /* slate-700 */
+    border: 1px solid #e2e8f0; /* slate-200 */
+}
+.file-chip-link { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; } /* indigo */
+.file-chip-muted { background: #fafafa; color: #64748b; border-color: #e5e7eb; cursor: pointer; }
+
+.file-chip .truncate { vertical-align: middle; }
+
+.chip-x {
+    margin-inline-start: .25rem;
+    border: 0; background: transparent; color: #ef4444;
+    font-weight: 700; line-height: 1; cursor: pointer;
+}
+.chip-x:hover { color: #b91c1c; }
+.file-chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    max-width: 220px; padding: .35rem .6rem; border-radius: 9999px;
+    font-size: .78rem; line-height: 1;
+    background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;
+}
+.file-chip-link { background:#eef2ff; color:#4338ca; border-color:#c7d2fe; }
+.file-chip-muted { background:#fafafa; color:#64748b; border-color:#e5e7eb; cursor:pointer; }
+.chip-x { margin-inline-start:.25rem; border:0; background:transparent; color:#ef4444; font-weight:700; cursor:pointer; }
+.chip-x:hover { color:#b91c1c; }
+
+/* رفع هرگونه لاین/بار رنگی کنار بابل‌ها */
+.bg-green-50, .bg-blue-50 { position: relative; }
+.bg-green-50::before, .bg-blue-50::before { content:none; }
+/* اگر قبلاً pseudo-element داشتی که نوار ایجاد می‌کرد، این خط آن را حذف می‌کند */
+
+.close-btn { display:flex; align-items:center; justify-content:center; background:transparent; }
 </style>
