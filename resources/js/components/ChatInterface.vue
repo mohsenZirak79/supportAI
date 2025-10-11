@@ -118,16 +118,17 @@
                     <!-- حالت متنی -->
                     <div v-else class="text-input-area">
                     <textarea
-                        v-model="inputMessage"
-                        placeholder="پیام خود را بنویسید..."
+                        ref="msgInput"
+                        v-model="form.message"
+                        class="chat-input"
+                        placeholder="پیام خود را بنویسید…"
                         rows="1"
-                        @input="autoResize"
-                        ref="textarea"
-                        :disabled="loading"
-                    ></textarea>
+                        @input="autoGrow"
+                        @keydown="onKeydown"
+                    />
                         <div class="input-actions">
                             <button type="button" @click="startRecording" class="mic-btn" :disabled="loading">🎤</button>
-                            <button type="submit" :disabled="!inputMessage.trim() || loading">ارسال</button>
+                            <button class="btn btn-primary" @click="sendMessage">ارسال</button>
                         </div>
                     </div>
                 </form>
@@ -157,7 +158,7 @@
 
 
 <script setup>
-import {ref, computed, nextTick, onMounted, onUnmounted} from 'vue';
+import {ref, computed, nextTick, onMounted, onUnmounted, watch} from 'vue';
 import HandoffModal from './HandoffModal.vue';
 import AiAnswer from './AiAnswer.vue'
 import { useToast } from 'vue-toast-notification'
@@ -769,9 +770,10 @@ const stopSpeak = () => {
 }
 
 .chat-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 600;
     cursor: pointer;
+    color: white;
 }
 
 .chat-container {
@@ -1355,4 +1357,15 @@ const stopSpeak = () => {
     --bg: rgba(238,242,255,.85);
     --hover: rgba(224,231,255,1);
 }
+.chat-input{
+    width: 100%;
+    min-height: 56px;       /* اندازه اولیه */
+    max-height: 220px;      /* محدودیت رشد */
+    overflow: hidden;       /* بدون اسکرول عمودی */
+    resize: none;           /* کاربر نتواند دستی تغییر دهد */
+    line-height: 1.6;
+    border-radius: 14px;
+    padding: 12px 14px;
+}
+
 </style>

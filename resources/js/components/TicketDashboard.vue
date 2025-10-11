@@ -249,13 +249,14 @@
                             </div>
                         </div>
                         <p class="text-gray-600 mb-4">{{ ticket.message.substring(0, 150) }}...</p>
-                        <div v-if="ticket.attachments && ticket.attachments.length > 0"
+
+                        <div v-if="(ticket.attachments_count ?? 0) > 0"
                              class="flex items-center text-sm text-gray-500 mb-4">
                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                             </svg>
-                            {{ ticket.attachments.length }} فایل پیوست
+                            {{ ticket.attachments_count }} فایل پیوست
                         </div>
                     </div>
                 </div>
@@ -294,10 +295,11 @@
                     <div class="p-6 space-y-6 max-h-[65vh] overflow-y-auto bg-gray-50">
                         <div v-for="msg in threadMessages" :key="msg.id" class="flex items-start">
                             <div class="flex-shrink-0 mt-1">
-                                <div :class="`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                  msg.sender_type === 'user' ? 'bg-blue-500' : 'bg-green-500'
-                }`">
-                                    {{ msg.sender_type === 'user' ? 'پشتیبان' : 'شما' }}
+                                <div :class="[
+                                          'w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium',
+                                          isSupport(msg.sender_type) ? 'bg-green-500' : 'bg-blue-500'
+                                        ]">
+                                    {{ isSupport(msg.sender_type) ? 'پشتیبان' : 'شما' }}
                                 </div>
                             </div>
                             <div class="ml-4 flex-1">
@@ -305,15 +307,14 @@
                                     :class="msg.sender_type === 'user' ? 'bg-blue-50 border border-blue-200 text-blue-800' : 'bg-green-50 border border-green-200 text-green-800'"
                                     class="rounded-lg p-4 shadow-sm">
                                     <p>{{ msg.message }}</p>
-                                    <div v-if="msg.attachments && msg.attachments.length"
-                                         class="mt-2 text-sm text-gray-600">
-                                        <div v-for="file in msg.attachments" :key="file.id" class="flex items-center">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
-                                                 viewBox="0 0 24 24">
+                                    <div v-if="msg.attachments && msg.attachments.length" class="mt-2 text-sm text-gray-600">
+                                        <div v-for="file in msg.attachments" :key="file.id" class="flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                       d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                                             </svg>
-                                            {{ file.name }}
+                                            <a :href="file.url" target="_blank" class="hover:underline">{{ file.name || 'فایل پیوست' }}</a>
+                                            <span class="text-xs text-gray-400">{{ prettySize(file.size) }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -323,7 +324,7 @@
                     </div>
 
                     <!-- Reply Form -->
-                    <div v-if="canReplyToThread" class="p-6 border-t bg-white">
+                    <div v-if="canReplyToThread" class="p-4 md:p-6 border-t bg-white">
                         <form @submit.prevent="submitThreadReply" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">پاسخ شما</label>
@@ -332,10 +333,13 @@
                                     rows="3"
                                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     placeholder="پاسخ خود را بنویسید..."
+                                    @keydown.ctrl.enter.prevent="submitThreadReply"
                                     required
                                 ></textarea>
+                                <p class="text-xs text-gray-400 mt-1">Ctrl + Enter برای ارسال</p>
                             </div>
-                            <!-- File Upload for Reply -->
+
+                            <!-- Dropzone -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">📎 فایل‌های پیوست</label>
                                 <div
@@ -347,6 +351,7 @@
                                     @click="$refs.replyFileInput.click()"
                                 >
                                     <p class="text-gray-600">فایل‌ها را اینجا بکشید یا کلیک کنید</p>
+                                    <p class="text-xs text-gray-400 mt-1">حداکثر 10 فایل، هر کدام تا 5 مگابایت</p>
                                 </div>
                                 <input
                                     type="file"
@@ -357,35 +362,38 @@
                                     accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
                                 >
                             </div>
-                            <!-- Selected Files Preview -->
-                            <transition-group name="slide" tag="div" class="space-y-2">
-                                <div
-                                    v-for="(file, index) in replyFiles"
-                                    :key="file.name + index"
-                                    class="flex items-center justify-between bg-gray-50 p-2 rounded-lg"
+
+                            <!-- File chips (compact) -->
+                            <div v-if="replyFiles.length" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                                <template v-for="(file, idx) in replyFilesLimited" :key="file.name + idx">
+        <span class="file-chip" :title="file.name">
+          <span class="mr-1">{{ getFileEmoji(file.type) }}</span>
+          <span class="truncate max-w-[160px] inline-block align-middle">{{ file.name }}</span>
+          <button type="button" class="chip-x" @click="removeReplyFile(idx)" aria-label="remove">×</button>
+        </span>
+                                </template>
+
+                                <!-- +N more -->
+                                <span v-if="replyFilesMoreCount > 0" class="file-chip file-chip-muted cursor-pointer"
+                                      @click="showAllReplyFiles = !showAllReplyFiles">
+        +{{ replyFilesMoreCount }} فایل دیگر
+      </span>
+                            </div>
+
+                            <div class="flex justify-end gap-3">
+                                <button type="button" class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
+                                        @click="threadReplyMessage=''; replyFiles=[];">
+                                    پاک‌سازی
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="isSubmittingReply || !threadReplyMessage.trim()"
+                                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
+               text-white px-5 py-2 rounded-lg font-medium disabled:opacity-50"
                                 >
-                                    <div class="flex items-center space-x-2 space-x-reverse">
-                                        <div class="text-lg">{{ getFileIcon(file.type) }}</div>
-                                        <span class="text-sm">{{ file.name }}</span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        @click="removeReplyFile(index)"
-                                        class="text-red-500 hover:text-red-700"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </transition-group>
-                            <button
-                                type="submit"
-                                class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                            >
-                                ارسال پاسخ
-                            </button>
+                                    {{ isSubmittingReply ? 'در حال ارسال...' : 'ارسال پاسخ' }}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -569,6 +577,22 @@ const handleEsc = (e) => {
         if (showNewTicketForm.value) closeNewTicketForm();
     }
 };
+const prettySize = (bytes) => {
+    if (!bytes) return '';
+    const k = 1024, sizes = ['بایت','کیلوبایت','مگابایت','گیگابایت'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+};
+// Helper: شمارش پیوست‌ بر اساس شکل‌های مختلف ریسپانس
+const getAttachCount = (t) => {
+    if (!t) return 0;
+    // ترتیب fallback: attachments_count -> attachments.length -> media_count -> files_count -> 0
+    if (typeof t.attachments_count === 'number') return t.attachments_count;
+    if (Array.isArray(t.attachments)) return t.attachments.length;
+    if (typeof t.media_count === 'number') return t.media_count;
+    if (typeof t.files_count === 'number') return t.files_count;
+    return 0;
+};
 
 const lockBodyScroll = (lock) => {
     if (lock) {
@@ -604,25 +628,60 @@ const fetchDepartments = async () => {
 const fetchTickets = async () => {
     loading.value = true;
     try {
-        const response = await axios.get('/api/v1/tickets');
-        tickets.value = response.data.data;
-    } catch (error) {
+        const { data } = await axios.get('/api/v1/tickets');
+        tickets.value = data?.data ?? data ?? [];
+    } catch (e) {
         toast.error('خطا در بارگذاری تیکت‌ها');
     } finally {
         loading.value = false;
     }
 };
+const canUserReply = ref(false);
 
-// --- Thread Management ---
 const viewThread = async (rootId) => {
     try {
-        const response = await axios.get(`/api/v1/tickets/${rootId}`);
-        selectedThread.value = response.data.ticket;
-        threadMessages.value = response.data.messages;
-    } catch (error) {
+        const { data } = await axios.get(`/api/v1/tickets/${rootId}`);
+        selectedThread.value = data.ticket;
+        threadMessages.value = data.messages || [];      // شامل پیام ریشه هم هست
+        canUserReply.value   = !!data.can_user_reply;    // اجازه پاسخ از بک‌اند
+    } catch (e) {
         toast.error('خطا در بارگذاری گفتگو');
     }
 };
+const canReplyToThread = computed(() =>
+    !!canUserReply.value && selectedThread.value?.status !== 'closed'
+);
+
+// --- Thread Management ---
+// const viewThread = async (rootId) => {
+//     try {
+//         const response = await axios.get(`/api/v1/tickets/${rootId}`);
+//         const t = response?.data?.ticket ?? {};
+//         const msgs = response?.data?.messages ?? [];
+//
+//         selectedThread.value = t;
+//
+//         // پیام ریشه (اولین تیکت) را بساز و به ابتدای لیست اضافه کن
+//         const rootMessage = {
+//             id: `root-${t.id}`,
+//             message: t.message,
+//             // اگر سمت بک‌اند نوع فرستنده را مشخص می‌کند از همان استفاده کن، در غیر اینصورت 'customer'
+//             sender_type: t.sender_type || 'customer',
+//             created_at: t.created_at,
+//             // اگر بک‌اند attachments را برنمی‌گرداند، حداقل count داریم؛
+//             // در UI نمایش نام فایل لازم نیست، پس آرایه خالی مشکلی ایجاد نمی‌کند
+//             attachments: Array.isArray(t.attachments) ? t.attachments : [],
+//         };
+//
+//         threadMessages.value = [rootMessage, ...msgs];
+//
+//         // اسکرول به ابتدای گفتگو
+//         // (اختیاری: اگر container خاصی داری، می‌تونی با nextTick به بالا اسکرولش کنی)
+//     } catch (error) {
+//         toast.error('خطا در بارگذاری گفتگو');
+//     }
+// };
+
 
 const closeThreadModal = () => {
     selectedThread.value = null;
@@ -631,30 +690,41 @@ const closeThreadModal = () => {
     replyFiles.value = [];
 };
 
-const canReplyToThread = computed(() => {
-    if (threadMessages.value.length === 0) return false;
-    const lastMessage = threadMessages.value[threadMessages.value.length - 1];
-    return lastMessage.sender_type === 'user' && lastMessage.status !== 'closed';
-});
+// const canReplyToThread = computed(() => {
+//     if (threadMessages.value.length === 0) return false;
+//     const lastMessage = threadMessages.value[threadMessages.value.length - 1];
+//     return lastMessage.sender_type === 'user' && lastMessage.status !== 'closed';
+// });
 
 const submitThreadReply = async () => {
     if (!selectedThread.value) return;
+    if (!canReplyToThread.value) {
+        toast.error('بعد از دریافت پاسخ پشتیبانی می‌توانید جواب بدهید.');
+        return;
+    }
+
+    isSubmittingReply.value = true;
     try {
         const formData = new FormData();
         formData.append('message', threadReplyMessage.value);
-        replyFiles.value.forEach(file => formData.append('files[]', file));
+        replyFiles.value.forEach(f => formData.append('files[]', f)); // بک‌اند جدید files[] را می‌خواند
 
         await axios.post(`/api/v1/tickets/${selectedThread.value.id}/messages`, formData, {
-            headers: {'Content-Type': 'multipart/form-data'}
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
+
         toast.success('پاسخ شما ارسال شد');
-        await viewThread(selectedThread.value.id);
         threadReplyMessage.value = '';
         replyFiles.value = [];
-    } catch (error) {
-        toast.error('خطا در ارسال پاسخ');
+        await viewThread(selectedThread.value.id); // رفرش گفتگو
+    } catch (e) {
+        const msg = e?.response?.data?.message || 'خطا در ارسال پاسخ';
+        toast.error(msg);
+    } finally {
+        isSubmittingReply.value = false;
     }
 };
+
 
 // --- File Handling for Reply ---
 const handleFileSelectReply = (event) => {
@@ -678,21 +748,35 @@ const submitNewTicket = async () => {
         formData.append('title', newTicket.value.title);
         formData.append('message', newTicket.value.message);
         formData.append('department', newTicket.value.department);
-        selectedFiles.value.forEach(file => formData.append('files[]', file));
+        if (newTicket.value.priority) formData.append('priority', newTicket.value.priority);
+        selectedFiles.value.forEach(f => formData.append('files[]', f));
 
-        const response = await axios.post('/api/v1/tickets', formData, {
+        const res = await axios.post('/api/v1/tickets', formData, {
             headers: {'Content-Type': 'multipart/form-data'}
         });
 
-        tickets.value.unshift(response.data);
+        const created = res?.data?.data ?? res?.data ?? {};
+        tickets.value.unshift({
+            ...created,
+            attachments_count: created.attachments_count ?? (selectedFiles.value?.length || 0),
+        });
+
         closeNewTicketForm();
+        newTicket.value = { title: '', message: '', department: '', priority: 'normal' };
+        selectedFiles.value = [];
+
         toast.success('تیکت شما با موفقیت ثبت شد.');
     } catch (error) {
-        toast.error('خطا در ثبت تیکت');
+        const msg =
+            error?.response?.data?.message
+            ?? (error?.response?.data?.errors && Object.values(error.response.data.errors)[0]?.[0])
+            ?? 'خطا در ثبت تیکت';
+        toast.error(msg);
     } finally {
         isSubmittingTicket.value = false;
     }
 };
+
 
 const closeNewTicketForm = () => {
     showNewTicketForm.value = false;
@@ -780,6 +864,8 @@ const getPriorityClass = (priority) => {
     };
     return map[priority] || 'prio-normal';
 };
+const isSupport = (t) => ['admin','support','agent','staff','operator']
+    .includes(String(t || '').toLowerCase());
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);

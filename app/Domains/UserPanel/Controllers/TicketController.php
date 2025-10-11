@@ -7,6 +7,8 @@ use App\Domains\Shared\Models\Ticket;
 use App\Http\Resources\TicketResource;
 use Illuminate\Http\Request;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class TicketController extends Controller
 {
@@ -15,7 +17,10 @@ class TicketController extends Controller
     {
         $tickets = Ticket::where('sender_id', auth()->id())
             ->whereNull('parent_id')
-            ->with(['replies' => fn($q) => $q->orderBy('created_at')])
+            ->withCount([
+                'media as attachments_count' => fn($q) =>
+                $q->where('collection_name', 'ticket-attachments')
+            ])
             ->latest()
             ->cursorPaginate(20);
 
@@ -26,32 +31,41 @@ class TicketController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'message' => 'required|string',
+            'title'      => 'required|string|max:255',
+            'message'    => 'required|string',
             'department' => 'required|in:support_finance,support_website,support_sales,support_admin',
-            'priority' => 'nullable|in:low,normal,high,urgent'
+            'priority'   => 'nullable|in:low,normal,high,urgent'
         ]);
+
+        $id = (string) Str::uuid(); // ✅ یکبار بساز
 
         $ticket = Ticket::create([
-            'id' => \Illuminate\Support\Str::uuid(),
-            'root_id' => \Illuminate\Support\Str::uuid(),
-            'title' => $validated['title'],
-            'message' => $validated['message'],
+            'id'          => $id,
+            'root_id'     => $id,                 // ✅ مهم: ریشه = خودش
+            'title'       => $validated['title'],
+            'message'     => $validated['message'],
             'sender_type' => 'user',
-            'sender_id' => auth()->id(),
-            'department' => $validated['department'],
-            'priority' => $validated['priority'] ?? 'normal'
+            'sender_id'   => auth()->id(),
+            'department'  => $validated['department'],
+            'priority'    => $validated['priority'] ?? 'normal'
         ]);
 
-        // آپلود فایل‌ها (اگر وجود داشت)
+        // فایل‌ها
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $ticket->addMedia($file)->toMediaCollection('ticket-attachments');
             }
         }
 
-        return new TicketResource($ticket->load('media'));
+        // ✅ تعداد پیوست هم همراه پاسخ بیاید
+        $ticket->loadCount([
+            'media as attachments_count' => fn($q) =>
+            $q->where('collection_name', 'ticket-attachments')
+        ])->load('media');
+
+        return new TicketResource($ticket);
     }
+
 
     // POST /api/v1/tickets/{rootId}/messages
     public function sendMessage(string $rootId, Request $request)
@@ -60,22 +74,32 @@ class TicketController extends Controller
         abort_if($root->sender_id !== auth()->id(), 403);
 
         $validated = $request->validate([
-            'message' => 'required|string',
-            'attachments' => 'array|max:10',
-            'attachments.*' => 'exists:media,id'
+            'message'        => 'required|string',
+            'attachments'    => 'array',
+            'attachments.*'  => 'exists:media,id',
+            'files'          => 'array',
+            'files.*'        => 'file|max:5120', // 5MB
         ]);
 
         $reply = Ticket::create([
-            'id' => \Illuminate\Support\Str::uuid(),
-            'parent_id' => $rootId,
-            'root_id' => $rootId,
-            'title' => $root->title,
-            'message' => $validated['message'],
+            'id'          => (string) Str::uuid(),
+            'parent_id'   => $rootId,
+            'root_id'     => $rootId,
+            'title'       => $root->title,
+            'message'     => $validated['message'],
             'sender_type' => 'user',
-            'sender_id' => auth()->id(),
-            'status' => 'pending' // وضعیت thread به pending تغییر می‌کند
+            'sender_id'   => auth()->id(),
+            'status'      => 'pending'
         ]);
 
+        // فایل‌های آپلودی جدید
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $reply->addMedia($file)->toMediaCollection('ticket-attachments');
+            }
+        }
+
+        // الصاق از Media ID
         if ($request->filled('attachments')) {
             $media = Media::whereIn('id', $request->attachments)->get();
             foreach ($media as $file) {
@@ -83,31 +107,70 @@ class TicketController extends Controller
             }
         }
 
-        // به‌روزرسانی وضعیت همه پیام‌های thread
+        // همه پیام‌های thread به pending
         Ticket::where('root_id', $rootId)->update(['status' => 'pending']);
 
-        return new TicketMessageResource($reply->load('media'));
+        // ✅ تعداد پیوست پاسخ
+        $reply->loadCount([
+            'media as attachments_count' => fn($q) =>
+            $q->where('collection_name', 'ticket-attachments')
+        ])->load('media');
+
+        return $reply;
+        return new TicketMessageResource($reply);
     }
+
 
     public function show(string $rootId)
     {
-
-        // بررسی اینکه تیکت متعلق به کاربر است
         $rootTicket = Ticket::where('id', $rootId)
             ->where('sender_type', 'user')
             ->where('sender_id', auth()->id())
             ->firstOrFail();
 
-        // دریافت تمام پیام‌های thread
-        $messages = Ticket::where('root_id', $rootId)
+    $messages = Ticket::where('root_id', $rootId)
+        ->with('media')
             ->orderBy('created_at')
-            ->get();
+        ->get()
+        ->map(function ($m) {
+            $attachments = $m->media
+                ->where('collection_name', 'ticket-attachments')
+                ->map(function ($med) {
+                    return [
+                        'id'   => $med->id,
+                        'name' => $med->file_name,
+                        'mime' => $med->mime_type,
+                        'size' => (int) $med->size,
+                        'url'  => $med->getFullUrl(), // ✅ لینک مستقیم
+                    ];
+                })->values();
+
+            return [
+                'id'          => $m->id,
+                'message'     => $m->message,
+                'sender_type' => $m->sender_type, // user|admin|support|...
+                'status'      => $m->status,
+                'created_at'  => $m->created_at,
+                'attachments' => $attachments,
+            ];
+        });
+
+    $last = $messages->last();
+        $supportSenders = ['admin', 'support', 'agent', 'staff', 'operator'];
+    $canUserReply = $last && in_array(strtolower($last['sender_type']), $supportSenders, true);
+
+        $rootTicket->loadCount([
+            'media as attachments_count' => fn($q) =>
+            $q->where('collection_name', 'ticket-attachments')
+        ]);
 
         return response()->json([
-            'ticket' => $rootTicket,
-            'messages' => $messages
+            'ticket'          => $rootTicket,
+            'messages'        => $messages,
+            'can_user_reply'  => $canUserReply,
         ]);
     }
+
     public function getDepartments()
     {
         // دریافت نقش‌های پشتیبانی از Spatie
