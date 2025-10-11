@@ -83,4 +83,11 @@ class User extends Authenticatable implements JWTSubject
     {
         return []; // اگر claim سفارشی میخوای اضافه کن
     }
+
+    public function getBirthDateJalaliAttribute()
+    {
+        return $this->birth_date
+            ? Jalalian::fromDateTime($this->birth_date)->format('Y/m/d')
+            : null;
+    }
 }

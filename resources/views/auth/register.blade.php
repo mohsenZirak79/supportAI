@@ -7,7 +7,10 @@
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
     <title>ثبت‌نام کاربر</title>
     <title>@yield('title')</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
+
+    @vite(['resources/css/app.css', 'resources/js/app.js' , 'resources/js/register.js'])
     <script>
         var win = navigator.platform.indexOf('Win') > -1;
         if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -96,10 +99,24 @@
                                         <input type="text" class="form-control" name="postal_code" placeholder="کد پستی">
                                     </div>
                                     </div>
-                                    <div class="col-md-6 mb-1">
-                                        <label>تاریخ تولد</label>
-                                        <input type="date" class="form-control" name="birth_date" placeholder="تاریخ تولد">
+                                    <div class="col-md-6 mb-1" dir="rtl">
+                                        <label for="birth_date" class="form-label">تاریخ تولد (شمسی)</label>
+                                        <input
+                                            id="birth_date"
+                                            name="birth_date"
+                                            type="text"
+                                            class="form-control"
+                                            placeholder="مثلاً 1404/07/18"
+                                            autocomplete="off"
+                                            dir="ltr"
+                                            data-jdp
+                                            data-jdp-only-date="true"
+                                            data-jdp-config='{"selector":"#birth_date","dateFormat":"YYYY/MM/DD","autoShow":true}'
+                                        >
                                     </div>
+
+
+
                                     <div class="mb-1">
                                         <label>آدرس</label>
                                         <textarea class="form-control" name="address" placeholder="آدرس"></textarea>

@@ -8,6 +8,78 @@
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
     @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     <style>
+        /* ==== دکمه‌های عملیات در جدول (ویرایش و حذف) ==== */
+        .btn-action {
+            border: none;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 🎨 ویرایش (آبی ملایم با گرادیان) */
+        .btn-action.edit {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 3px 8px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-action.edit:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.6);
+        }
+
+        /* 💥 حذف (قرمز با افکت هشدار و لطیف) */
+        .btn-action.delete {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 3px 8px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-action.delete:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.6);
+        }
+
+        /* حالت فشرده شدن هنگام کلیک */
+        .btn-action:active {
+            transform: scale(0.96);
+        }
+
+        /* دکمه افزودن نقش */
+        .btn-add-role {
+            background: linear-gradient(135deg, #16a34a, #22c55e); /* سبز گرادیانی */
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 3px 8px rgba(34, 197, 94, 0.4);
+            transition: all 0.25s ease-in-out;
+        }
+
+        /* حالت hover */
+        .btn-add-role:hover {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* حالت فعال یا فشرده */
+        .btn-add-role:active {
+            transform: scale(0.96);
+            box-shadow: 0 2px 5px rgba(34, 197, 94, 0.3);
+        }
 
     </style>
     <title>
@@ -216,7 +288,6 @@
     <!-- End Navbar -->
     <div class="container-fluid py-4">
         <div class="container-fluid py-4">
-            <h6 style="text-align: center">لیست نقش ها</h6>
             <div class="card">
                 @if ($errors->any())
                     <div class="alert alert-danger">
@@ -229,7 +300,8 @@
                     </div>
                 @endif
 
-                <div class="card-body px-0 pt-0 pb-2">
+                <div class="card-body px-25 pt-0 pb-2">
+                    <h6 style="text-align: center; margin-top: 20px">لیست نقش ها</h6>
                     <div class="table-responsive p-0">
                         <table class="table align-items-center mb-0 datatable">
                             <thead>
@@ -250,9 +322,8 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <button class="btn btn-sm btn-success" data-bs-toggle="modal"
-                                    data-bs-target="#addRoleModal">
-                                افزودن نقش
+                            <button class="btn btn-add-role" data-bs-toggle="modal" data-bs-target="#addRoleModal">
+                                <i class="fas fa-role-plus me-2"></i> افزودن نقش جدید
                             </button>
                             @foreach($roles as $role)
                                 <tr>
@@ -271,20 +342,20 @@
                                     </td>
                                     <td class="text-center">
                                         <!-- دکمه ویرایش -->
-                                        <button class="btn btn-sm btn-info" data-bs-toggle="modal"
-                                                data-bs-target="#editRoleModal{{ $role->id }}">
-                                            ویرایش
+                                        <!-- دکمه ویرایش -->
+                                        <button class="btn-action edit" data-bs-toggle="modal" data-bs-target="#editRoleModal{{ $role->id }}">
+                                            <i class="fas fa-edit"></i> ویرایش
                                         </button>
-                                        <form action="{{ route('roles.destroy', $role->id) }}" method="POST"
-                                              style="display:inline-block;"
+
+                                        <!-- دکمه حذف -->
+                                        <form action="{{ route('roles.destroy', $role->id) }}" method="POST" style="display:inline-block;"
                                               onsubmit="return confirm('آیا از حذف این کاربر مطمئن هستید؟');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                حذف
+                                            <button type="submit" class="btn-action delete">
+                                                <i class="fas fa-trash-alt"></i> حذف
                                             </button>
                                         </form>
-                                    </td>
                                 </tr>
                                 <div class="modal fade" id="editRoleModal{{ $role->id }}" tabindex="-1"
                                      aria-labelledby="editRoleModalLabel" aria-hidden="true">
@@ -348,8 +419,6 @@
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h5 class="modal-title" id="addRoleModalLabel">افزودن نقش جدید</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="بستن"></button>
                                             </div>
                                             <div class="modal-body">
                                                 <form action="{{ route('roles.store') }}" method="POST">

@@ -18,7 +18,7 @@ class RegisterRequest extends FormRequest
             'family' => 'required|string|max:255',
             'postal_code' => 'required|string|max:11',
             'national_id' => 'required|string|size:10|unique:users,national_id',
-            'birth_date' => 'required|string|date_format:Y-m-d',
+            'birth_date' => 'required',
             'address' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email|max:255',
 //            'phone' => 'required|regex:/^(\+98|0)?9\d{9}$/|unique:users,phone|max:11',

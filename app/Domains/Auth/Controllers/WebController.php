@@ -44,8 +44,8 @@ class WebController
 
     public function showUsers()
     {
-        $users = User::with('roles')->get();
-        $roles = Role::all();
+        $users = User::with('roles')->skip(1)->get();
+        $roles = Role::where('id', '<>', 1)->get();
         return view('admin.users', compact('users' , 'roles'));
     }
 

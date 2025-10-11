@@ -64,6 +64,17 @@ class UserController
      */
     public function update(Request $request, User $user)
     {
+        $blockedUuids = [
+            '96998813-6a6d-4b36-b3dc-662ec3e68dfd',
+            '7f25cceb-3b3d-4ee7-894b-162218c7860f',
+        ];
+
+        if (in_array($user->id, $blockedUuids, true)) {
+            return back()->withErrors([
+                'error' => 'امکان حذف این کاربر وجود ندارد.',
+            ]);
+        }
+
         $request->validate([
             'name'   => 'required|string|max:255',
             'email'  => 'required|email|unique:users,email,' . $user->id,
@@ -86,6 +97,16 @@ class UserController
      */
     public function destroy(User $user)
     {
+        $blockedUuids = [
+            '96998813-6a6d-4b36-b3dc-662ec3e68dfd',
+            '7f25cceb-3b3d-4ee7-894b-162218c7860f',
+        ];
+
+        if (in_array($user->id, $blockedUuids, true)) {
+            return back()->withErrors([
+                'error' => 'امکان حذف این کاربر وجود ندارد.',
+            ]);
+        }
         $user->delete();
         return redirect()->route('admin.users')->with('success', 'کاربر حذف شد.');
     }

@@ -104,6 +104,24 @@ window.toast = {
     },
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+
+    const toPersianDigits = str =>
+        str.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+
+    // همه متن‌های صفحه را پیمایش کن و اعداد را فارسی کن
+    const walk = node => {
+        if (node.nodeType === 3) {
+            node.nodeValue = toPersianDigits(node.nodeValue);
+        } else if (node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
+            node.childNodes.forEach(walk);
+        }
+    };
+
+    walk(document.body);
+});
+
+
 // ✅ استفاده:
 // window.toast.success('عملیات با موفقیت انجام شد')
 // window.toast.error('خطایی رخ داد')

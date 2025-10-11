@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Morilog\Jalali\Jalalian;
 use function Symfony\Component\String\u;
 
 class AuthController
@@ -26,6 +27,9 @@ class AuthController
             return response()->json(['error' => ['code' => 'TOO_MANY_ATTEMPTS', 'message' => 'Too many registration attempts']], 429);
         }
         RateLimiter::hit('register_' . $request->ip(), 60);*/
+        $jalali = $request->input('birth_date');
+        $carbon = Jalalian::fromFormat('Y/m/d', $jalali)->toCarbon();
+
         $user = User::create([
             'name' => $request->name,
             'family' => $request->family,
@@ -34,7 +38,7 @@ class AuthController
             'password' => Hash::make($request->password),
             'national_id' => $request->national_id,
             'postal_code' => $request->postal_code,
-            'birth_date' => $request->birth_date,
+            'birth_date' => $carbon,
             'address' => $request->address,
         ]);
 
