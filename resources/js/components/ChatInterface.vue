@@ -119,7 +119,7 @@
                     <div v-else class="text-input-area">
                     <textarea
                         ref="msgInput"
-                        v-model="form.message"
+                        v-model="inputMessage"
                         class="chat-input"
                         placeholder="پیام خود را بنویسید…"
                         rows="1"
@@ -481,7 +481,8 @@ const sendMessage = async () => {
     inputMessage.value = '';
     await nextTick();
     scrollToBottom();
-
+    inputMessage.value = ''
+    if (msgInput.value) msgInput.value.style.height = 'auto'
     loading.value = true;
 
     try {
@@ -551,7 +552,23 @@ const updateChatTitle = async (chatId, title) => {
         alert('خطا در به‌روزرسانی عنوان');
     }
 };
+const msgInput = ref(null)
 
+// 2-2) رشد خودکار بدون اسکرول
+function autoGrow () {
+    const ta = msgInput.value
+    if (!ta) return
+    ta.style.height = 'auto'
+    ta.style.height = Math.min(ta.scrollHeight, 220) + 'px'
+}
+
+// 2-3) Enter = ارسال / Shift+Enter = خط جدید
+function onKeydown (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        sendMessage()
+    }
+}
 // حذف چت
 const deleteChat = async (chatId) => {
     if (!confirm('آیا مطمئنید می‌خواهید این چت را حذف کنید؟')) return;

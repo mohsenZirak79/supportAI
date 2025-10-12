@@ -2,6 +2,7 @@
 
 namespace App\Domains\UserPanel\Controllers;
 
+use App\Domains\Role\Models\Role;
 use App\Http\Controllers\Controller;
 use App\Domains\Shared\Models\Ticket;
 use App\Http\Resources\TicketResource;
@@ -21,6 +22,40 @@ class TicketController extends Controller
 //                'media as attachments_count' => fn($q) =>
 //                $q->where('collection_name', 'ticket-attachments')
 //            ])
+//            ->latest()
+//            ->cursorPaginate(20);
+//
+//        return TicketResource::collection($tickets);
+//    }
+//    public function index()
+//    {
+//        $tickets = Ticket::query()
+//            ->where('sender_id', auth()->id())
+//            ->whereNull('parent_id')
+//            // تعداد پیوست‌ها
+//            ->withCount([
+//                'media as attachments_count' => fn($q) =>
+//                $q->where('collection_name', 'ticket-attachments')
+//            ])
+//            // ⬇️ وضعیت مؤثر = وضعیت آخرین پیام کل رشته (خود ریشه یا زیرمجموعه‌ها)
+//            ->select('tickets.*')
+//            ->selectSub(function ($q) {
+//                $q->from('tickets as t2')
+//                    ->select('t2.status')
+//                    ->whereColumn('t2.root_id', 'tickets.id')
+//                    ->orWhereColumn('t2.id', 'tickets.id')
+//                    ->orderByDesc('t2.created_at')
+//                    ->limit(1);
+//            }, 'effective_status')
+//            // برای UI مفید است بدانیم آخرین فرستنده چه نقشی بوده:
+//            ->selectSub(function ($q) {
+//                $q->from('tickets as t3')
+//                    ->select('t3.sender_type')
+//                    ->whereColumn('t3.root_id', 'tickets.id')
+//                    ->orWhereColumn('t3.id', 'tickets.id')
+//                    ->orderByDesc('t3.created_at')
+//                    ->limit(1);
+//            }, 'last_sender_type')
 //            ->latest()
 //            ->cursorPaginate(20);
 //
@@ -68,12 +103,12 @@ class TicketController extends Controller
         $validated = $request->validate([
             'title'      => 'required|string|max:255',
             'message'    => 'required|string',
-            'department' => 'required|in:support_finance,support_website,support_sales,support_admin',
+            'department' => 'required|exists:roles,id',
             'priority'   => 'nullable|in:low,normal,high,urgent'
         ]);
 
         $id = (string) Str::uuid(); // ✅ یکبار بساز
-
+        $department = Role::where('id', $validated['department'])->firstOrFail()->name;
         $ticket = Ticket::create([
             'id'          => $id,
             'root_id'     => $id,                 // ✅ مهم: ریشه = خودش
@@ -81,7 +116,8 @@ class TicketController extends Controller
             'message'     => $validated['message'],
             'sender_type' => 'user',
             'sender_id'   => auth()->id(),
-            'department'  => $validated['department'],
+            'department'  => $department,
+            'department_role_id'  => (int)$validated['department'],
             'priority'    => $validated['priority'] ?? 'normal'
         ]);
 
@@ -207,43 +243,73 @@ class TicketController extends Controller
 //    }
     public function show(string $rootId)
     {
+        // فقط تیکتی که متعلق به همین کاربر است (همان شرط فعلی شما)
         $rootTicket = Ticket::where('id', $rootId)
             ->where('sender_type', 'user')
             ->where('sender_id', auth()->id())
             ->firstOrFail();
 
-        // ⬇️ هم خود ریشه و هم زیرمجموعه‌ها
-        $messages = Ticket::where(function($q) use ($rootId) {
+        // کل پیام‌های ترد (ریشه + زیرمجموعه‌ها) به صورت مدل (برای دسترسی به last مدل)
+        $messagesModels = Ticket::where(function ($q) use ($rootId) {
             $q->where('root_id', $rootId)->orWhere('id', $rootId);
         })
-            ->with('media')
+            ->with('media')           // برای پیوست‌ها
             ->orderBy('created_at')
-            ->get()
-            ->map(function ($m) {
-                return [
-                    'id'          => $m->id,
-                    'message'     => $m->message,
-                    'sender_type' => $m->sender_type, // user | admin | support | ...
-                    'status'      => $m->status,
-                    'created_at'  => $m->created_at,
-                    'attachments' => $m->media
-                        ->where('collection_name','ticket-attachments')
-                        ->map(fn($med)=>[
-                            'id'=>$med->id,'name'=>$med->file_name,'mime'=>$med->mime_type,
-                            'size'=>(int)$med->size,'url'=>$med->getFullUrl()
-                        ])->values(),
-                ];
-            });
+            ->get();
 
-        $last = $messages->last();
-        $canUserReply = $last && in_array(strtolower($last['sender_type']), ['admin','support','agent','staff','operator'], true);
+        // آخرین پیام (مدل)
+        $lastModel = $messagesModels->last();
 
-        $rootTicket->loadCount(['media as attachments_count'=>fn($q)=>$q->where('collection_name','ticket-attachments')]);
+        // به صورت پیش‌فرض اجازه‌ی پاسخ false
+        $canUserReply = false;
+
+        if ($lastModel) {
+            // اگر آخرین پیام توسط پشتیبان ثبت شده باشد (sender_type = admin)
+            if (strtolower($lastModel->sender_type) === 'admin') {
+                // بررسی نقش‌های فرستنده‌ی این پیام:
+                // دارد حداقل یک نقش با allow_ticket = '1' و is_internal = 0؟
+                // (Spatie: model_has_roles => role_id / model_id / model_type)
+                $hasAllowedRole = Role::query()
+                    ->where('allow_ticket', '1')
+                    ->where('is_internal', 0) // یا is_system_role = 0 اگر آن نام را انتخاب کرده‌ای
+                    ->whereHas('users', function ($q) use ($lastModel) {
+                        $q->where('users.id', $lastModel->sender_id);
+                    })
+                    ->exists();
+
+                $canUserReply = $hasAllowedRole;
+            }
+        }
+
+        // Map خروجی پیام‌ها (مثل قبل)
+        $messages = $messagesModels->map(function ($m) {
+            return [
+                'id'          => $m->id,
+                'message'     => $m->message,
+                'sender_type' => $m->sender_type, // user | admin
+                'status'      => $m->status,
+                'created_at'  => $m->created_at,
+                'attachments' => $m->media
+                    ->where('collection_name','ticket-attachments')
+                    ->map(fn($med) => [
+                        'id'   => $med->id,
+                        'name' => $med->file_name,
+                        'mime' => $med->mime_type,
+                        'size' => (int) $med->size,
+                        'url'  => $med->getFullUrl(),
+                    ])->values(),
+            ];
+        });
+
+        // شمارش فایل‌های پیوست برای خود ریشه (مثل قبل)
+        $rootTicket->loadCount([
+            'media as attachments_count' => fn($q) => $q->where('collection_name','ticket-attachments')
+        ]);
 
         return response()->json([
             'ticket'         => $rootTicket,
-            'messages'       => $messages,       // شامل پیام ریشه است
-            'can_user_reply' => $canUserReply,
+            'messages'       => $messages,       // شامل پیام ریشه
+            'can_user_reply' => $canUserReply,   // حالا داینامیک از roles
         ]);
     }
 

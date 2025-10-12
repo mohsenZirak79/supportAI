@@ -65,7 +65,7 @@
                         <span
                             class="absolute inset-0 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity bg-white/10"></span>
                         <span class="relative flex items-center space-x-2 space-x-reverse">
-                          <svg class="w-10 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg class="icon-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M12 4v16m8-8H4"></path>
                           </svg>
@@ -78,71 +78,68 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
-                <div class="stat-card glossy p-6">
-                    <div class="flex items-center">
-                        <div
-                            class="icon-wrap bg-gradient-to-br from-blue-100 to-cyan-100 p-3 rounded-xl ring-1 ring-blue-200/50">
-                            <svg class="w-10 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+                <!-- کل تیکت‌ها -->
+                <div class="stat glossy p-4">
+                    <div class="stat-row">
+                        <div class="stat-icon bg-sky-100">
+                            <svg class="icon-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
-                        <div class="mr-4">
-                            <p class="text-sm font-medium text-gray-600">کل تیکت‌ها</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ tickets.length }}</p>
+                        <div class="stat-body">
+                            <div class="stat-label">کل تیکت‌ها</div>
+                            <div class="stat-value">{{ tickets.length }}</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="stat-card glossy p-6">
-                    <div class="flex items-center">
-                        <div
-                            class="icon-wrap bg-gradient-to-br from-amber-100 to-yellow-100 p-3 rounded-xl ring-1 ring-amber-200/50">
-                            <svg class="w-10 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <!-- در انتظار پاسخ -->
+                <div class="stat glossy p-4">
+                    <div class="stat-row">
+                        <div class="stat-icon bg-amber-100">
+                            <svg class="icon-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
-                        <div class="mr-4">
-                            <p class="text-sm font-medium text-gray-600">در انتظار پاسخ</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ pendingTickets }}</p>
+                        <div class="stat-body">
+                            <div class="stat-label">در انتظار پاسخ</div>
+                            <div class="stat-value">{{ pendingTickets }}</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="stat-card glossy p-6">
-                    <div class="flex items-center">
-                        <div
-                            class="icon-wrap bg-gradient-to-br from-emerald-100 to-green-100 p-3 rounded-xl ring-1 ring-emerald-200/50">
-                            <svg class="w-10 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M5 13l4 4L19 7"></path>
+                <!-- پاسخ داده شده -->
+                <div class="stat glossy p-4">
+                    <div class="stat-row">
+                        <div class="stat-icon bg-emerald-100">
+                            <svg class="icon-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
                         </div>
-                        <div class="mr-4">
-                            <p class="text-sm font-medium text-gray-600">پاسخ داده شده</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ answeredTickets }}</p>
+                        <div class="stat-body">
+                            <div class="stat-label">پاسخ داده شده</div>
+                            <div class="stat-value">{{ answeredTickets }}</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="stat-card glossy p-6">
-                    <div class="flex items-center">
-                        <div
-                            class="icon-wrap bg-gradient-to-br from-rose-100 to-red-100 p-3 rounded-xl ring-1 ring-rose-200/50">
-                            <svg class="w-10 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M6 18L18 6M6 6l12 12"></path>
+                <!-- بسته شده -->
+                <div class="stat glossy p-4">
+                    <div class="stat-row">
+                        <div class="stat-icon bg-rose-100">
+                            <svg class="icon-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                         </div>
-                        <div class="mr-4">
-                            <p class="text-sm font-medium text-gray-600">بسته شده</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ closedTickets }}</p>
+                        <div class="stat-body">
+                            <div class="stat-label">بسته شده</div>
+                            <div class="stat-value">{{ closedTickets }}</div>
                         </div>
                     </div>
                 </div>
             </div>
+
 
             <!-- Filters -->
             <div class="glossy p-6 mb-4">
@@ -181,10 +178,18 @@
 
             <!-- Tickets List -->
             <div class="space-y-6">
-                <div v-if="loading" class="text-center py-12">
-                    <div
-                        class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                    <p class="mt-4 text-gray-600">در حال بارگذاری...</p>
+                <div v-if="loading" class="py-16 flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin"></div>
+                    <p class="mt-4 text-gray-500">در حال بارگذاری…</p>
+
+                    <div class="mt-8 w-full max-w-4xl space-y-4">
+                        <div class="h-24 rounded-xl bg-white shadow-sm relative overflow-hidden">
+                            <div class="shimmer"></div>
+                        </div>
+                        <div class="h-24 rounded-xl bg-white shadow-sm relative overflow-hidden">
+                            <div class="shimmer"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div v-else-if="filteredTickets.length === 0" class="text-center py-12">
@@ -215,7 +220,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                     </svg>
-                    {{ getDepartmentName(ticket.department) }}
+                    {{ getDepartmentName(ticket.department_role_id) }}
                   </span>
                                     <span class="flex items-center">
                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,8 +235,8 @@
                                 </div>
                             </div>
                             <div class="flex items-center space-x-3 space-x-reverse">
-                <span :class="['badge', getStatusClass(ticket.status)]">
-                  {{ getStatusLabel(ticket.status) }}
+                <span :class="['badge', getStatusClass(ticket.effective_status)]">
+                  {{ getStatusLabel(ticket.effective_status) }}
                 </span>
                                 <button
                                     @click="viewThread(ticket.id)"
@@ -240,7 +245,7 @@
                                     <span
                                         class="absolute inset-0 rounded-lg blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity bg-white/30"></span>
                                     <span class="relative flex items-center space-x-2 space-x-reverse">
-                    <svg class="w-10 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="icon-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                     </svg>
@@ -295,26 +300,35 @@
 
                     <!-- Messages Scroll Area -->
                     <div class="overflow-y-auto bg-gray-50 p-4 md:p-6" id="thread-scroll">
-                        <div v-for="msg in threadMessages" :key="msg.id" class="mb-4">
-                            <div class="flex items-start gap-3" :class="isSupport(msg.sender_type) ? 'flex-row' : 'flex-row-reverse'">
-                                <!-- آواتار ساده: «پشتیبان» یا «شما» -->
+                        <div v-for="msg in threadMessages" :key="msg.id" class="mb-6">
+                            <!-- ردیف پیام -->
+                            <div
+                                class="flex items-start gap-3"
+                                dir="ltr"
+                                :class="isSupport(msg.sender_type) ? 'justify-start' : 'justify-end'"
+                            >
+                                <!-- آواتار -->
                                 <div
                                     class="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                                    :class="isSupport(msg.sender_type) ? 'bg-emerald-500' : 'bg-blue-500'"
+                                    :class="isSupport(msg.sender_type) ? 'bg-emerald-500 order-1' : 'bg-blue-500 order-2'"
                                 >
                                     {{ isSupport(msg.sender_type) ? 'پشتیبان' : 'شما' }}
                                 </div>
 
-                                <!-- بابل پیام -->
+                                <!-- حباب پیام -->
                                 <div
                                     class="max-w-[80%] rounded-lg border p-4"
-                                    :class="isSupport(msg.sender_type)
-                      ? 'bg-green-50 border-green-200 text-green-800'
-                      : 'bg-blue-50 border-blue-200 text-blue-800'"
+                                    :class="[
+          isSupport(msg.sender_type)
+            ? 'bg-green-50 border-green-200 text-green-800 order-2 text-left'
+            : 'bg-blue-50 border-blue-200 text-blue-800 order-1 text-right'
+        ]"
                                 >
-                                    <p class="leading-7 whitespace-pre-wrap break-words">{{ msg.message }}</p>
+                                    <p class="rtl-text text-right leading-7 whitespace-pre-wrap break-words">
+                                        {{ msg.message }}
+                                    </p>
 
-                                    <!-- پیوست‌ها (چیپ‌های جمع‌وجور) -->
+                                    <!-- پیوست‌ها (چیپ) -->
                                     <div v-if="msg.attachments && msg.attachments.length" class="mt-3 flex flex-wrap gap-2">
                                         <template v-for="att in (msg.showAllAtt ? msg.attachments : msg.attachments.slice(0,6))" :key="att.id">
                                             <a :href="att.url" target="_blank" class="file-chip file-chip-link" :title="att.name">
@@ -333,7 +347,11 @@
                                 </div>
                             </div>
 
-                            <p class="text-xs text-gray-400 mt-1" :class="isSupport(msg.sender_type) ? 'text-left' : 'text-right'">
+                            <!-- زمان پیام -->
+                            <p
+                                class="text-xs text-gray-400 mt-1"
+                                :class="isSupport(msg.sender_type) ? 'text-left' : 'text-right'"
+                            >
                                 {{ formatDate(msg.created_at) }}
                             </p>
                         </div>
@@ -648,22 +666,39 @@ onUnmounted(() => {
 });
 
 // --- Toasts ---
-
-// --- Fetch Data ---
 const fetchDepartments = async () => {
     try {
-        const response = await axios.get('/api/v1/support-roles');
-        departments.value = response.data;
-    } catch (error) {
+        const { data } = await axios.get('/api/v1/support-roles', {
+            params: { model: 'ticket' },
+            headers: { 'Cache-Control': 'no-cache', 'Accept': 'application/json' }
+        });
+
+        // خروجی می‌تونه مستقیم آرایه باشه یا داخل data
+        const arr = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        departments.value = arr
+            .map(r => ({ id: r.id, name: r.name ?? r.label ?? r.title ?? String(r.id) }))
+            .filter(x => x.id && x.name);
+
+        if (!departments.value.length) {
+            toast.error('لیست بخش‌ها خالی است.');
+        }
+    } catch (e) {
+        console.error('GET /api/v1/support-roles failed:', e?.response || e);
         toast.error('خطا در بارگذاری بخش‌ها');
+        departments.value = []; // بدون fallback استاتیک
     }
 };
 
 const fetchTickets = async () => {
     loading.value = true;
     try {
-        const {data} = await axios.get('/api/v1/tickets');
-        tickets.value = data?.data ?? data ?? [];
+        const { data } = await axios.get('/api/v1/tickets');
+        const raw = data?.data ?? data ?? [];
+        tickets.value = raw.map(t => ({
+            ...t,
+            attachments_count: getAttachCount(t),
+            effective_status: t.effective_status || computeEffectiveStatus(t),
+        }));
     } catch (e) {
         toast.error('خطا در بارگذاری تیکت‌ها');
     } finally {
@@ -719,7 +754,19 @@ const canReplyToThread = computed(() =>
 //         toast.error('خطا در بارگذاری گفتگو');
 //     }
 // };
+const computeEffectiveStatus = (t) => {
+    // اگر بک‌اند خودش closed داده، همون را برگردون
+    if (t.status === 'closed') return 'closed';
 
+    const replies = Array.isArray(t.replies) ? t.replies : [];
+    const last = replies[replies.length - 1];
+
+    // اگر هنوز پاسخی از پشتیبان نداریم، در انتظار پاسخ
+    if (!last) return 'pending';
+
+    // اگر آخرین پیام از کاربر بوده => در انتظار پاسخ / اگر از پشتیبان بوده => پاسخ داده شده
+    return String(last.sender_type).toLowerCase() === 'user' ? 'pending' : 'answered';
+};
 
 const closeThreadModal = () => {
     selectedThread.value = null;
@@ -758,6 +805,8 @@ const submitThreadReply = async () => {
 
         // رفرش گفتگو (آخرین پاسخ پشتیبان بعداً اجازه را تغییر می‌دهد)
         await viewThread(selectedThread.value.id);
+        const idx = tickets.value.findIndex(t => t.id === selectedThread.value.id);
+        if (idx !== -1) tickets.value[idx].effective_status = 'pending';
     } catch (e) {
         const msg = e?.response?.data?.message || 'خطا در ارسال پاسخ';
         toast.error(msg);
@@ -800,10 +849,11 @@ const submitNewTicket = async () => {
         tickets.value.unshift({
             ...created,
             attachments_count: created.attachments_count ?? (selectedFiles.value?.length || 0),
+            effective_status: 'pending', // ← تازه ایجاد شده: طبیعی‌اش pending است
         });
 
         closeNewTicketForm();
-        newTicket.value = {title: '', message: '', department: '', priority: 'normal'};
+        newTicket.value = {title: '', message: '', department_role_id: '', priority: 'normal'};
         selectedFiles.value = [];
 
         toast.success('تیکت شما با موفقیت ثبت شد.');
@@ -821,7 +871,7 @@ const submitNewTicket = async () => {
 
 const closeNewTicketForm = () => {
     showNewTicketForm.value = false;
-    newTicket.value = {title: '', message: '', department: ''};
+    newTicket.value = {title: '', message: '', department_role_id: ''};
     selectedFiles.value = [];
 };
 
@@ -905,9 +955,9 @@ const getPriorityClass = (priority) => {
     };
     return map[priority] || 'prio-normal';
 };
-const isSupport = (t) => ['admin','support','agent','staff','operator']
-    .includes(String(t || '').toLowerCase());
-
+// const isSupport = (t) => ['admin','support','agent','staff','operator']
+//     .includes(String(t || '').toLowerCase());
+const isSupport = (t) => String(t || '').toLowerCase() === 'admin';
 const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fa-IR', {
@@ -919,23 +969,23 @@ const formatDate = (dateString) => {
     });
 };
 
-const pendingTickets = computed(() => tickets.value.filter(t => t.status === 'pending').length);
-const answeredTickets = computed(() => tickets.value.filter(t => t.status === 'answered').length);
-const closedTickets = computed(() => tickets.value.filter(t => t.status === 'closed').length);
+const pendingTickets  = computed(() => tickets.value.filter(t => (t.effective_status || t.status) === 'pending').length);
+const answeredTickets = computed(() => tickets.value.filter(t => (t.effective_status || t.status) === 'answered').length);
+const closedTickets   = computed(() => tickets.value.filter(t => (t.effective_status || t.status) === 'closed').length);
 
 const filteredTickets = computed(() => {
     let filtered = tickets.value;
     if (statusFilter.value) {
-        filtered = filtered.filter(ticket => ticket.status === statusFilter.value);
+        filtered = filtered.filter(ticket => (ticket.effective_status || ticket.status) === statusFilter.value);
     }
     if (departmentFilter.value) {
-        filtered = filtered.filter(ticket => ticket.department === departmentFilter.value);
+        filtered = filtered.filter(ticket => ticket.department_role_id === departmentFilter.value);
     }
     if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(ticket =>
-            ticket.title.toLowerCase().includes(query) ||
-            ticket.message.toLowerCase().includes(query)
+            (ticket.title || '').toLowerCase().includes(query) ||
+            (ticket.message || '').toLowerCase().includes(query)
         );
     }
     return filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -960,7 +1010,19 @@ onMounted(() => {
     #f7fafc;
     min-height: 100vh;
 }
-
+@keyframes shimmer-move { 100% { transform: translateX(100%); } }
+.shimmer {
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+        90deg,
+        rgba(255,255,255,0) 0%,
+        rgba(243,244,246,0.9) 50%,
+        rgba(255,255,255,0) 100%
+    );
+    animation: shimmer-move 1.5s infinite;
+}
 /* ---------- Toast ---------- */
 /*.toast-container {
     position: fixed;
@@ -989,16 +1051,7 @@ onMounted(() => {
     backdrop-filter: saturate(150%) blur(6px);
 }
 
-@keyframes toastSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px)
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0)
-    }
-}
+
 
 .toast-success {
     background: linear-gradient(135deg, #10b981, #34d399);
@@ -1233,11 +1286,30 @@ header.bg-white {
 .file-chip-muted { background:#fafafa; color:#64748b; border-color:#e5e7eb; cursor:pointer; }
 .chip-x { margin-inline-start:.25rem; border:0; background:transparent; color:#ef4444; font-weight:700; cursor:pointer; }
 .chip-x:hover { color:#b91c1c; }
-
+.rtl-text {
+    direction: rtl;
+    unicode-bidi: plaintext;
+    text-align: right;
+}
 /* رفع هرگونه لاین/بار رنگی کنار بابل‌ها */
 .bg-green-50, .bg-blue-50 { position: relative; }
-.bg-green-50::before, .bg-blue-50::before { content:none; }
+.bg-green-50::before,
+.bg-blue-50::before { content: none !important; }
 /* اگر قبلاً pseudo-element داشتی که نوار ایجاد می‌کرد، این خط آن را حذف می‌کند */
 
 .close-btn { display:flex; align-items:center; justify-content:center; background:transparent; }
+.icon-5 { width: 1.25rem; height: 1.25rem; }      /* w-5 h-5 */
+.icon-6 { width: 1.5rem;  height: 1.5rem;  }      /* w-6 h-6 - برای کارت‌ها */
+.btn-icon { margin-inline-start: .25rem; }
+
+
+.stat { border-radius: 14px; }
+.stat-row { display:flex; align-items:center; gap:12px; }
+.stat-icon {
+    width: 44px; height: 44px; border-radius: 12px; display:flex; align-items:center; justify-content:center;
+}
+.stat-body { display:flex; align-items:baseline; gap:8px; flex-wrap:nowrap; }
+.stat-label { font-size:.95rem; color:#475569; font-weight:600; white-space:nowrap; }
+.stat-value { font-size:1.5rem; font-weight:800; color:#0f172a; line-height:1; white-space:nowrap; }
+
 </style>

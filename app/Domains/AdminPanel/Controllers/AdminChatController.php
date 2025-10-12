@@ -13,11 +13,6 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class AdminChatController extends Controller
 {
-    public function __construct()
-    {
-        Auth::login(User::where('id', 'f25bcf94-c1d9-4a40-b2ce-109765552cbf')->first());
-    }
-
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -39,75 +34,6 @@ class AdminChatController extends Controller
 
         return view('admin.chats', compact('conversations'));
     }
-
-//    public function detail(Request $request, Conversation $conversation)
-//    {
-//        $user = Auth::user();
-//        $isAdmin = $user->hasRole('ادمین');
-//        $roleNames = $user->roles()->pluck('name')->all();
-//
-//        // مجوز دیدن دیتیل
-//        $canView = $isAdmin || Referral::query()
-//                ->where('conversation_id', $conversation->id)
-//                ->where(function ($q) use ($user, $roleNames) {
-//                    $q->whereIn('assigned_role', $roleNames)
-//                        ->orWhere('assigned_agent_id', $user->id);
-//                })
-//                ->exists();
-//
-//        abort_unless($canView, 403, 'اجازهٔ مشاهدهٔ این مکالمه را ندارید.');
-//
-//        $messages = $conversation->messages()
-//            ->select('id','sender_type','content','created_at')
-//            ->orderBy('created_at')
-//            ->get();
-//
-//        $referrals = Referral::query()
-//            ->where('conversation_id', $conversation->id)
-//            ->orderByDesc('created_at')
-//            ->get()
-//            ->map(function ($r) use ($user, $isAdmin, $roleNames) {
-//                $canRespond = false;
-//                if (in_array($r->status, ['pending','assigned']) && empty($r->agent_response)) {
-//                    if ($isAdmin) {
-//                        $canRespond = true;
-//                    } else {
-//                        $canRespond = ($r->assigned_agent_id && $r->assigned_agent_id === $user->id)
-//                            || (!$r->assigned_agent_id && in_array($r->assigned_role, $roleNames));
-//                    }
-//                }
-//
-//                return [
-//                    'id'                 => $r->id,
-//                    'trigger_message_id' => $r->trigger_message_id,
-//                    'assigned_role'      => $r->assigned_role,
-//                    'assigned_agent_id'  => $r->assigned_agent_id,
-//                    'description'        => $r->description,
-//                    'status'             => $r->status,
-//                    'agent_response'     => $r->agent_response,
-//                    'response_visibility'=> $r->response_visibility,
-//                    'created_at'         => optional($r->created_at)?->toDateTimeString(),
-//                    'can_respond'        => $canRespond,
-//                    'can_assign_me'      => !$r->assigned_agent_id && (
-//                            $isAdmin || in_array($r->assigned_role, $roleNames)
-//                        ),
-//                ];
-//            });
-//
-//        return response()->json([
-//            'conversation' => [
-//                'id'    => $conversation->id,
-//                'title' => $conversation->title,
-//                'user'  => [
-//                    'id'   => $conversation->user->id ?? null,
-//                    'name' => $conversation->user->name ?? '-',
-//                ],
-//            ],
-//            'messages'  => $messages,
-//            'referrals' => $referrals,
-//        ]);
-//    }
-// App/Http/Controllers/AdminChatController.php
 
     public function detail(Request $request, Conversation $conversation)
     {
@@ -179,7 +105,6 @@ class AdminChatController extends Controller
         ]);
     }
 
-
     public function respond(Request $request, Referral $referral)
     {
         // به‌جای JSON، multipart بفرستیم
@@ -221,8 +146,6 @@ class AdminChatController extends Controller
             'assigned_agent_id' => $user->id,
             'status' => $referral->status === 'pending' ? 'assigned' : $referral->status,
         ]);
-
         return response()->json(['message' => 'برای شما تخصیص داده شد.', 'referral' => $referral->fresh()]);
     }
-
 }

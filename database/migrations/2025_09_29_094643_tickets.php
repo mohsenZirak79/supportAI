@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('sender_type'); // 'user' یا 'agent'
             $table->uuid('sender_id')->nullable();
             $table->string('department')->nullable(); // فقط برای تیکت اصلی
+            $table->bigInteger('department_role_id')->nullable(); // فقط برای تیکت اصلی
             $table->string('status')->default('pending');
             $table->string('priority')->nullable(); // فقط برای تیکت اصلی
             $table->timestamps();

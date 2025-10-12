@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\AdminPanel\Controllers\AdminChatController;
+use App\Domains\AdminPanel\Controllers\AdminTicketController;
 use App\Domains\Auth\Controllers\WebController;
 use App\Domains\Shared\Models\User;
 use App\Domains\Shared\Controllers\UserController;
@@ -128,7 +129,9 @@ Route::middleware([CheckPermissionForRoute::class])->group(function () {
 
         Route::get('/users', [WebController::class, 'showUsers'])->name('admin.users');
         Route::get('/roles', [WebController::class, 'showRoles'])->name('admin.roles');
-        Route::get('/tickets', [WebController::class, 'showTickets'])->name('admin.tickets');
+        Route::get('/tickets', [\App\Domains\AdminPanel\Controllers\AdminTicketController::class, 'index'])->name('admin.tickets');
+        Route::get('/tickets/{id}', [\App\Domains\AdminPanel\Controllers\AdminTicketController::class, 'show'])->name('admin.tickets.show');
+        Route::post('/tickets/{id}/messages', [\App\Domains\AdminPanel\Controllers\AdminTicketController::class, 'reply'])->name('admin.tickets.reply');
         Route::get('/chats', [AdminChatController::class, 'index'])->name('admin.chats');
     });
 });

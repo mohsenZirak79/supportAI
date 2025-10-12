@@ -34,6 +34,9 @@ return new class extends Migration
             }
             $table->string('name');
             $table->string('allow_ticket')->default('0');
+            $table->string('allow_chat')->default('0');
+            $table->string('allow_users')->default('0');
+            $table->string('allow_role')->default('0');
             $table->string('guard_name');
             $table->timestamps();
 

@@ -23,7 +23,17 @@
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
     @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     <style>
-
+        .ticket-chip{display:inline-flex;align-items:center;gap:.35rem;max-width:230px;padding:.35rem .6rem;border-radius:9999px;font-size:.78rem;line-height:1;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}
+        .ticket-chip .truncate{display:inline-block;max-width:150px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .bubble{max-width:88%;border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px}
+        .bubble-user{background:#eff6ff;border-color:#bfdbfe;color:#1e40af}
+        .bubble-agent{background:#ecfdf5;border-color:#a7f3d0;color:#064e3b}
+        .msg-time{font-size:12px;color:#94a3b8}
+        .truncate-1{max-width:380px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .status-badge{display:inline-block;padding:.25rem .55rem;border-radius:9999px;font-weight:700;font-size:.75rem}
+        .st-pending{background:#fff7ed;color:#92400e;border:1px solid #fcd34d99}
+        .st-answered{background:#ecfdf5;color:#065f46;border:1px solid #34d39999}
+        .st-closed{background:#f1f5f9;color:#334155;border:1px solid #cbd5e199}
     </style>
     <title>
         تیکت ها
@@ -237,95 +247,232 @@
                 </div>
                 <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0 datatable">
+                        <table class="table align-items-center mb-0 datatable" id="example">
                             <thead>
                             <tr>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">عنوان</th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">نام ارسال کننده</th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">تاریخ ثبت</th>
+                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">عنوان</th>
+                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">نام ارسال‌کننده</th>
+                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">تاریخ ایجاد (میلادی)</th>
+                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">وضعیت</th>
+                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">عملیات</th>
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($tickets as $ticket)
+                            @foreach($tickets as $t)
                                 <tr>
-                                    <td>{{ $ticket->title }}</td>
-                                    <td>{{ $ticket->sender->name }}</td>
-                                    <td>{{ \Morilog\Jalali\Jalalian::fromDateTime($ticket->created_at)->format('Y/m/d') }}</td>
+                                    <td class="text-center">
+                                        <span class="truncate-1" title="{{ $t->title }}">{{ $t->title }}</span>
+                                    </td>
+                                    <td class="text-center">{{ $t->sender->name ?? '-' }}</td>
+                                    <td class="text-center">
+                                        {{ optional($t->created_at)->timezone('UTC')->format('Y-m-d H:i') }}
+                                    </td>
+                                    <td class="text-center">
+                                        @php
+                                            $class = $t->status === 'pending' ? 'st-pending' : ($t->status==='answered'?'st-answered':'st-closed');
+                                            $label = $t->status === 'pending' ? 'در انتظار پاسخ' : ($t->status==='answered'?'پاسخ داده شده':'بسته شده');
+                                        @endphp
+                                        <span class="status-badge {{ $class }}">{{ $label }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button
+                                            class="btn btn-sm btn-primary btn-view-ticket"
+                                            data-id="{{ $t->id }}"
+                                            data-url="{{ route('admin.tickets.show', $t->id) }}"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#ticketModal">
+                                            مشاهده
+                                        </button>
+                                    </td>
                                 </tr>
                             @endforeach
                             </tbody>
                         </table>
+                        <div class="px-3">
+                            {{ $tickets->links() }}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </main>
-<div class="fixed-plugin">
-    <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
-        <i class="fa fa-cog py-2"> </i>
-    </a>
-    <div class="card shadow-lg ">
-        <div class="card-header pb-0 pt-3 ">
-            <div class="float-start">
-                <h5 class="mt-3 mb-0">Soft UI Configurator</h5>
-                <p>See our dashboard options.</p>
+<!-- Modal -->
+<div class="modal fade" id="ticketModal" tabindex="-1" aria-labelledby="ticketModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content" style="max-height:90vh;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ticketModalLabel">جزئیات تیکت</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
             </div>
-            <div class="float-end mt-4">
-                <button class="btn btn-link text-dark p-0 fixed-plugin-close-button">
-                    <i class="fa fa-close"></i>
-                </button>
-            </div>
-            <!-- End Toggle Button -->
-        </div>
-        <hr class="horizontal dark my-1">
-        <div class="card-body pt-sm-3 pt-0">
-            <!-- Sidebar Backgrounds -->
-            <div>
-                <h6 class="mb-0">Sidebar Colors</h6>
-            </div>
-            <a href="javascript:void(0)" class="switch-trigger background-color">
-                <div class="badge-colors my-2 text-start">
-                    <span class="badge filter bg-gradient-primary active" data-color="primary" onclick="sidebarColor(this)"></span>
-                    <span class="badge filter bg-gradient-dark" data-color="dark" onclick="sidebarColor(this)"></span>
-                    <span class="badge filter bg-gradient-info" data-color="info" onclick="sidebarColor(this)"></span>
-                    <span class="badge filter bg-gradient-success" data-color="success" onclick="sidebarColor(this)"></span>
-                    <span class="badge filter bg-gradient-warning" data-color="warning" onclick="sidebarColor(this)"></span>
-                    <span class="badge filter bg-gradient-danger" data-color="danger" onclick="sidebarColor(this)"></span>
+            <div class="modal-body">
+                <div id="tkMeta" class="mb-3 text-sm text-muted"></div>
+
+                <div class="mb-4">
+                    <h6 class="mb-2">پیام‌ها</h6>
+                    <div id="tkMsgList" class="d-flex flex-column gap-3" style="max-height:45vh; overflow-y:auto; border:1px solid #eee; padding:10px;"></div>
                 </div>
-            </a>
-            <!-- Sidenav Type -->
-            <div class="mt-3">
-                <h6 class="mb-0">Sidenav Type</h6>
-                <p class="text-sm">Choose between 2 different sidenav types.</p>
+
+                <div id="replyBox" class="mt-3" style="display:none;">
+                    <hr>
+                    <h6 class="mb-2">ارسال پاسخ</h6>
+                    <form id="replyForm">
+                        <div class="mb-2">
+                            <label class="form-label small">پاسخ شما</label>
+                            <textarea name="message" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small d-block">فایل‌های پیوست (اختیاری)</label>
+                            <input type="file" name="files[]" class="form-control form-control-sm" multiple>
+                            <div class="form-text">حداکثر 10 فایل، هر کدام تا 5MB</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-sm">ثبت پاسخ</button>
+
+                        </div>
+                    </form>
+                </div>
+
             </div>
-            <div class="d-flex">
-                <button class="btn bg-gradient-primary w-100 px-3 mb-2 active" data-class="bg-transparent" onclick="sidebarType(this)">Transparent</button>
-                <button class="btn bg-gradient-primary w-100 px-3 mb-2 ms-2" data-class="bg-white" onclick="sidebarType(this)">White</button>
-            </div>
-            <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
-            <!-- Navbar Fixed -->
-            <div class="mt-3">
-                <h6 class="mb-0">Navbar Fixed</h6>
-            </div>
-            <div class="form-check form-switch ps-0">
-                <input class="form-check-input mt-1 ms-auto" type="checkbox" id="navbarFixed" onclick="navbarFixed(this)">
-            </div>
-            <hr class="horizontal dark my-sm-4">
-            <a class="btn bg-gradient-dark w-100" href="https://www.creative-tim.com/product/soft-ui-dashboard-pro">Free Download</a>
-            <a class="btn btn-outline-dark w-100" href="https://www.creative-tim.com/learning-lab/bootstrap/license/soft-ui-dashboard">View documentation</a>
-            <div class="w-100 text-center">
-                <a class="github-button" href="https://github.com/creativetimofficial/soft-ui-dashboard" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star creativetimofficial/soft-ui-dashboard on GitHub">Star</a>
-                <h6 class="mt-3">Thank you for sharing!</h6>
-                <a href="https://twitter.com/intent/tweet?text=Check%20Soft%20UI%20Dashboard%20made%20by%20%40CreativeTim%20%23webdesign%20%23dashboard%20%23bootstrap5&amp;url=https%3A%2F%2Fwww.creative-tim.com%2Fproduct%2Fsoft-ui-dashboard" class="btn btn-dark mb-0 me-2" target="_blank">
-                    <i class="fab fa-twitter me-1" aria-hidden="true"></i> Tweet
-                </a>
-                <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.creative-tim.com/product/soft-ui-dashboard" class="btn btn-dark mb-0 me-2" target="_blank">
-                    <i class="fab fa-facebook-square me-1" aria-hidden="true"></i> Share
-                </a>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function getCsrfToken() {
+        const el = document.querySelector('meta[name="csrf-token"]');
+        return el ? el.getAttribute('content') : '{{ csrf_token() }}'
+    }
+    (function(){
+        const token = getCsrfToken();
+        const tkMsgList = document.getElementById('tkMsgList');
+        const tkMeta = document.getElementById('tkMeta');
+        const replyBox = document.getElementById('replyBox');
+        const replyForm = document.getElementById('replyForm');
+
+        let currentTicketId = null;
+        let canReply = false;
+
+        document.querySelectorAll('.btn-view-ticket').forEach(btn=>{
+            btn.addEventListener('click', ()=> openTicket(btn));
+        });
+
+        async function openTicket(btn){
+            const url = btn.getAttribute('data-url');
+            currentTicketId = btn.getAttribute('data-id');
+
+            tkMeta.innerHTML = '';
+            tkMsgList.innerHTML = '<div class="text-center text-muted py-2">در حال بارگذاری…</div>';
+            replyBox.style.display = 'none';
+
+            try{
+                const res = await fetch(url, { headers: { 'Accept':'application/json' }});
+                if(!res.ok){
+                    window.toast?.error('خطا در بارگذاری جزئیات');
+                    tkMsgList.innerHTML = '<div class="text-danger">خطا در بارگذاری.</div>';
+                    return;
+                }
+                const data = await res.json();
+                renderDetails(data);
+            }catch(e){
+                tkMsgList.innerHTML = '<div class="text-danger">خطا در بارگذاری.</div>';
+            }
+        }
+
+        function renderDetails(data){
+            document.getElementById('ticketModalLabel').textContent = 'تیکت: ' + (data.ticket?.title || '-');
+
+            const createdAt = toEnDate(data.ticket?.created_at);
+            const statusLbl = statusLabel(data.ticket?.status);
+            tkMeta.innerHTML = `
+            <div>ارسال‌کننده: <strong>${escapeHtml(data.ticket?.sender?.name || '-')}</strong></div>
+            <div>تاریخ ایجاد: <span>${createdAt}</span></div>
+            <div>وضعیت: <span>${statusLbl}</span></div>
+        `;
+
+            tkMsgList.innerHTML = '';
+            (data.messages || []).forEach(m=>{
+                const isSupport = String(m.sender_type||'').toLowerCase() !== 'user';
+                const side = isSupport ? 'start' : 'end';
+                const who  = isSupport ? 'پشتیبان' : 'کاربر';
+
+                const box = document.createElement('div');
+                box.innerHTML = `
+              <div class="d-flex justify-content-${side}">
+                <div class="bubble ${isSupport ? 'bubble-agent' : 'bubble-user'}" dir="rtl">
+                    <div class="small text-muted mb-1">${who}</div>
+                    <div class="mb-2" style="white-space:pre-wrap;word-break:break-word;">${escapeHtml(m.message || '')}</div>
+                    ${renderFiles(m.attachments||[])}
+                    <div class="mt-1 msg-time">${toEnDate(m.created_at)}</div>
+                </div>
+              </div>
+            `;
+                tkMsgList.appendChild(box);
+            });
+
+            canReply = !!data.can_reply;
+            replyBox.style.display = canReply ? 'block' : 'none';
+        }
+
+        function renderFiles(files){
+            if(!files.length) return '';
+            let html = '<div class="d-flex flex-wrap gap-2">';
+            files.slice(0, 100).forEach(f=>{
+                html += `
+            <a class="ticket-chip" href="${f.url}" target="_blank" title="${escapeHtml(f.name||'file')}">
+              <span>📎</span>
+              <span class="truncate">${escapeHtml(f.name||'file')}</span>
+            </a>`;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        replyForm.addEventListener('submit', async (e)=>{
+            e.preventDefault();
+            if(!currentTicketId) return;
+            const formData = new FormData(replyForm);
+            try{
+                const res = await fetch(`/admin/tickets/${currentTicketId}/messages`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+                    body: formData
+                });
+                if(!res.ok){
+                    const t = await res.text().catch(()=> '');
+                    console.error('reply failed:', res.status, t);
+                    window.toast?.error('ثبت پاسخ ناموفق بود.');
+                    return;
+                }
+                window.toast?.success('پاسخ ثبت شد.');
+                // رفرش دیتیل
+                const showUrl = document.querySelector(`.btn-view-ticket[data-id="${currentTicketId}"]`)?.getAttribute('data-url');
+                if(showUrl){
+                    const r = await fetch(showUrl, { headers: { 'Accept':'application/json' }});
+                    renderDetails(await r.json());
+                }
+            }catch(err){
+                window.toast?.error('خطای شبکه در ثبت پاسخ');
+            }
+        });
+
+        function toEnDate(iso){
+            try{
+                return new Date(iso).toLocaleString('en-GB', {year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
+            }catch{ return iso || '' }
+        }
+        function statusLabel(s){
+            if(s==='pending') return 'در انتظار پاسخ';
+            if(s==='answered') return 'پاسخ داده شده';
+            if(s==='closed') return 'بسته شده';
+            return s || '-';
+        }
+        function escapeHtml(s){return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
+    })();
+</script>
 </body>
 </html>

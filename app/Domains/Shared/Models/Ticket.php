@@ -14,7 +14,7 @@ class Ticket extends Model implements HasMedia
     public $incrementing = false;
     protected $fillable = [
         'id', 'parent_id', 'root_id', 'title', 'message',
-        'sender_type', 'sender_id', 'department', 'status', 'priority'
+        'sender_type', 'sender_id', 'department', 'status', 'priority','department_role_id'
     ];
 
     public function registerMediaCollections(): void
