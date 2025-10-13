@@ -82,14 +82,8 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-
-Route::get('/chat', function () {
-    return View::make('chat.index');
-})->name('chat');
-Route::get('/ticket', function () {
-    return View::make('tickets.index');
-});
-
+Route::get('/chat', fn() => View::make('chat.index'))->name('chat')->middleware('ensure.jwt.cookie');
+Route::get('/ticket', fn() => View::make('tickets.index'))->middleware('ensure.jwt.cookie');
 
 //    dd($user = User::first());
 //    dd(auth()->user());
@@ -103,14 +97,12 @@ Route::get('/ticket', function () {
 //        'sender_id'=>'c52c582f-e127-4776-8b06-ea6304bc930e',
 //
 //    ]);
-Route::get('/login', [WebController::class, 'showLogin'])->name('login');
-Route::get('/register', [WebController::class, 'showRegister'])->name('register');
+
 //Route::get('/chat', [WebController::class, 'showChat'])->middleware('auth:sanctum');
 
 
 Route::view('/register', 'auth.register')->name('register');
 Route::view('/login', 'auth.login')->name('login');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'register'])->name('register');
 Route::post('/activate', [AuthController::class, 'activate'])->name('activate');
 
@@ -121,12 +113,11 @@ Route::get('/test', function () {
 
 
 Route::get('/login', [WebController::class, 'showLogin'])->name('login');
-Route::get('/register', [WebController::class, 'showRegister'])->name('register');
-;
+Route::get('/register', [WebController::class, 'showRegister'])->name('register');;
 
-Route::middleware([CheckPermissionForRoute::class])->group(function () {
-    Route::prefix('admin')->group(function () {
-
+Route::middleware(['web', 'auth:web', \App\Http\Middleware\CheckPermissionForRoute::class])
+    ->prefix('admin')
+    ->group(function () {
         Route::get('/users', [WebController::class, 'showUsers'])->name('admin.users');
         Route::get('/roles', [WebController::class, 'showRoles'])->name('admin.roles');
         Route::get('/tickets', [\App\Domains\AdminPanel\Controllers\AdminTicketController::class, 'index'])->name('admin.tickets');
@@ -134,7 +125,6 @@ Route::middleware([CheckPermissionForRoute::class])->group(function () {
         Route::post('/tickets/{id}/messages', [\App\Domains\AdminPanel\Controllers\AdminTicketController::class, 'reply'])->name('admin.tickets.reply');
         Route::get('/chats', [AdminChatController::class, 'index'])->name('admin.chats');
     });
-});
 
 Route::prefix('admin')->group(function () {
     Route::get('/chats/{conversation}/detail', [AdminChatController::class, 'detail'])->name('admin.chats.detail');
@@ -162,7 +152,6 @@ Route::prefix('role')->name('roles.')->group(function () {
 
 
 Route::view('/register', 'auth.register')->name('register');
-Route::view('/login', 'auth.login')->name('login');
 Route::post('/login', [AuthController::class, 'verifyLoginOtp'])->name('login.verify');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 //Route::post('/login', [AuthController::class, 'register'])->name('register');

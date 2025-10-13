@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Morilog\Jalali\Jalalian;
 use function Symfony\Component\String\u;
@@ -212,57 +213,45 @@ class AuthController
     {
         $user = User::where('phone', $request->phone)->first();
 
-        // 1️⃣ چک OTP و زمان
         if (!$user || now()->diffInSeconds($user->otp_sent_at) > 120) {
-            return response()->json([
-                'error' => [
-                    'code' => 'OTP_EXPIRED',
-                    'message' => 'OTP expired'
-                ]
-            ], 400);
+            return response()->json(['error' => ['code' => 'OTP_EXPIRED','message' => 'OTP expired']], 400);
         }
 
         if (Cache::get('otp_login_' . $request->phone) != $request->otp) {
-            return response()->json([
-                'error' => [
-                    'code' => 'OTP_INVALID',
-                    'message' => 'Invalid OTP'
-                ]
-            ], 400);
+            return response()->json(['error' => ['code' => 'OTP_INVALID','message' => 'Invalid OTP']], 400);
         }
 
-        // 2️⃣ ساخت JWT و ذخیره در Cache
-        $token = JWTAuth::fromUser($user);
-        Cache::put('jwt_token_' . $user->id, $token, now()->addHours(2));
+    // 1) صدور JWT برای استفاده در API
+    $jwt = \Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
 
-        // حذف OTP بعد از استفاده
+    // 2) ساخت Session برای وب (ادمین/ریورب/چیزهایی که به سشن تکیه دارند)
+    \Illuminate\Support\Facades\Auth::login($user);
+    $request->session()->regenerate();
+
         Cache::forget('otp_login_' . $request->phone);
-        Auth::login($user);
-        session()->regenerate();
 
-        // 3️⃣ نقش‌ها و مسیر
-        $roles = $user->roles->pluck('name');
-        if ($roles->contains('ادمین')) {
-            $redirect = 'admin.users';
-        } elseif ($user->roles->pluck('id')->contains(3)) {
-            $redirect = 'chat';
-        } elseif ($user->roles()->where('allow_ticket', 1)->exists()) {
-            $redirect = 'admin.tickets';
-        } else {
-            return response()->json([
-                'error' => [
-                    'code' => 'PERMISSION_DENIED',
-                    'message' => 'User does not have permission to access any page'
-                ]
-            ], 403);
-        }
+    // 3) تصمیم مسیر
+    $isAdmin = $user->hasRole('ادمین'); // یا هر رول/پرمیژنِ دلخواه
+    $redirect = $isAdmin ? route('admin.users') : route('chat');
 
+    // 4) پاسخ + ست کردن کوکی JWT (برای API)
         return response()->json([
-            'access_token' => $token,
-            'primary_role' => $user->roles->pluck('name'),
-            'redirect_url' => route($redirect),
-        ]);
+        'access_token' => $jwt,
+        'role_names'   => $user->roles->pluck('name'),
+        'redirect_url' => $redirect,
+        ])->cookie(
+            'jwt',
+        $jwt,
+            120,                       // دقیقه
+        '/',                   // path
+        null,                  // domain
+        app()->isProduction(), // Secure فقط روی HTTPS
+            true,                      // HttpOnly
+        false,                 // Raw
+            'Lax'                      // SameSite
+        );
     }
+
 
 
     public function twoFaVerify(Request $request)
@@ -284,11 +273,37 @@ class AuthController
 
     public function logout(Request $request)
     {
-        Auth::logout(); // خروج کاربر از سشن
+        // خروج سشن (برای ادمین)
+        if (Auth::check()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
-        $request->session()->invalidate(); // حذف کامل داده‌های سشن
-        $request->session()->regenerateToken(); // جلوگیری از CSRF بعد از logout
+        // پاک‌کردن JWT کوکی
+        return redirect('/login')
+            ->with('success', 'با موفقیت خارج شدید.')
+            ->withoutCookie('jwt');
+    }
+    public function refresh(Request $request)
+    {
+        try {
+            // اگر توکن منقضی شده هم باشد، parseToken()->refresh() کار می‌کند (اگر blacklist فعال است مطابق تنظیمات).
+            $newToken = JWTAuth::parseToken()->refresh(); // می‌تواند exception بدهد اگر توکن totally invalid باشد
+        } catch (JWTException $e) {
+            return response()->json(['error' => ['code' => 'TOKEN_INVALID', 'message' => 'Cannot refresh token']], 401);
+        }
 
-        return redirect('/login')->with('success', 'با موفقیت خارج شدید.');
+        return response()->json(['ok' => true])->cookie(
+            'jwt',
+            $newToken,
+            120,                           // عمر جدید (دقیقه)
+            '/',
+            null,
+            app()->isProduction(),         // Secure در پرود
+            true,                          // HttpOnly
+            false,
+            'Lax'
+        );
     }
 }

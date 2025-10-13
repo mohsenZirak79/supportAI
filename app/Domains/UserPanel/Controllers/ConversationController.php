@@ -23,7 +23,7 @@ class ConversationController extends Controller
 {
 //    public function sendMessage(Request $request, Conversation $conversation)
 //    {
-//        $user = Auth::user();
+//        $user = $request->user();
 //        abort_unless($user && $conversation->user_id === $user->id, 403);
 //
 //        $validated = $request->validate([
@@ -110,7 +110,7 @@ class ConversationController extends Controller
 
     public function sendMessage(Request $request, Conversation $conversation)
     {
-        $user = Auth::user();
+        $user = $request->user();
         abort_unless($user && $conversation->user_id === $user->id, 403);
 
         $validated = $request->validate([
@@ -358,7 +358,8 @@ class ConversationController extends Controller
     // لیست چت‌ها (فقط active)
     public function index(Request $request)
     {
-        $user = Auth::user();
+        dd($request->all());
+        $user = $request->user();
         abort_unless($user, 403);
 
         $conversations = Conversation::where('user_id', $user->id)
@@ -372,7 +373,7 @@ class ConversationController extends Controller
     // ایجاد چت جدید
     public function store(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
         abort_unless($user, 403);
 
         $request->validate(['title' => 'nullable|string|max:100']);
@@ -388,7 +389,7 @@ class ConversationController extends Controller
 
     public function messages(Conversation $conversation)
     {
-        $user = Auth::user();
+        $user = $request->user();
         abort_unless($user && $conversation->user_id === $user->id, 403);
 
         $messages = $conversation->messages()
@@ -401,7 +402,7 @@ class ConversationController extends Controller
     // تغییر عنوان چت
     public function updateTitle(Request $request, Conversation $conversation)
     {
-        $user = Auth::user();
+        $user = $request->user();
         abort_unless($user && $conversation->user_id === $user->id, 403);
 
         $request->validate(['title' => 'required|string|max:100']);
@@ -413,7 +414,7 @@ class ConversationController extends Controller
     // حذف چت (soft delete)
     public function destroy(Conversation $conversation)
     {
-        $user = Auth::user();
+        $user = $request->user();
         abort_unless($user && $conversation->user_id === $user->id, 403);
 
         $conversation->delete(); // soft delete
@@ -422,7 +423,7 @@ class ConversationController extends Controller
 
     public function userReferrals(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
         $query = Referral::where('user_id', $user->id)
             ->with(['conversation', 'assignedAgent']) // No triggerMessage to avoid heavy load
             ->orderBy('created_at', 'desc')
@@ -449,7 +450,7 @@ class ConversationController extends Controller
 
     public function handoff(Request $request, Message $message)
     {
-        $user = Auth::user();
+        $user = $request->user();
         abort_unless($user, 403);
 
         $validated = $request->validate([

@@ -162,6 +162,7 @@ import {ref, computed, nextTick, onMounted, onUnmounted, watch} from 'vue';
 import HandoffModal from './HandoffModal.vue';
 import AiAnswer from './AiAnswer.vue'
 import { useToast } from 'vue-toast-notification'
+import { apiFetch } from '../lib/http';
 const toast = useToast();
 const isHandoffModalOpen = ref(false);
 const selectedMessageForHandoff = ref(null);
@@ -174,9 +175,7 @@ const audioChunks = ref([]);
 const availableRoles = ref([]);
 const fetchDepartments = async () => {  // ← این تابع رو کامل اضافه کن
     try {
-        const response = await fetch('/api/v1/support-roles', {
-            headers: {'Accept': 'application/json'}
-        });
+        const response = await apiFetch('/support-roles');
         if (response.ok) {
             const data = await response.json();  // یا data.data اگر API فرق داره
             availableRoles.value = data;  // array objects مثل [{id: "...", name: "..."}]
@@ -276,12 +275,12 @@ const uploadVoice = async (blob) => {
         const formData = new FormData();
         formData.append('file', blob, 'recording.webm');
         formData.append('collection', 'message_voices');
-        const uploadRes = await fetch('/api/v1/files', {method: 'POST', body: formData});
+        const uploadRes = await apiFetch('/files', { method: 'POST', body: formData });
         if (!uploadRes.ok) throw new Error('آپلود فایل شکست خورد');
         const {file_id} = await uploadRes.json();
 
         // 2) ارسال پیام با media_ids
-        const messageRes = await fetch(`/api/v1/conversations/${activeChatId.value}/messages`, {
+        const messageRes = await apiFetch(`/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({content: '', media_ids: [file_id], media_kind: 'voice'})
@@ -373,9 +372,7 @@ const autoResize = () => {
 // لود چت‌ها از API
 const loadChats = async () => {
     try {
-        const res = await fetch('/api/v1/conversations', {
-            headers: {'Accept': 'application/json'}
-        });
+        const res = await apiFetch('/conversations');
         if (res.ok) {
             const {data} = await res.json();
             chats.value = data.map(chat => ({
@@ -395,7 +392,7 @@ const loadChats = async () => {
 // لود پیام‌ها
 const loadMessages = async (chatId) => {
     try {
-        const res = await fetch(`/api/v1/conversations/${chatId}/messages`);
+        const res = await apiFetch(`/conversations/${chatId}/messages`);
         if (res.ok) {
             const {data} = await res.json();
             const chat = chats.value.find(c => c.id === chatId);
@@ -411,7 +408,7 @@ const loadMessages = async (chatId) => {
                 await Promise.all(
                     (chat.messages || []).map(async (msg) => {
                         try {
-                            const r = await fetch(`/api/v1/messages/${msg.id}/media`, {headers: {'Accept': 'application/json'}});
+                            const r = await apiFetch(`/messages/${msg.id}/media`);
                             if (r.ok) {
                                 const {data: media} = await r.json();
                                 msg.media = media || [];
@@ -437,7 +434,7 @@ const loadMessages = async (chatId) => {
 // ایجاد چت جدید
 const startNewChat = async () => {
     try {
-        const res = await fetch('/api/v1/conversations', {
+        const res = await apiFetch('/conversations', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title: 'چت جدید'})
@@ -486,7 +483,7 @@ const sendMessage = async () => {
     loading.value = true;
 
     try {
-        const res = await fetch(`/api/v1/conversations/${activeChatId.value}/messages`, {
+        const res = await apiFetch(`/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({content: userMsg.text})
@@ -538,7 +535,7 @@ const editCurrentTitle = () => {
 
 const updateChatTitle = async (chatId, title) => {
     try {
-        const res = await fetch(`/api/v1/conversations/${chatId}/title`, {
+        const res = await apiFetch(`/conversations/${chatId}/title`, {
             method: 'PATCH',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title})
@@ -574,7 +571,7 @@ const deleteChat = async (chatId) => {
     if (!confirm('آیا مطمئنید می‌خواهید این چت را حذف کنید؟')) return;
 
     try {
-        const res = await fetch(`/api/v1/conversations/${chatId}`, {method: 'DELETE'});
+        const res = await apiFetch(`/conversations/${chatId}`, {method: 'DELETE'});
         if (res.ok) {
             chats.value = chats.value.filter(c => c.id !== chatId);
             if (activeChatId.value === chatId) {
@@ -604,9 +601,7 @@ const handleHandoffSubmit = async (data) => {
             return
         }
 
-        const res = await fetch(
-            `/api/v1/messages/${selectedMessageForHandoff.value.id}/handoff`,
-            {
+        const res = await apiFetch(`/messages/${selectedMessageForHandoff.value.id}/handoff`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
                 body: JSON.stringify(data)

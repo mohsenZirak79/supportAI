@@ -12,7 +12,7 @@ class CheckPermissionForRoute
      */
     public function handle(Request $request, Closure $next)
     {
-        $user = $request->user();
+        $user = auth('web')->user();
 
         if (!$user) {
             abort(403, 'دسترسی ندارید');

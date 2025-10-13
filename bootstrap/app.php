@@ -16,7 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'forceTestUser' => ForceTestUser::class,
+//            'forceTestUser' => ForceTestUser::class,
+            'jwt.cookie' => \App\Http\Middleware\JwtFromCookie::class,
+            'ensure.jwt.cookie' => \App\Http\Middleware\EnsureJwtCookie::class,
             'checkPermissionForRoute' => CheckPermissionForRoute::class,
         ]);
     })

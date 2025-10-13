@@ -102,60 +102,45 @@
 </footer>
 
 <script>
-    // window.__toast.success('test')
-    // console.log('injam')
-
     // ارسال شماره
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const phoneInput = document.querySelector('#loginForm input[name="phone"]');
-        const phone = phoneInput.value.trim();
+        const phone = document.querySelector('#loginForm input[name="phone"]').value.trim();
 
         try {
-            const response = await axios.post('/api/v1/auth/login', { phone });
-
-            // نمایش فرم OTP
+            const res = await axios.post('/api/v1/auth/login', { phone });
+            // فرم OTP را نمایش بده
             document.getElementById('loginForm').style.display = 'none';
             const otpForm = document.getElementById('otpForm');
             otpForm.style.display = 'block';
             otpForm.querySelector('input[name="phone"]').value = phone;
 
-            // نمایش OTP تستی (فقط در local)
-            if (response.data.otp) {
-                alert('Test OTP: ' + response.data.otp);
-            }
-
-        } catch (error) {
-            console.log(error['response']['data']['message'])
-            document.getElementById('error').innerText = error['response']['data']['message'] || 'خطا در ارسال شماره';
+            if (res.data.otp) alert('Test OTP: ' + res.data.otp); // فقط در local
+        } catch (err) {
+            document.getElementById('error').innerText =
+                err?.response?.data?.message || 'خطا در ارسال شماره';
         }
     });
 
     // ارسال OTP
     document.getElementById('otpForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-
         const otpForm = document.getElementById('otpForm');
         const phone = otpForm.querySelector('input[name="phone"]').value;
-        const otp = otpForm.querySelector('input[name="otp"]').value;
+        const otp   = otpForm.querySelector('input[name="otp"]').value;
 
         try {
-            const response = await axios.post('/login', { phone, otp }, { withCredentials: true });
+            // توجه: این روتِ وبه (verifyLoginOtp) که کوکی HttpOnly می‌ذاره
+            const res = await axios.post('/login', { phone, otp });
+            // >>> هیچ localStorage یی لازم نیست
+            // localStorage.removeItem('token');  // اگر قبلاً گذاشته‌ای، پاکش کن
 
-
-            // ذخیره توکن
-            localStorage.setItem('token', response.data.access_token);
-
-            // ریدایرکت بر اساس مسیر برگشتی از بک‌اند
-            window.location.href = response.data.redirect_url;
-
-        } catch (error) {
+            window.location.href = res.data.redirect_url; // مثلا /chat
+        } catch (err) {
             document.getElementById('error').innerText =
-                error.response?.data?.error?.message || 'خطا در تایید OTP';
+                err?.response?.data?.error?.message || 'خطا در تایید OTP';
         }
     });
-
 </script>
-
 </body>
 </html>
