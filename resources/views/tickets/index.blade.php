@@ -9,7 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <title>تیکت‌ها</title>
     @vite(['resources/css/app.css', 'resources/js/tickets.js'])
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
 </head>
 <body>
 <div id="app"></div>

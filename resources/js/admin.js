@@ -48,8 +48,8 @@ const baseOptions = {
         paginate: { first: 'اول', previous: 'قبلی', next: 'بعدی', last: 'آخر' }
     },
     buttons: [
-        { extend: 'excelHtml5', text: 'Excel', className: 'dt-btn-excel' },
-        { extend: 'pdfHtml5', text: 'PDF', className: 'dt-btn-pdf' }
+        { extend: 'excelHtml5', text: 'Excel', className: 'dt-btn-excel' }
+        // ,{ extend: 'pdfHtml5', text: 'PDF', className: 'dt-btn-pdf' }
     ]
 };
 

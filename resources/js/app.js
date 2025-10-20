@@ -13,7 +13,10 @@ import "./admin/axios.min.js";
 
 import './bootstrap'
 import { createApp } from 'vue'
+window.axios = axios;
 
+// ⬇️ این خط حیاتی است
+window.axios.defaults.withCredentials = true;
 // ✅ چون App.vue نداری، کامپوننت اصلی‌ت همون ChatInterface هست
 import ChatInterface from './components/ChatInterface.vue'
 

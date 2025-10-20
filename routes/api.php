@@ -26,16 +26,38 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 use App\Domains\Auth\Controllers\AuthController;
 use App\Domains\UserPanel\Controllers\ConversationController;
-
+use Tymon\JWTAuth\Facades\JWTAuth;
 //use App\Domains\UserPanel\Controllers\FileController;
 //use App\Domains\AgentPanel\Controllers\TicketController;
 //use App\Domains\AdminPanel\Controllers\UserController;
 //use App\Domains\AdminPanel\Controllers\RoleController;
+
+Route::get('v1/_debug-jwt', function (\Illuminate\Http\Request $request) {
+//    \Log::debug('headers', $request->headers->all());
+
+    try {
+        // اگر JwtFromCookie کار کنه، اینجا parseToken باید موفق شه
+        $u = JWTAuth::parseToken()->authenticate();
+        return response()->json([
+            'ok' => true,
+            'user_id' => optional($u)->id,
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'ok' => false,
+            'err' => $e->getMessage(),
+            'has_cookie' => (bool) $request->cookie('jwt'),
+            'bearer' => $request->bearerToken() ? 'present' : 'missing',
+        ], 401);
+    }
+})->middleware('jwt.cookie')->name('_debug-jwt'); // ← نکته: فقط jwt.cookie
+
+
 Route::prefix('v1')->group(function () {
     Route::post('/auth/refresh', [AuthController::class, 'refresh']); // ⬅️ جدید
 });
 Route::prefix('v1')
-    ->middleware(['jwt.cookie','auth:jwt'])  // ⬅️ این دو تا مهم‌اند
+    ->middleware(['jwt.cookie','jwt.auth'])  // ⬅️ این دو تا مهم‌اند
     ->group(function () {
         Route::get('conversations', [ConversationController::class, 'index']);
         Route::post('conversations', [ConversationController::class, 'store']);

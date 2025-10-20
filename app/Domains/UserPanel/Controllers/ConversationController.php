@@ -7,13 +7,9 @@ use App\Domains\Shared\Models\User;
 use App\Http\Controllers\Controller;
 use App\Domains\Shared\Models\Conversation;
 use App\Domains\Shared\Models\Message;
-use App\Domains\Shared\Services\PythonAIService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -358,7 +354,6 @@ class ConversationController extends Controller
     // لیست چت‌ها (فقط active)
     public function index(Request $request)
     {
-        dd($request->all());
         $user = $request->user();
         abort_unless($user, 403);
 
@@ -387,13 +382,30 @@ class ConversationController extends Controller
         return response()->json($conversation, 201);
     }
 
-    public function messages(Conversation $conversation)
+    public function messages(Request $request, Conversation $conversation)
     {
         $user = $request->user();
         abort_unless($user && $conversation->user_id === $user->id, 403);
 
         $messages = $conversation->messages()
-            ->select('id', 'conversation_id', 'sender_type', 'content', 'created_at') // ← conversation_id رو هم اضافه کردم
+            ->select('id', 'conversation_id', 'sender_type', 'content', 'created_at')->addSelect([
+                // آیا هر نوع مدیایی دارد؟
+                'has_media' => DB::raw("EXISTS (
+                SELECT 1 FROM media
+                WHERE media.model_type = '".addslashes(Message::class)."'
+                  AND media.model_id = messages.id
+            )"),
+
+                'has_voice' => DB::raw("EXISTS (
+                SELECT 1 FROM media
+                WHERE media.model_type = '".addslashes(Message::class)."'
+                  AND media.model_id = messages.id
+                  AND (
+                        media.collection_name = 'message_voices'
+                     OR media.mime_type LIKE 'audio/%'
+                  )
+            )"),
+            ]) // ← conversation_id رو هم اضافه کردم
             ->orderBy('created_at')
             ->get();
         return response()->json(['data' => $messages]);

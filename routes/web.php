@@ -103,7 +103,7 @@ Route::get('/ticket', fn() => View::make('tickets.index'))->middleware('ensure.j
 
 Route::view('/register', 'auth.register')->name('register');
 Route::view('/login', 'auth.login')->name('login');
-Route::post('/login', [AuthController::class, 'register'])->name('register');
+//Route::post('/login', [AuthController::class, 'register'])->name('register');
 Route::post('/activate', [AuthController::class, 'activate'])->name('activate');
 
 
@@ -151,7 +151,7 @@ Route::prefix('role')->name('roles.')->group(function () {
 });
 
 
-Route::view('/register', 'auth.register')->name('register');
+//Route::view('/register', 'auth.register')->name('register');
 Route::post('/login', [AuthController::class, 'verifyLoginOtp'])->name('login.verify');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 //Route::post('/login', [AuthController::class, 'register'])->name('register');

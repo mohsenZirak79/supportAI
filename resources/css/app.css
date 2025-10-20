@@ -21,3 +21,11 @@
 @import "./admin/nucleo-svg.css";
 @import "./admin/soft-ui-dashboard.css";
 @import 'vue-toast-notification/dist/theme-sugar.css';
+@import "../fonts/Vazirmatn-font-face.css";
+
+
+html, body {
+    font-family: 'Vazirmatn', sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

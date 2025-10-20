@@ -41,7 +41,7 @@
                 <div class="messages-container" ref="messagesContainer">
                     <div
                         v-for="(message, index) in activeChat?.messages || []"
-                        :key="index"
+                        :key="message.id || message._tmpKey || Math.random()"
                         class="message"
                         :class="{ 'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot' }"
                     >
@@ -49,7 +49,7 @@
 
                             <!-- بات: متن + دکمه‌های پخش -->
                             <template v-if="message.sender === 'bot' && message.text">
-                                <AiAnswer :text="message.text" lang="fa-IR" />
+                                <AiAnswer :text="message.text" lang="fa-IR"/>
                             </template>
 
                             <!-- کاربر: اگر متن دارد همان را، وگرنه اگر voice است یک برچسب نشان بده -->
@@ -61,7 +61,8 @@
 
                             <!-- پخش صدا (همان قبلی) -->
                             <div v-if="message.voiceUrl" class="voice-player" @click.stop="playVoice(message.id)">
-                                <audio :ref="el => registerAudioRef(message.id, el)" :src="message.voiceUrl" preload="none" controls></audio>
+                                <audio :ref="el => registerAudioRef(message.id, el)" :src="message.voiceUrl"
+                                       preload="none" controls></audio>
                             </div>
 
                             <div class="message-meta">
@@ -74,7 +75,10 @@
                                         title="کپی متن"
                                     >
                                         <!-- آیکن کپی -->
-                                        <svg viewBox="0 0 24 24" class="icon"><path d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                        <svg viewBox="0 0 24 24" class="icon">
+                                            <path
+                                                d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                                        </svg>
                                     </button>
 
                                     <button
@@ -84,7 +88,9 @@
                                         title="ارجاع به پشتیبانی"
                                     >
                                         <!-- آیکن ارجاع/ارسال -->
-                                        <svg viewBox="0 0 24 24" class="icon"><path d="M4 12v8h16v-8h2v10H2V12h2zm8-9 6 6h-4v6h-4V9H6l6-6z"/></svg>
+                                        <svg viewBox="0 0 24 24" class="icon">
+                                            <path d="M4 12v8h16v-8h2v10H2V12h2zm8-9 6 6h-4v6h-4V9H6l6-6z"/>
+                                        </svg>
                                     </button>
                                 </div>
                             </div>
@@ -128,7 +134,7 @@
                     />
                         <div class="input-actions">
                             <button type="button" @click="startRecording" class="mic-btn" :disabled="loading">🎤</button>
-                            <button class="btn btn-primary" @click="sendMessage">ارسال</button>
+                            <button type="submit" class="btn btn-primary" :disabled="loading">ارسال</button>
                         </div>
                     </div>
                 </form>
@@ -161,8 +167,9 @@
 import {ref, computed, nextTick, onMounted, onUnmounted, watch} from 'vue';
 import HandoffModal from './HandoffModal.vue';
 import AiAnswer from './AiAnswer.vue'
-import { useToast } from 'vue-toast-notification'
-import { apiFetch } from '../lib/http';
+import {useToast} from 'vue-toast-notification'
+import {apiFetch} from '../lib/http';
+
 const toast = useToast();
 const isHandoffModalOpen = ref(false);
 const selectedMessageForHandoff = ref(null);
@@ -206,6 +213,25 @@ const inputMessage = ref('');
 const loading = ref(false);
 const textarea = ref(null);
 const messagesContainer = ref(null);
+const mediaFetchedFor = new Set();
+
+async function ensureMediaLoaded(msg) {
+    if (!msg?.id) return;
+    if (msg.voiceUrl) return;     // قبلاً ست شده
+    if (mediaFetchedFor.has(msg.id)) return; // یکبار درخواست دادیم
+
+    mediaFetchedFor.add(msg.id);
+    try {
+        const r = await apiFetch(`/messages/${msg.id}/media`);
+        if (!r.ok) return;
+        const {data: media} = await r.json();
+        msg.media = media || [];
+        const voice = msg.media.find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
+        if (voice) msg.voiceUrl = voice.url;
+    } catch (e) {
+        // بی‌صدا رد شو
+    }
+}
 
 // فرض می‌کنیم AI User با این ایمیل ثبت شده
 const AI_EMAIL = 'ai@system.local';
@@ -270,28 +296,40 @@ const cleanupRecording = () => {
 };
 
 const uploadVoice = async (blob) => {
+    const chat = chats.value.find(c => c.id === activeChatId.value);
+    if (!chat) return;
+
     try {
         // 1) آپلود فایل
         const formData = new FormData();
         formData.append('file', blob, 'recording.webm');
         formData.append('collection', 'message_voices');
-        const uploadRes = await apiFetch('/files', { method: 'POST', body: formData });
+
+        const uploadRes = await fetch('/api/v1/files', { method: 'POST', body: formData });
         if (!uploadRes.ok) throw new Error('آپلود فایل شکست خورد');
-        const {file_id} = await uploadRes.json();
+        const { file_id } = await uploadRes.json();
 
-        // 2) ارسال پیام با media_ids
-        const messageRes = await apiFetch(`/conversations/${activeChatId.value}/messages`, {
+        // 2) ارسال پیام ویسی به گفتگو
+        //    ⚠️ بک‌اند شما { user_message, ai_message, conversation } برمی‌گردونه
+        const messageRes = await fetch(`/api/v1/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({content: '', media_ids: [file_id], media_kind: 'voice'})
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ content: '', media_ids: [file_id], media_kind: 'voice' })
         });
-        if (!messageRes.ok) throw new Error('ارسال پیام شکست خورد');
+        if (!messageRes.ok) {
+            const t = await messageRes.text().catch(() => '');
+            console.error('send voice failed', messageRes.status, t);
+            throw new Error('ارسال پیام شکست خورد');
+        }
 
-        const {user_message} = await messageRes.json(); // ← این مهم است
-        const chat = chats.value.find(c => c.id === activeChatId.value);
-        if (!chat) return;
+        const { user_message, ai_message, conversation } = await messageRes.json();
 
-        // 3) پیام را به UI اضافه کن
+        // 3) اگر عنوان گفتگو آپدیت شده بود
+        if (conversation?.title && conversation.title !== chat.title) {
+            chat.title = conversation.title;
+        }
+
+        // 4) پیام کاربر (ویس) را به UI اضافه کن
         chat.messages.push({
             id: user_message.id,
             sender: 'user',
@@ -299,21 +337,55 @@ const uploadVoice = async (blob) => {
             created_at: user_message.created_at
         });
 
-        // 4) مدیای همین پیام را بگیر و voiceUrl ست کن
-        const r = await fetch(`/api/v1/messages/${user_message.id}/media`, {headers: {'Accept': 'application/json'}});
-        if (r.ok) {
-            const {data: media} = await r.json();
-            const voice = (media || []).find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
-            if (voice) {
-                // پیدا کردن پیام تازه اضافه‌شده و تزریق voiceUrl
-                const msg = chat.messages.find(m => m.id === user_message.id);
-                if (msg) msg.voiceUrl = voice.url;
+        // مدیای پیام کاربر را بگیر تا voiceUrl ست شود
+        try {
+            const r = await fetch(`/api/v1/messages/${user_message.id}/media`, { headers: { 'Accept': 'application/json' }});
+            if (r.ok) {
+                const { data: media } = await r.json();
+                const voice = (media || []).find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
+                if (voice) {
+                    const msg = chat.messages.find(m => m.id === user_message.id);
+                    if (msg) msg.voiceUrl = voice.url;
+                }
             }
-            await nextTick(); // تا <audio> رندر شود و ref ثبت شود
+        } catch (_) {}
+
+        // 5) پیام AI را هم (متن + احتمالاً ویس) به UI اضافه کن
+        if (ai_message) {
+            chat.messages.push({
+                id: ai_message.id,
+                sender: 'bot',
+                text: ai_message.content || '',
+                created_at: ai_message.created_at
+            });
+
+            // اگر AI ویس هم داده بود، مدیاش را بگیر و voiceUrl ست کن
+            try {
+                const r2 = await fetch(`/api/v1/messages/${ai_message.id}/media`, { headers: { 'Accept': 'application/json' }});
+                if (r2.ok) {
+                    const { data: media2 } = await r2.json();
+                    const voice2 = (media2 || []).find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
+                    if (voice2) {
+                        const aimsg = chat.messages.find(m => m.id === ai_message.id);
+                        if (aimsg) aimsg.voiceUrl = voice2.url;
+                    }
+                }
+            } catch (_) {}
+        } else {
+            // اگر به هر دلیلی ai_message نبود، حداقل یه پیام خطای ملایم نشون بده
+            chat.messages.push({
+                id: 'ai-fallback-' + Date.now(),
+                sender: 'bot',
+                text: 'نتوانستم پاسخ صوتی را پردازش کنم.',
+                created_at: new Date().toISOString()
+            });
         }
+
+        await nextTick();
+        scrollToBottom();
     } catch (error) {
-        alert('خطا در ارسال صدا');
-        console.error('Upload error:', error);
+        console.error('Upload voice error:', error);
+        toast.error('خطا در ارسال/دریافت ویس');
     }
 };
 
@@ -401,29 +473,40 @@ const loadMessages = async (chatId) => {
                     id: msg.id,
                     sender: msg.sender_type === 'ai' ? 'bot' : 'user',
                     text: msg.content,
-                    created_at: msg.created_at
+                    created_at: msg.created_at,
+                    type: msg.type,                // اگر خواستی نمایش بدهی
+                    has_media: !!msg.has_media,    // ← از API جدید
+                    has_voice: !!msg.has_voice,    // ← از API جدید
                 }));
+                const recent = (chat.messages || []).slice(-12);
+                recent.forEach(m => {
+                    const maybeHasMedia =
+                        m.has_media === true ||
+                        m.has_voice === true ||
+                        m.type === 'voice' ||
+                        !(m.text && m.text.trim()); // متن خالی = احتمالاً ویس/فایل
+                    if (maybeHasMedia) ensureMediaLoaded(m); // بدون await
+                });
 
-                // ⬇️ همین بلاک را «اینجا» اضافه کن:
-                await Promise.all(
-                    (chat.messages || []).map(async (msg) => {
-                        try {
-                            const r = await apiFetch(`/messages/${msg.id}/media`);
-                            if (r.ok) {
-                                const {data: media} = await r.json();
-                                msg.media = media || [];
-                                const voice = msg.media.find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
-                                if (voice) {
-                                    msg.voiceUrl = voice.url;
-                                }
-                            } else {
-                                msg.media = [];
-                            }
-                        } catch {
-                            msg.media = [];
-                        }
-                    })
-                );
+                // await Promise.all(
+                //     (chat.messages || []).map(async (msg) => {
+                //         try {
+                //             const r = await apiFetch(`/messages/${msg.id}/media`);
+                //             if (r.ok) {
+                //                 const {data: media} = await r.json();
+                //                 msg.media = media || [];
+                //                 const voice = msg.media.find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
+                //                 if (voice) {
+                //                     msg.voiceUrl = voice.url;
+                //                 }
+                //             } else {
+                //                 msg.media = [];
+                //             }
+                //         } catch {
+                //             msg.media = [];
+                //         }
+                //     })
+                // );
             }
         }
     } catch (e) {
@@ -481,7 +564,8 @@ const sendMessage = async () => {
     inputMessage.value = ''
     if (msgInput.value) msgInput.value.style.height = 'auto'
     loading.value = true;
-
+    await nextTick();
+    scrollToBottom();
     try {
         const res = await apiFetch(`/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
@@ -493,18 +577,37 @@ const sendMessage = async () => {
             const {ai_message, conversation} = await res.json();
 
             // آپدیت عنوان چت اگر تغییر کرده
-            if (conversation.title && conversation.title !== activeChat.title) {
-                activeChat.title = conversation.title;
+            const chatLocal = chats.value.find(c => c.id === activeChatId.value);
+            if (chatLocal) {
+                if (conversation.title && conversation.title !== chatLocal.title) {
+                    chatLocal.title = conversation.title;
+                }
+
+                // اضافه کردن پاسخ AI
+                // activeChat.messages.push({
+                //     id: ai_message.id,
+                //     sender: 'bot',
+                //     text: ai_message.content,
+                //     created_at: ai_message.created_at,
+                //     // فلگ‌های محافظه‌کارانه: بعداً اگر مدیا داشت lazy ست می‌کنیم
+                //     has_media: false,
+                //     has_voice: false,
+                // });
+                // await nextTick();
+                // scrollToBottom();
+                const botMsg = {
+                    id: ai_message.id,
+                    sender: 'bot',
+                    text: ai_message.content || '',
+                    created_at: ai_message.created_at,
+                    has_media: false,
+                    has_voice: false,
+                };
+                chatLocal.messages = [...chatLocal.messages, botMsg]; // ← به‌جای push
+
+                await nextTick();
+                scrollToBottom();
             }
-
-            // اضافه کردن پاسخ AI
-            activeChat.messages.push({
-                sender: 'bot',
-                text: ai_message.content
-            });
-
-            // ذخیره aiUserId برای تشخیص آینده
-            if (!aiUserId) aiUserId = ai_message.sender_id;
         } else {
             throw new Error('خطا در ارسال پیام');
         }
@@ -552,7 +655,7 @@ const updateChatTitle = async (chatId, title) => {
 const msgInput = ref(null)
 
 // 2-2) رشد خودکار بدون اسکرول
-function autoGrow () {
+function autoGrow() {
     const ta = msgInput.value
     if (!ta) return
     ta.style.height = 'auto'
@@ -560,12 +663,13 @@ function autoGrow () {
 }
 
 // 2-3) Enter = ارسال / Shift+Enter = خط جدید
-function onKeydown (e) {
+function onKeydown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault()
         sendMessage()
     }
 }
+
 // حذف چت
 const deleteChat = async (chatId) => {
     if (!confirm('آیا مطمئنید می‌خواهید این چت را حذف کنید؟')) return;
@@ -662,8 +766,16 @@ const playVoice = async (id) => {
     }
 };
 
-const onBubbleClick = (message) => {
-    if (message.voiceUrl) playVoice(message.id);
+const onBubbleClick = async (message) => {
+    if (!message) return;
+
+    if (!message.voiceUrl && (message.has_voice || message.has_media)) {
+        await ensureMediaLoaded(message);
+    }
+
+    if (message.voiceUrl) {
+        playVoice(message.id);
+    }
 };
 
 
@@ -672,17 +784,6 @@ onMounted(() => {
     loadChats();
     fetchDepartments();
 });
-
-
-
-
-
-
-
-
-
-
-
 
 
 const synth = window.speechSynthesis;
@@ -732,7 +833,11 @@ const speak = (text) => {
     const parts = chunkText(text, 220);
 
     const playPart = (i) => {
-        if (i >= parts.length) { isSpeaking.value = false; currentUtter = null; return; }
+        if (i >= parts.length) {
+            isSpeaking.value = false;
+            currentUtter = null;
+            return;
+        }
         const u = new SpeechSynthesisUtterance(parts[i]);
         if (faVoice) u.voice = faVoice;
         u.lang = faVoice?.lang || 'fa-IR';  // مهم برای جهت/تلفظ
@@ -1313,11 +1418,11 @@ const stopSpeak = () => {
 
 /* دکمه‌ها: کپسولی با افکت شیشه‌ای سبک */
 .msg-action {
-    --bg: rgba(241,245,249,.9);      /* slate-100/90 */
-    --bd: rgba(203,213,225,.9);      /* slate-300/90 */
-    --fg: #334155;                   /* slate-700 */
-    --hover: rgba(226,232,240,1);    /* slate-200 */
-    --ring: rgba(99,102,241,.25);    /* indigo ring */
+    --bg: rgba(241, 245, 249, .9); /* slate-100/90 */
+    --bd: rgba(203, 213, 225, .9); /* slate-300/90 */
+    --fg: #334155; /* slate-700 */
+    --hover: rgba(226, 232, 240, 1); /* slate-200 */
+    --ring: rgba(99, 102, 241, .25); /* indigo ring */
 
     display: inline-flex;
     align-items: center;
@@ -1330,19 +1435,19 @@ const stopSpeak = () => {
     color: var(--fg);
     cursor: pointer;
     transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
-    box-shadow: 0 2px 6px rgba(15,23,42,.06);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, .06);
     backdrop-filter: blur(4px);
 }
 
 .msg-action:hover {
     background: var(--hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(15,23,42,.10);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, .10);
 }
 
 .msg-action:active {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(15,23,42,.06);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, .06);
 }
 
 .msg-action:focus-visible {
@@ -1365,16 +1470,17 @@ const stopSpeak = () => {
 
 .msg-action.handoff {
     --fg: #4338ca; /* ایندیگو */
-    --bd: rgba(165,180,252,.7);
-    --bg: rgba(238,242,255,.85);
-    --hover: rgba(224,231,255,1);
+    --bd: rgba(165, 180, 252, .7);
+    --bg: rgba(238, 242, 255, .85);
+    --hover: rgba(224, 231, 255, 1);
 }
-.chat-input{
+
+.chat-input {
     width: 100%;
-    min-height: 56px;       /* اندازه اولیه */
-    max-height: 220px;      /* محدودیت رشد */
-    overflow: hidden;       /* بدون اسکرول عمودی */
-    resize: none;           /* کاربر نتواند دستی تغییر دهد */
+    min-height: 56px; /* اندازه اولیه */
+    max-height: 220px; /* محدودیت رشد */
+    overflow: hidden; /* بدون اسکرول عمودی */
+    resize: none; /* کاربر نتواند دستی تغییر دهد */
     line-height: 1.6;
     border-radius: 14px;
     padding: 12px 14px;

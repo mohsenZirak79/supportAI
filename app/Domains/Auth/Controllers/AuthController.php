@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Morilog\Jalali\Jalalian;
+use Illuminate\Support\Facades\Cookie;
 use function Symfony\Component\String\u;
 
 class AuthController
@@ -170,8 +171,8 @@ class AuthController
 
         // 3. پیدا کردن یوزر
         $user = User::where('phone', $request->phone)->first();
-        if (!$user){
-            return response()->json(['message' => 'شماره تلفن یافت نشد'] , 404);
+        if (!$user) {
+            return response()->json(['message' => 'شماره تلفن یافت نشد'], 404);
         }
 
         // 4. ساخت OTP
@@ -214,44 +215,79 @@ class AuthController
         $user = User::where('phone', $request->phone)->first();
 
         if (!$user || now()->diffInSeconds($user->otp_sent_at) > 120) {
-            return response()->json(['error' => ['code' => 'OTP_EXPIRED','message' => 'OTP expired']], 400);
+            return response()->json(['error' => ['code' => 'OTP_EXPIRED', 'message' => 'OTP expired']], 400);
         }
 
         if (Cache::get('otp_login_' . $request->phone) != $request->otp) {
-            return response()->json(['error' => ['code' => 'OTP_INVALID','message' => 'Invalid OTP']], 400);
+            return response()->json(['error' => ['code' => 'OTP_INVALID', 'message' => 'Invalid OTP']], 400);
         }
 
-    // 1) صدور JWT برای استفاده در API
-    $jwt = \Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
+        // 1) صدور JWT برای استفاده در API
+        $jwt = \Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
 
-    // 2) ساخت Session برای وب (ادمین/ریورب/چیزهایی که به سشن تکیه دارند)
-    \Illuminate\Support\Facades\Auth::login($user);
-    $request->session()->regenerate();
+        // 2) ساخت Session برای وب (ادمین/ریورب/چیزهایی که به سشن تکیه دارند)
+        \Illuminate\Support\Facades\Auth::login($user);
+        $request->session()->regenerate();
 
         Cache::forget('otp_login_' . $request->phone);
 
-    // 3) تصمیم مسیر
-    $isAdmin = $user->hasRole('ادمین'); // یا هر رول/پرمیژنِ دلخواه
-    $redirect = $isAdmin ? route('admin.users') : route('chat');
+        // 3) تصمیم مسیر
+        $isAdmin = $user->hasRole('کاربر عادی'); // یا هر رول/پرمیژنِ دلخواه
+        $redirect = $isAdmin ? route('chat') : route('profile');
+//        $jwt = \Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
+//        \Log::debug('JWT issued', ['len' => strlen($jwt), 'head' => substr($jwt,0,20)]);
+//        $redirect = route('_debug-jwt');
 
-    // 4) پاسخ + ست کردن کوکی JWT (برای API)
-        return response()->json([
-        'access_token' => $jwt,
-        'role_names'   => $user->roles->pluck('name'),
-        'redirect_url' => $redirect,
-        ])->cookie(
+        $response = response()->json([
+            'access_token' => $jwt,
+            'role_names' => $user->roles->pluck('name'),
+            'redirect_url' => $redirect,
+        ]);
+
+        // 5) ست کردن کوکی JWT به صورت *خام (Raw)*
+        $cookie = Cookie::make(
             'jwt',
-        $jwt,
+            $jwt,
             120,                       // دقیقه
-        '/',                   // path
-        null,                  // domain
-        app()->isProduction(), // Secure فقط روی HTTPS
+            '/',                       // path
+            null,                      // domain
+            app()->isProduction(),     // Secure فقط روی HTTPS
             true,                      // HttpOnly
-        false,                 // Raw
+            true,                      // ⬅️ **RAW/UNENCRYPTED** (بسیار مهم)
             'Lax'                      // SameSite
         );
-    }
 
+        // 6) افزودن کوکی خام به پاسخ
+        return $response->withCookie($cookie);
+
+
+
+
+        // 4) پاسخ + ست کردن کوکی JWT (برای API)
+//        return response()->json([
+//            'access_token' => $jwt,
+//            'role_names' => $user->roles->pluck('name'),
+//            'redirect_url' => $redirect,
+//        ])->cookie('jwt', $jwt, 120, '/', null, app()->isProduction(), true, true, 'Lax');
+//
+//        $redirect = route('chat');
+//
+//        return response()->json([
+//            'access_token' => $jwt,
+//            'role_names' => $user->roles->pluck('name'),
+//            'redirect_url' => $redirect,
+//        ])->cookie(
+//            'jwt',
+//            $jwt,
+//            120,                       // دقیقه
+//            '/',                   // path
+//            null,                  // domain
+//            app()->isProduction(), // Secure فقط روی HTTPS
+//            true,                      // HttpOnly
+//            true,                 // Raw
+//            'Lax'                      // SameSite
+//        );
+    }
 
 
     public function twoFaVerify(Request $request)
@@ -285,6 +321,7 @@ class AuthController
             ->with('success', 'با موفقیت خارج شدید.')
             ->withoutCookie('jwt');
     }
+
     public function refresh(Request $request)
     {
         try {
@@ -302,7 +339,7 @@ class AuthController
             null,
             app()->isProduction(),         // Secure در پرود
             true,                          // HttpOnly
-            false,
+            true,
             'Lax'
         );
     }

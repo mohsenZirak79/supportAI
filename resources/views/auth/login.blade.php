@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
     <title>ورود کاربر</title>
@@ -57,7 +58,8 @@
 
                             <div class="card-body">
                                 <!-- فرم شماره تلفن -->
-                                <form id="loginForm">
+                                <form id="loginForm" method="POST">
+                                    @csrf
                                     <label>شماره تلفن</label>
                                     <div class="mb-3">
                                         <input type="text" class="form-control" name="phone"
@@ -69,12 +71,10 @@
                                 </form>
 
                                 <!-- فرم OTP -->
-                                <form id="otpForm" style="display:none; margin-top:20px;">
-                                    <label>کد ورود</label>
-                                    <div class="mb-3">
-                                        <input type="hidden" name="phone">
-                                        <input type="text" name="otp" placeholder="کد تایید" class="form-control" required>
-                                    </div>
+                                <form id="otpForm" method="POST" style="display:none; margin-top:20px;">
+                                    @csrf
+                                    <input type="hidden" name="phone">
+                                    <input type="text" name="otp" placeholder="کد تایید" class="form-control" required>
                                     <button type="submit" class="btn bg-gradient-info w-100 mt-4 mb-0">
                                         تایید کد
                                     </button>
@@ -102,44 +102,44 @@
 </footer>
 
 <script>
-    // ارسال شماره
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const phone = document.querySelector('#loginForm input[name="phone"]').value.trim();
+    document.addEventListener('DOMContentLoaded', () => {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        try {
-            const res = await axios.post('/api/v1/auth/login', { phone });
-            // فرم OTP را نمایش بده
-            document.getElementById('loginForm').style.display = 'none';
-            const otpForm = document.getElementById('otpForm');
-            otpForm.style.display = 'block';
-            otpForm.querySelector('input[name="phone"]').value = phone;
+        // ارسال شماره (OTP request)
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.querySelector('#loginForm input[name="phone"]').value.trim();
+            if (!phone) return;
 
-            if (res.data.otp) alert('Test OTP: ' + res.data.otp); // فقط در local
-        } catch (err) {
-            document.getElementById('error').innerText =
-                err?.response?.data?.message || 'خطا در ارسال شماره';
-        }
-    });
+            try {
+                const res = await axios.post('/api/v1/auth/login', { phone });
+                document.getElementById('loginForm').style.display = 'none';
+                const otpForm = document.getElementById('otpForm');
+                otpForm.style.display = 'block';
+                otpForm.querySelector('input[name="phone"]').value = phone;
 
-    // ارسال OTP
-    document.getElementById('otpForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const otpForm = document.getElementById('otpForm');
-        const phone = otpForm.querySelector('input[name="phone"]').value;
-        const otp   = otpForm.querySelector('input[name="otp"]').value;
+                if (res.data.otp) alert('Test OTP: ' + res.data.otp);
+            } catch (err) {
+                document.getElementById('error').innerText =
+                    err?.response?.data?.message || 'خطا در ارسال شماره';
+            }
+        });
 
-        try {
-            // توجه: این روتِ وبه (verifyLoginOtp) که کوکی HttpOnly می‌ذاره
-            const res = await axios.post('/login', { phone, otp });
-            // >>> هیچ localStorage یی لازم نیست
-            // localStorage.removeItem('token');  // اگر قبلاً گذاشته‌ای، پاکش کن
+        // تأیید OTP
+        document.getElementById('otpForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.querySelector('#otpForm input[name="phone"]').value;
+            const otp = document.querySelector('#otpForm input[name="otp"]').value;
 
-            window.location.href = res.data.redirect_url; // مثلا /chat
-        } catch (err) {
-            document.getElementById('error').innerText =
-                err?.response?.data?.error?.message || 'خطا در تایید OTP';
-        }
+            try {
+                const res = await axios.post('/login', { phone, otp });
+                window.location.href = res.data.redirect_url;
+            } catch (err) {
+                document.getElementById('error').innerText =
+                    err?.response?.data?.error?.message || 'خطا در تأیید OTP';
+            }
+        });
     });
 </script>
 </body>

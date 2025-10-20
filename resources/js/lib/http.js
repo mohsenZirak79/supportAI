@@ -3,6 +3,7 @@ const API_BASE = '/api/v1';
 
 let isRefreshing = false;
 let refreshPromise = null;
+let pendingQueue = []; // [{resolve, reject, path, opts}]
 
 async function refreshToken() {
     if (isRefreshing) return refreshPromise;
@@ -41,7 +42,36 @@ function goLogin() {
     const ret = encodeURIComponent(url.pathname + url.search);
     window.location.href = `/login?ret=${ret}`;
 }
-
+function enqueueRetry(fn) {
+    return new Promise((resolve, reject) => {
+        pendingQueue.push({ resolve, reject, fn });
+    });
+}
+function flushQueue(err) {
+    const queue = pendingQueue;
+    pendingQueue = [];
+    queue.forEach(({ resolve, reject, fn }) => {
+        if (err) reject(err);
+        else resolve(fn());
+    });
+}
+async function refreshTokenOnce() {
+    if (isRefreshing) return refreshPromise;
+    isRefreshing = true;
+    refreshPromise = fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' },
+    })
+        .then(res => {
+            if (!res.ok) throw new Error('refresh failed');
+            return true;
+        })
+        .finally(() => {
+            isRefreshing = false;
+        });
+    return refreshPromise;
+}
 /**
  * apiFetch: جانشین fetch برای API
  * - credentials: 'include'
@@ -49,34 +79,39 @@ function goLogin() {
  */
 export async function apiFetch(path, options = {}) {
     const opts = {
-    method: options.method || 'GET',
-    headers: {
-      'Accept': 'application/json',
-      ...(options.headers || {}),
-    },
-    credentials: 'include', // ⬅️ حیاتی: کوکی jwt بره/برگرده
-    ...(options.body ? { body: options.body } : {}),
+        method: options.method || 'GET',
+        headers: {
+            'Accept': 'application/json',
+            ...(options.headers || {}),
+        },
+        credentials: 'include',
+        ...(options.body ? { body: options.body } : {}),
     };
 
-  let res = await fetch(`${API_BASE}${path}`, opts);
+    const doFetch = () => fetch(`${API_BASE}${path}`, opts);
 
-  // هندل 401 + تلاش refresh
-    if (res.status === 401) {
-    const r = await fetch(`${API_BASE}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Accept': 'application/json' },
-    });
+    let res = await doFetch();
 
-    // if (r.ok) {
-    //   res = await fetch(`${API_BASE}${path}`, opts);
-    //   if (res.status !== 401) return res;
-    //         }
-    //
-    // const ret = encodeURIComponent(location.pathname + location.search);
-    // location.href = `/login?ret=${ret}`;
-    // return res;
+    if (res.status !== 401) return res;
+
+    // اگر یکی دارد refresh می‌کند، این درخواست را صف کن تا بعد از refresh دوباره ارسال شود
+    if (isRefreshing) {
+        return enqueueRetry(async () => {
+            const retry = await doFetch();
+            return retry;
+        });
     }
 
-    return res;
+    try {
+        await refreshTokenOnce();
+        // refresh موفق → همه‌ی منتظرها را اجرا کن
+        flushQueue(null);
+        // و خود این یکی را هم retry کن
+        res = await doFetch();
+        return res;
+    } catch (err) {
+        // refresh شکست → کل صف را با خطا رد کن
+        flushQueue(err);
+        return res; // همان 401 اولیه
+    }
 }
