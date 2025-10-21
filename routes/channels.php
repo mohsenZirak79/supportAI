@@ -3,9 +3,9 @@
 use Illuminate\Support\Facades\Broadcast;
 
 // این خط را به ابتدای فایل اضافه کن تا مسیر /broadcasting/auth با میدلورها ثبت شود:
-Broadcast::routes([
-    'middleware' => ['api', 'jwt.cookie', 'auth:jwt'], // ← فقط همین‌ها
-]);
+//Broadcast::routes([
+//    'middleware' => ['api', 'jwt.cookie', 'auth:jwt'], // ← فقط همین‌ها
+//]);
 
 //// حالا قوانین کانال‌ها:
 //// نمونه ۱: کانال عمومیِ فقط لاگین‌کرده‌ها

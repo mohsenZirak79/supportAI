@@ -241,56 +241,114 @@ class TicketController extends Controller
 //            'can_user_reply'  => $canUserReply,
 //        ]);
 //    }
+//    public function show(string $rootId)
+//    {
+//        // فقط تیکتی که متعلق به همین کاربر است (همان شرط فعلی شما)
+//        $rootTicket = Ticket::where('id', $rootId)
+//            ->where('sender_type', 'user')
+//            ->where('sender_id', auth()->id())
+//            ->firstOrFail();
+//
+//        // کل پیام‌های ترد (ریشه + زیرمجموعه‌ها) به صورت مدل (برای دسترسی به last مدل)
+//        $messagesModels = Ticket::where(function ($q) use ($rootId) {
+//            $q->where('root_id', $rootId)->orWhere('id', $rootId);
+//        })
+//            ->with('media')           // برای پیوست‌ها
+//            ->orderBy('created_at')
+//            ->get();
+//
+//        // آخرین پیام (مدل)
+//        $lastModel = $messagesModels->last();
+//
+//        // به صورت پیش‌فرض اجازه‌ی پاسخ false
+//        $canUserReply = false;
+//
+//        if ($lastModel) {
+//            // اگر آخرین پیام توسط پشتیبان ثبت شده باشد (sender_type = admin)
+//            if (strtolower($lastModel->sender_type) === 'admin') {
+//                // بررسی نقش‌های فرستنده‌ی این پیام:
+//                // دارد حداقل یک نقش با allow_ticket = '1' و is_internal = 0؟
+//                // (Spatie: model_has_roles => role_id / model_id / model_type)
+//                $hasAllowedRole = Role::query()
+//                    ->where('allow_ticket', '1')
+//                    ->where('is_internal', 0) // یا is_system_role = 0 اگر آن نام را انتخاب کرده‌ای
+//                    ->whereHas('users', function ($q) use ($lastModel) {
+//                        $q->where('users.id', $lastModel->sender_id);
+//                    })
+//                    ->exists();
+//
+//                $canUserReply = $hasAllowedRole;
+//            }
+//        }
+//
+//        // Map خروجی پیام‌ها (مثل قبل)
+//        $messages = $messagesModels->map(function ($m) {
+//            return [
+//                'id'          => $m->id,
+//                'message'     => $m->message,
+//                'sender_type' => $m->sender_type, // user | admin
+//                'status'      => $m->status,
+//                'created_at'  => $m->created_at,
+//                'attachments' => $m->media
+//                    ->where('collection_name','ticket-attachments')
+//                    ->map(fn($med) => [
+//                        'id'   => $med->id,
+//                        'name' => $med->file_name,
+//                        'mime' => $med->mime_type,
+//                        'size' => (int) $med->size,
+//                        'url'  => $med->getFullUrl(),
+//                    ])->values(),
+//            ];
+//        });
+//
+//        // شمارش فایل‌های پیوست برای خود ریشه (مثل قبل)
+//        $rootTicket->loadCount([
+//            'media as attachments_count' => fn($q) => $q->where('collection_name','ticket-attachments')
+//        ]);
+//
+//        return response()->json([
+//            'ticket'         => $rootTicket,
+//            'messages'       => $messages,       // شامل پیام ریشه
+//            'can_user_reply' => $canUserReply,   // حالا داینامیک از roles
+//        ]);
+//    }
     public function show(string $rootId)
     {
-        // فقط تیکتی که متعلق به همین کاربر است (همان شرط فعلی شما)
+        // فقط تیکتی که متعلق به همین کاربر است
         $rootTicket = Ticket::where('id', $rootId)
             ->where('sender_type', 'user')
             ->where('sender_id', auth()->id())
             ->firstOrFail();
 
-        // کل پیام‌های ترد (ریشه + زیرمجموعه‌ها) به صورت مدل (برای دسترسی به last مدل)
+        // کل پیام‌های ترد (ریشه + زیرمجموعه‌ها)
         $messagesModels = Ticket::where(function ($q) use ($rootId) {
             $q->where('root_id', $rootId)->orWhere('id', $rootId);
         })
-            ->with('media')           // برای پیوست‌ها
+            ->with('media')
             ->orderBy('created_at')
             ->get();
 
-        // آخرین پیام (مدل)
+        // آخرین پیام
         $lastModel = $messagesModels->last();
 
-        // به صورت پیش‌فرض اجازه‌ی پاسخ false
+        // قانون: اگر آخرین پیام از "کاربر" نباشد و تیکت بسته نباشد، کاربر می‌تواند پاسخ دهد
         $canUserReply = false;
-
         if ($lastModel) {
-            // اگر آخرین پیام توسط پشتیبان ثبت شده باشد (sender_type = admin)
-            if (strtolower($lastModel->sender_type) === 'admin') {
-                // بررسی نقش‌های فرستنده‌ی این پیام:
-                // دارد حداقل یک نقش با allow_ticket = '1' و is_internal = 0؟
-                // (Spatie: model_has_roles => role_id / model_id / model_type)
-                $hasAllowedRole = Role::query()
-                    ->where('allow_ticket', '1')
-                    ->where('is_internal', 0) // یا is_system_role = 0 اگر آن نام را انتخاب کرده‌ای
-                    ->whereHas('users', function ($q) use ($lastModel) {
-                        $q->where('users.id', $lastModel->sender_id);
-                    })
-                    ->exists();
-
-                $canUserReply = $hasAllowedRole;
-            }
+            $lastIsUser = strtolower((string)$lastModel->sender_type) === 'user';
+            $isClosed   = strtolower((string)$rootTicket->status) === 'closed';
+            $canUserReply = !$lastIsUser && !$isClosed;
         }
 
-        // Map خروجی پیام‌ها (مثل قبل)
+        // خروجی پیام‌ها
         $messages = $messagesModels->map(function ($m) {
             return [
                 'id'          => $m->id,
                 'message'     => $m->message,
-                'sender_type' => $m->sender_type, // user | admin
+                'sender_type' => $m->sender_type, // user | admin | ...
                 'status'      => $m->status,
                 'created_at'  => $m->created_at,
                 'attachments' => $m->media
-                    ->where('collection_name','ticket-attachments')
+                    ->where('collection_name', 'ticket-attachments')
                     ->map(fn($med) => [
                         'id'   => $med->id,
                         'name' => $med->file_name,
@@ -301,18 +359,17 @@ class TicketController extends Controller
             ];
         });
 
-        // شمارش فایل‌های پیوست برای خود ریشه (مثل قبل)
+        // شمارش پیوست‌های ریشه
         $rootTicket->loadCount([
-            'media as attachments_count' => fn($q) => $q->where('collection_name','ticket-attachments')
+            'media as attachments_count' => fn($q) => $q->where('collection_name', 'ticket-attachments')
         ]);
 
         return response()->json([
             'ticket'         => $rootTicket,
-            'messages'       => $messages,       // شامل پیام ریشه
-            'can_user_reply' => $canUserReply,   // حالا داینامیک از roles
+            'messages'       => $messages,
+            'can_user_reply' => $canUserReply,
         ]);
     }
-
     public function getDepartments()
     {
         // دریافت نقش‌های پشتیبانی از Spatie

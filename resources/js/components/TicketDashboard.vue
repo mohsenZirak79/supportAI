@@ -283,7 +283,7 @@
                     @click.stop
                 >
                     <!-- Header -->
-                    <div class="p-5 border-b border-gray-200 flex items-center justify-center relative">
+                    <div class="p-3 border-b border-gray-200 flex items-center justify-center relative">
                         <button
                             @click="closeThreadModal"
                             class="absolute top-4 left-4 close-btn text-red-500 hover:text-red-700"
@@ -370,7 +370,7 @@
                                     @keydown.ctrl.enter.prevent="submitThreadReply"
                                     required
                                 ></textarea>
-                                <p class="text-xs text-gray-400 mt-1">Ctrl + Enter برای ارسال</p>
+<!--                                <p class="text-xs text-gray-400 mt-1">Ctrl + Enter برای ارسال</p>-->
                             </div>
 
                             <!-- Dropzone -->

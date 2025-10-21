@@ -252,7 +252,7 @@
                             <tr>
                                 <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">عنوان</th>
                                 <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">نام ارسال‌کننده</th>
-                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">تاریخ ایجاد (میلادی)</th>
+                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">تاریخ ایجاد</th>
                                 <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">وضعیت</th>
                                 <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">عملیات</th>
                             </tr>
@@ -265,7 +265,7 @@
                                     </td>
                                     <td class="text-center">{{ $t->sender->name ?? '-' }}</td>
                                     <td class="text-center">
-                                        {{ optional($t->created_at)->timezone('UTC')->format('Y-m-d H:i') }}
+                                        {{ \Morilog\Jalali\Jalalian::fromDateTime($t->created_at)->format('Y/m/d') }}
                                     </td>
                                     <td class="text-center">
                                         @php

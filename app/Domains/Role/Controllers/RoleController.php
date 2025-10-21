@@ -81,7 +81,7 @@ class RoleController
         $data['allow_users'] = $request->has('allow_users') ? 1 : 0;
         $data['allow_role'] = $request->has('allow_role') ? 1 : 0;
         $data['is_internal'] = $request->has('is_internal') ? 1 : 0;
-        dd($data);
+//        dd($data);
 
         // 4️⃣ بروزرسانی نقش
         $role->update($data);
