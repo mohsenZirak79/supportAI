@@ -20,7 +20,6 @@ class RoleController
 
     public function store(Request $request)
     {
-        // 1️⃣ اعتبارسنجی فیلدها
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
@@ -31,8 +30,9 @@ class RoleController
         $data['allow_chat'] = $request->has('allow_chat') ? 1 : 0;
         $data['allow_users'] = $request->has('allow_users') ? 1 : 0;
         $data['allow_role'] = $request->has('allow_role') ? 1 : 0;
-
+        $data['is_internal'] = $request->has('is_internal') ? 1 : 0;
         // 3️⃣ ایجاد رول
+        $role = Role::create($data);
         $permissions = [];
 
         if ($data['allow_ticket']) {
@@ -80,6 +80,8 @@ class RoleController
         $data['allow_chat'] = $request->has('allow_chat') ? 1 : 0;
         $data['allow_users'] = $request->has('allow_users') ? 1 : 0;
         $data['allow_role'] = $request->has('allow_role') ? 1 : 0;
+        $data['is_internal'] = $request->has('is_internal') ? 1 : 0;
+        dd($data);
 
         // 4️⃣ بروزرسانی نقش
         $role->update($data);
@@ -114,8 +116,9 @@ class RoleController
     }
 
 
-    public function delete(Role $permission)
+    public function destroy(Role $role)
     {
-        return $permission->delete();
+        $role->delete();
+        return redirect()->route('admin.roles')->with('success', 'نقش با موفقیت حذف شد.');
     }
 }

@@ -111,7 +111,8 @@
                                  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                 <title>office</title>
                                 <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                    <g transform="translate(-1869.000000, -293.000000)" fill="#FFFFFF" fill-rule="nonzero">
+                                    <g transform="translate(-1869.000000, -293.000000)" fill="#FFFFFF"
+                                       fill-rule="nonzero">
                                         <g transform="translate(1716.000000, 291.000000)">
                                             <g transform="translate(153.000000, 2.000000)">
                                                 <path class="color-background opacity-6"
@@ -137,7 +138,8 @@
                                  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                 <title>credit-card</title>
                                 <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                    <g transform="translate(-2169.000000, -745.000000)" fill="#FFFFFF" fill-rule="nonzero">
+                                    <g transform="translate(-2169.000000, -745.000000)" fill="#FFFFFF"
+                                       fill-rule="nonzero">
                                         <g transform="translate(1716.000000, 291.000000)">
                                             <g transform="translate(453.000000, 454.000000)">
                                                 <path class="color-background opacity-6"
@@ -163,7 +165,8 @@
                                  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                 <title>box-3d-50</title>
                                 <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                    <g transform="translate(-2319.000000, -291.000000)" fill="#FFFFFF" fill-rule="nonzero">
+                                    <g transform="translate(-2319.000000, -291.000000)" fill="#FFFFFF"
+                                       fill-rule="nonzero">
                                         <g transform="translate(1716.000000, 291.000000)">
                                             <g transform="translate(603.000000, 0.000000)">
                                                 <path class="color-background"
@@ -192,7 +195,8 @@
                                  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                 <title>box-3d-50</title>
                                 <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                    <g transform="translate(-2319.000000, -291.000000)" fill="#FFFFFF" fill-rule="nonzero">
+                                    <g transform="translate(-2319.000000, -291.000000)" fill="#FFFFFF"
+                                       fill-rule="nonzero">
                                         <g transform="translate(1716.000000, 291.000000)">
                                             <g transform="translate(603.000000, 0.000000)">
                                                 <path class="color-background"
@@ -343,13 +347,15 @@
                                     <td class="text-center">
                                         <!-- دکمه ویرایش -->
                                         <!-- دکمه ویرایش -->
-                                        <button class="btn-action edit" data-bs-toggle="modal" data-bs-target="#editRoleModal{{ $role->id }}">
+                                        <button class="btn-action edit" data-bs-toggle="modal"
+                                                data-bs-target="#editRoleModal{{ $role->id }}">
                                             <i class="fas fa-edit"></i> ویرایش
                                         </button>
 
                                         <!-- دکمه حذف -->
-                                        <form action="{{ route('roles.destroy', $role->id) }}" method="POST" style="display:inline-block;"
-                                              onsubmit="return confirm('آیا از حذف این کاربر مطمئن هستید؟');">
+                                        <form action="{{ route('roles.destroy', $role->id) }}" method="POST"
+                                              style="display:inline-block;"
+                                              onsubmit="return confirm('آیا از حذف این نقش مطمئن هستید؟');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-action delete">
@@ -388,21 +394,31 @@
                                                         <label class="form-label"></label>
                                                         <input type="checkbox" id="allowChat" name="allow_chat">
                                                         <label for="allowChat">امکان مشاهده و پاسخ به چت ها
-                                                            </label><br>
+                                                        </label><br>
                                                     </div>
 
                                                     <div class="col-md-6 mb-3">
                                                         <label class="form-label"></label>
                                                         <input type="checkbox" id="allowUsers" name="allow_users">
                                                         <label for="allowUsers">امکان مشاهده و مدیریت کاربران
-                                                            </label><br>
+                                                        </label><br>
                                                     </div>
 
                                                     <div class="col-md-6 mb-3">
                                                         <label class="form-label"></label>
                                                         <input type="checkbox" id="allowRoles" name="allow_role">
                                                         <label for="allowRoles">امکان مشاهده و مدیریت نقش ها
-                                                            </label><br>
+                                                        </label><br>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label"></label>
+                                                        <input type="checkbox" id="isInternal" name="is_internal">
+                                                        <label for="isInternal">کاربر داخلی سیستم
+                                                        </label><br>
+                                                        <p>در صورت انتخاب این گزینه, امکان ارجاع چت و یا تیکت به این
+                                                            کاربر امکان پذیر نمی باشد و صرفا میتواند آن ها را مشاهده
+                                                            نماید</p>
                                                     </div>
                                                     <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
                                                 </form>
@@ -412,58 +428,72 @@
                                 </div>
                             @endforeach
 
-                                <!-- Modal افزودن نقش -->
-                                <div class="modal fade" id="addRoleModal" tabindex="-1"
-                                     aria-labelledby="addRoleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="addRoleModalLabel">افزودن نقش جدید</h5>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form action="{{ route('roles.store') }}" method="POST">
-                                                    @csrf
+                            <!-- Modal افزودن نقش -->
+                            <div class="modal fade" id="addRoleModal" tabindex="-1"
+                                 aria-labelledby="addRoleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="addRoleModalLabel">افزودن نقش جدید</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="{{ route('roles.store') }}" method="POST">
+                                                @csrf
 
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">عنوان نقش</label>
-                                                        <input type="text" name="name" class="form-control" required>
-                                                    </div>
-                                                    <hr>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">عنوان نقش</label>
+                                                    <input type="text" name="name" class="form-control" required>
+                                                </div>
+                                                <hr>
 
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowTicket" name="allow_ticket">
-                                                        <label for="allowTicket">امکان مشاهده و پاسخ به تیکت
-                                                            ها</label><br>
-                                                    </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label"></label>
+                                                    <input type="checkbox" id="allowTicket" name="allow_ticket">
+                                                    <label for="allowTicket">امکان مشاهده و پاسخ به تیکت
+                                                        ها</label><br>
+                                                </div>
 
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowChat" name="allow_chat">
-                                                        <label for="allowChat">امکان مشاهده و پاسخ به چت ها
-                                                        </label><br>
-                                                    </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label"></label>
+                                                    <input type="checkbox" id="allowChat" name="allow_chat">
+                                                    <label for="allowChat">امکان مشاهده و پاسخ به چت ها
+                                                    </label><br>
+                                                </div>
 
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowUsers" name="allow_users">
-                                                        <label for="allowUsers">امکان مشاهده و مدیریت کاربران
-                                                        </label><br>
-                                                    </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label"></label>
+                                                    <input type="checkbox" id="allowUsers" name="allow_users">
+                                                    <label for="allowUsers">امکان مشاهده و مدیریت کاربران
+                                                    </label><br>
+                                                </div>
 
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label"></label>
-                                                        <input type="checkbox" id="allowRoles" name="allow_role">
-                                                        <label for="allowRoles">امکان مشاهده و مدیریت نقش ها
-                                                        </label><br>
-                                                    </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label"></label>
+                                                    <input type="checkbox" id="allowRoles" name="allow_role">
+                                                    <label for="allowRoles">امکان مشاهده و مدیریت نقش ها
+                                                    </label><br>
+                                                </div>
 
-                                                    <button type="submit" class="btn btn-primary">ثبت</button>
-                                                </form>
-                                            </div>
+                                                <hr>
+                                                <div class="col-sm-12 mb-3">
+
+                                                    <p>در صورت انتخاب این گزینه, امکان ارجاع چت و یا تیکت به این
+                                                        کاربر امکان پذیر نمی باشد و صرفا میتواند آن ها را مشاهده
+                                                        نماید</p>
+                                                </div>
+
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label"></label>
+                                                    <input type="checkbox" id="isInternal" name="is_internal">
+                                                    <label for="isInternal">کاربر داخلی سیستم
+                                                    </label><br>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">ثبت</button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
                             </tbody>
 
                         </table>
