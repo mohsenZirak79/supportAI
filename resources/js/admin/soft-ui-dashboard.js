@@ -243,10 +243,10 @@ function navbarFixed(el) {
     navbarBlurOnScroll('navbarBlur');
     el.setAttribute("checked", "true");
   } else {
-    navbar.classList.remove(...classes);
-    navbar.setAttribute('navbar-scroll', 'false');
-    navbarBlurOnScroll('navbarBlur');
-    el.removeAttribute("checked");
+    // navbar.classList.remove(...classes);
+    // navbar.setAttribute('navbar-scroll', 'false');
+    // navbarBlurOnScroll('navbarBlur');
+    // el.removeAttribute("checked");
   }
 };
 
@@ -280,10 +280,10 @@ function navbarBlurOnScroll(id) {
   }
 
   function transparentNavbar() {
-    navbar.classList.remove(...classes)
-    navbar.classList.add(...toggleClasses)
+    // navbar.classList.remove(...classes)
+    // navbar.classList.add(...toggleClasses)
 
-    toggleNavLinksColor('transparent');
+    // toggleNavLinksColor('transparent');
   }
 
   function toggleNavLinksColor(type) {

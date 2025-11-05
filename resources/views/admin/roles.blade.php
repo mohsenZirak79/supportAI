@@ -94,8 +94,7 @@
     <div class="sidenav-header">
         <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute start-0 top-0 d-none d-xl-none"
            aria-hidden="true" id="iconSidenav"></i>
-        <a class="navbar-brand m-0" href="https://demos.creative-tim.com/soft-ui-dashboard/pages/dashboard.html"
-           target="_blank">
+        <a class="navbar-brand m-0" href="#">
             <span class="me-1 font-weight-bold">پنل مدیریت</span>
         </a>
     </div>
@@ -504,9 +503,7 @@
     </div>
 </main>
 <div class="fixed-plugin">
-    <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
-        <i class="fa fa-cog py-2"> </i>
-    </a>
+
     <div class="card shadow-lg ">
         <div class="card-header pb-0 pt-3 ">
             <div class="float-start">

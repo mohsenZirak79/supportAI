@@ -312,7 +312,7 @@ class ConversationController extends Controller
         }
 
         try {
-            event(new \App\Domains\Shared\Events\MessageSent($aiMessage));
+            //event(new \App\Domains\Shared\Events\MessageSent($aiMessage));
         } catch (\Throwable $e) {
             \Log::warning('Broadcast failed: ' . $e->getMessage(), [
                 'exception' => get_class($e),
@@ -456,7 +456,7 @@ class ConversationController extends Controller
             'agent_response' => $validated['agent_response'],
             'response_visibility' => $validated['response_visibility'],
         ]);
-        event(new \App\Domains\Shared\Events\ReferralResponded($referral)); // Broadcast to user
+        //event(new \App\Domains\Shared\Events\ReferralResponded($referral)); // Broadcast to user
         return response()->json($referral->fresh()->load(['user', 'conversation']));
     }
 
@@ -500,7 +500,7 @@ class ConversationController extends Controller
         } catch (\Throwable $e) {
             \Log::warning('Failed to update conversation status after handoff', ['id' => $conversation->id]);
         }
-        event(new \App\Domains\Shared\Events\ReferralCreated($referral));
+        //event(new \App\Domains\Shared\Events\ReferralCreated($referral));
 
         return response()->json(
             $referral->load(['conversation']),

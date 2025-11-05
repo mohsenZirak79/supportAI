@@ -186,7 +186,7 @@ const fetchDepartments = async () => {  // ← این تابع رو کامل ا�
         if (response.ok) {
             const data = await response.json();  // یا data.data اگر API فرق داره
             availableRoles.value = data;  // array objects مثل [{id: "...", name: "..."}]
-            console.log('Roles loaded:', availableRoles.value);  // برای debug
+            // console.log('Roles loaded:', availableRoles.value);  // برای debug
         } else {
             console.error('خطا در بارگذاری roles');
         }

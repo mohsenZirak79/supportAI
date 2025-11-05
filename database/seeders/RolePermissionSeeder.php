@@ -13,7 +13,7 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         // 1. نقش‌ها
-        $roles = ['برنامه نویس', 'ادمین' , 'کاربر عادی'];
+        $roles = ['برنامه نویس', 'ادمین', 'کاربر عادی'];
         foreach ($roles as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
@@ -49,15 +49,21 @@ class RolePermissionSeeder extends Seeder
 
         // 4. یوزرهای تستی + assign role
         $users = [
-            ['name' => 'admin', 'password' => '123456789' , 'role' => 'ادمین'],
-            ['name' => 'programmer','password' => '123456789' , 'role' => 'برنامه نویس']
+            ['name' => 'admin', 'password' => '123456789', 'role' => 'ادمین', 'phone' => '09123440912'],
+            ['name' => 'programmer', 'password' => '123456789', 'role' => 'برنامه نویس', 'phone' => '09374376595'],
         ];
 
         foreach ($users as $u) {
             $user = User::updateOrCreate(
                 [
                     'name' => $u['name'],
-                    'password' => Hash::make($u['password'])
+                    'password' => Hash::make($u['password']),
+                    'phone' => $u['phone'],
+                    'allow_ticket' => '1',
+                    'allow_chat' => '1',
+                    'allow_users' => '1',
+                    'allow_role' => '1',
+                    'is_internal' => '1',
                 ]
             );
 
