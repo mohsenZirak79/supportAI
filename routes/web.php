@@ -124,6 +124,9 @@ Route::middleware(['web', 'auth:web', \App\Http\Middleware\CheckPermissionForRou
         Route::get('/tickets/{id}', [\App\Domains\AdminPanel\Controllers\AdminTicketController::class, 'show'])->name('admin.tickets.show');
         Route::post('/tickets/{id}/messages', [\App\Domains\AdminPanel\Controllers\AdminTicketController::class, 'reply'])->name('admin.tickets.reply');
         Route::get('/chats', [AdminChatController::class, 'index'])->name('admin.chats');
+        Route::get('dashboard', function (){
+            return \view('admin.dashboard');
+        })->name('admin.dashboard');
     });
 
 Route::prefix('admin')->group(function () {
