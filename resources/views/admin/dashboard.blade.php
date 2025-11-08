@@ -327,41 +327,22 @@
                 به داشبورد خوش آمدی—همه‌چیز آماده‌ست تا گفت‌وگوهای هوشمند و پشتیبانی سریع شروع بشه.
             </p>
         </div>
-
-        <div class="row g-3 g-lg-4 align-items-stretch">
+        <div class="row justify-content-center g-3 g-lg-4 align-items-center">
             <div class="col-md-6">
-                <!-- تصویر رابط چت روی موبایل (Pexels) -->
                 <div class="card border-0 shadow-sm h-100" style="border-radius:20px;">
                     <img
-                        src="https://images.pexels.com/photos/30530423/pexels-photo-30530423.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                        src="{{ asset('images/dashboard-1.png') }}"
                         alt="رابط چت هوش مصنوعی روی موبایل"
                         class="img-fluid w-100"
                         style="border-top-left-radius:20px;border-top-right-radius:20px;"
                     >
-                    <div class="card-body">
+                    <div class="card-body text-center">
                         <h6 class="mb-1">چت هوش مصنوعی روی موبایل</h6>
-                        <small class="text-muted">نمونه‌ای از UI مکالمه با دستیار هوشمند</small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <!-- ایلاستریشن گفتگو با روبات (Unsplash) -->
-                <div class="card border-0 shadow-sm h-100 bg-light" style="border-radius:20px;">
-                    <img
-                        src="https://images.unsplash.com/photo-illustration/FtzoXEXFobo?auto=format&fit=crop&w=1200&q=80"
-                        alt="گفتگوی انسان و روبات"
-                        class="img-fluid w-100"
-                        style="border-top-left-radius:20px;border-top-right-radius:20px;"
-                    >
-                    <div class="card-body">
-                        <h6 class="mb-1">انسان × روبات</h6>
-                        <small class="text-muted">ماهیت پروژه: گفت‌وگو، کمک، و خودکارسازی</small>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+        </div>
 
 </main>
 <div class="fixed-plugin">

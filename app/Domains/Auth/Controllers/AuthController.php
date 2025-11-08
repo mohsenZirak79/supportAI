@@ -190,12 +190,12 @@ class AuthController
         ]);*/
 
         // 6. محیط local → برگرداندن OTP برای تست
-        if (app()->environment('local')) {
+        //if (app()->environment('local')) {
             return response()->json([
                 'message' => 'OTP sent',
                 'otp' => $otp
             ]);
-        }
+        //}
 
         return response()->json(['message' => 'OTP sent for login']);
     }
@@ -233,7 +233,7 @@ class AuthController
 
         // 3) تصمیم مسیر
         $isAdmin = $user->hasRole('کاربر عادی'); // یا هر رول/پرمیژنِ دلخواه
-        $redirect = $isAdmin ? route('chat') : route('profile');
+        $redirect = $isAdmin ? route('chat') : route('admin.dashboard');
 //        $jwt = \Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
 //        \Log::debug('JWT issued', ['len' => strlen($jwt), 'head' => substr($jwt,0,20)]);
 //        $redirect = route('_debug-jwt');
