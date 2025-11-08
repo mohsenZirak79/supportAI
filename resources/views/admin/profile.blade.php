@@ -21,7 +21,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-    @vite(['resources/css/admin.css', 'resources/js/admin.js'])
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
+    @vite(['resources/css/admin.css', 'resources/js/admin.js' ,'resources/js/register.js'])
+
 </head>
 
 <body class="g-sidenav-show rtl bg-gray-100">
@@ -271,12 +274,21 @@
                                 </div>
                             </div>
 
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">تاریخ تولد</label>
-                                    <input type="date" name="birth_date" class="form-control"
-                                           value="{{ old('birth_date', $user->birth_date) }}">
-                                </div>
+                            <div class="col-md-6 mb-1" dir="rtl">
+                                <label for="birth_date_{{ $user->id }}" class="form-label">تاریخ
+                                    تولد </label>
+                                <input
+                                    id="birth_date_{{ $user->id }}"
+                                    name="birth_date"
+                                    type="text"
+                                    class="form-control"
+                                    value="{{ $user->birth_date }}"
+                                    autocomplete="off"
+                                    dir="ltr"
+                                    data-jdp
+                                    data-jdp-only-date="true"
+                                    data-jdp-config='{"dateFormat":"YYYY/MM/DD","autoShow":true}'
+                                >
                             </div>
 
                             <div class="mb-3">
@@ -380,5 +392,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.jalaliDatepicker?.startWatch) {
+            jalaliDatepicker.startWatch({
+                time: false,
+                container: 'body',
+                zIndex: 200000
+            });
+
+            document.addEventListener('shown.bs.modal', function () {
+                jalaliDatepicker.updateOptions({zIndex: 200000, container: 'body'});
+            });
+        }
+    });
+
+</script>
 </body>
 </html>
