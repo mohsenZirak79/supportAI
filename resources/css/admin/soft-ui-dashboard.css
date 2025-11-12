@@ -24926,4 +24926,116 @@ pre[class*="language-"] {
   }
 }
 
+/* ------------------------------
+   Custom Responsive Overrides
+------------------------------ */
+@media (max-width: 1199.98px) {
+  .g-sidenav-show .navbar-main.fixed-top {
+    width: calc(100% - 32px);
+    margin: 0 16px;
+    border-radius: 1rem;
+    left: 0;
+    right: 0;
+  }
+
+  .g-sidenav-show .navbar:not(.sidenav).navbar-main .navbar-collapse {
+    margin-top: 0.5rem;
+  }
+
+  .g-sidenav-show .main-content {
+    margin-inline: 0 !important;
+  }
+
+  .g-sidenav-show .main-content .container-fluid {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .navbar-main .navbar-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+  }
+
+  .navbar-main .navbar-nav .nav-item {
+    width: 100%;
+  }
+
+  .navbar-main .navbar-nav .nav-link {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .g-sidenav-show .sidenav {
+    width: calc(100% - 2rem);
+    max-width: 18rem;
+    margin: 0 1rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .g-sidenav-show .sidenav {
+    width: calc(100% - 2rem);
+    margin: 0 1rem;
+    border-radius: 1rem;
+  }
+
+  .g-sidenav-show .main-content .container-fluid {
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .fixed-plugin .card {
+    width: calc(100% - 32px);
+    max-width: 360px;
+    right: -100% !important;
+    left: auto !important;
+  }
+
+  .fixed-plugin.show .card {
+    right: 16px !important;
+    left: auto !important;
+  }
+
+  .rtl .fixed-plugin .card {
+    right: auto !important;
+    left: -100% !important;
+  }
+
+  .rtl .fixed-plugin.show .card {
+    left: 16px !important;
+    right: auto !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .navbar-main {
+    padding-inline: 1rem;
+  }
+
+  .navbar-main .navbar-toggler {
+    margin-inline-start: auto;
+  }
+
+  .g-sidenav-show .sidenav {
+    width: calc(100% - 1.5rem);
+    margin: 0 0.75rem;
+    border-radius: 0.75rem;
+  }
+
+  .card {
+    border-radius: 1rem !important;
+  }
+
+  .fixed-plugin .fixed-plugin-button {
+    bottom: 12px;
+    right: 12px;
+  }
+
+  .rtl .fixed-plugin .fixed-plugin-button {
+    right: auto;
+    left: 12px;
+  }
+}
+
 /*# sourceMappingURL=dashboard-free.css.map */

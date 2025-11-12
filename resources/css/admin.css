@@ -98,6 +98,36 @@ table.dataTable tbody td {
     justify-content: space-between !important;
 }
 
+.dt-container .dt-layout-table {
+    width: 100% !important;
+}
+
+.dt-container .dt-layout-table > div {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--primary) transparent !important;
+}
+
+.dt-container .dt-layout-table > div::-webkit-scrollbar {
+    height: 6px !important;
+}
+
+.dt-container .dt-layout-table > div::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+.dt-container .dt-layout-table > div::-webkit-scrollbar-thumb {
+    background: rgba(159, 193, 250, 0.65) !important;
+    border-radius: 999px !important;
+}
+
+.dt-container .dt-layout-table table {
+    width: 100% !important;
+    min-width: 720px !important;
+}
+
 /* ------------------------------
    SEARCH BAR (CENTERED)
 ------------------------------ */
@@ -163,6 +193,7 @@ table.dataTable tbody td {
     margin-inline-start: auto !important;
     display: flex !important;
     gap: 8px !important;
+    flex-wrap: wrap !important;
 }
 
 .dt-buttons .dt-button {
@@ -258,6 +289,23 @@ table.dataTable tbody td {
 /* ------------------------------
    RESPONSIVE ADJUSTMENTS
 ------------------------------ */
+@media (max-width: 1024px) {
+    .dt-container {
+        padding: 14px !important;
+    }
+
+    .dt-container .dt-layout-row {
+        gap: 14px !important;
+    }
+
+    .dt-container .dt-search,
+    .dt-container .dt-buttons,
+    .dt-container .dt-length {
+        flex: 1 1 100% !important;
+        justify-content: center !important;
+    }
+}
+
 @media (max-width: 768px) {
     .dt-container .dt-layout-row {
         flex-direction: column !important;
@@ -273,16 +321,95 @@ table.dataTable tbody td {
         order: 2 !important;
         margin-inline-start: 0 !important;
         justify-content: center !important;
+        width: 100% !important;
     }
 
     .dt-container .dt-length {
         order: 3 !important;
         justify-content: center !important;
+        width: 100% !important;
+    }
+
+    .dt-buttons .dt-button {
+        flex: 1 1 calc(50% - 8px) !important;
+        justify-content: center !important;
+    }
+
+    .dt-container .dt-search input {
+        max-width: none !important;
+        width: min(320px, 100%) !important;
     }
 
     table.dataTable thead th,
     table.dataTable tbody td {
         padding: 10px 12px !important;
         font-size: 0.825rem !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .dt-container {
+        padding: 12px !important;
+    }
+
+    .dt-container .dt-search input {
+        width: 100% !important;
+    }
+
+    .dt-buttons .dt-button {
+        flex: 1 1 100% !important;
+    }
+
+    .dt-container .dt-paging {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    .dt-container .dt-layout-table table {
+        min-width: 600px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .dt-container {
+        border-radius: 10px !important;
+    }
+
+    .dt-container .dt-search label {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        width: 100% !important;
+    }
+
+    .dt-container .dt-search input {
+        width: 100% !important;
+    }
+
+    .dt-container .dt-length select {
+        width: 100% !important;
+    }
+
+    .dt-buttons {
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    .dt-buttons .dt-button {
+        width: 100% !important;
+    }
+
+    .dt-container .dt-paging .dt-paging-button {
+        min-width: 32px !important;
+        flex: 1 1 32px !important;
+    }
+
+    table.dataTable thead th,
+    table.dataTable tbody td {
+        padding: 8px 10px !important;
+        font-size: 0.8rem !important;
+    }
+
+    .dt-container .dt-layout-table table {
+        min-width: 520px !important;
     }
 }
