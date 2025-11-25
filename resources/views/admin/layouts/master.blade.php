@@ -9,87 +9,159 @@
     @stack('styles')
     <style>
         :root {
-            --admin-primary: #0f172a;
-            --admin-primary-contrast: #ffffff;
+            --admin-primary: rgba(15, 23, 42, 0.92);
+            --admin-primary-contrast: #f8fafc;
             --admin-accent: #22d3ee;
+            --admin-accent-soft: rgba(34, 211, 238, 0.18);
             --admin-muted: #cbd5f5;
             --admin-bg: #f4f6fb;
+            --admin-bg-gradient: radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.35), transparent 45%) fixed;
             --admin-surface: #ffffff;
             --admin-border: rgba(15, 23, 42, 0.08);
             --admin-text: #0f172a;
             --admin-muted-text: #475569;
+            --admin-shadow: 0 18px 35px rgba(15, 23, 42, 0.18);
         }
 
         body[data-theme='dark'] {
-            --admin-primary: #020617;
+            --admin-primary: rgba(2, 6, 23, 0.82);
             --admin-primary-contrast: #f8fafc;
             --admin-accent: #38bdf8;
+            --admin-accent-soft: rgba(56, 189, 248, 0.25);
             --admin-muted: #94a3b8;
-            --admin-bg: #0f172a;
-            --admin-surface: #111827;
-            --admin-border: rgba(226, 232, 240, 0.18);
+            --admin-bg: #020617;
+            --admin-bg-gradient: radial-gradient(circle at 20% 0%, rgba(59, 130, 246, 0.25), transparent 45%) fixed,
+                                 radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.2), transparent 50%) fixed;
+            --admin-surface: #0f172a;
+            --admin-border: rgba(226, 232, 240, 0.12);
             --admin-text: #e2e8f0;
             --admin-muted-text: #94a3b8;
+            --admin-shadow: 0 22px 45px rgba(8, 47, 73, 0.45);
         }
 
         body {
             margin: 0;
             font-family: 'IRANSans', 'Vazirmatn', sans-serif;
             background-color: var(--admin-bg);
+            background-image: var(--admin-bg-gradient);
+            background-attachment: fixed;
             color: var(--admin-text);
             transition: background-color .3s ease, color .3s ease;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(120deg, transparent 15%, rgba(255, 255, 255, 0.08), transparent 85%);
+            opacity: .4;
         }
 
         .admin-layout {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 1;
         }
 
         .admin-navbar {
             position: sticky;
             top: 0;
             z-index: 50;
-            background: var(--admin-primary);
-            color: var(--admin-primary-contrast);
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 1rem;
-            padding: 0.85rem 1.5rem;
-            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.25);
+            gap: 1.25rem;
+            padding: 1rem 1.75rem;
+            background: var(--admin-primary);
+            color: var(--admin-primary-contrast);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            box-shadow: var(--admin-shadow);
+            backdrop-filter: blur(14px);
         }
 
         .admin-navbar__brand {
             display: flex;
             align-items: center;
-            gap: .75rem;
-            font-weight: 600;
-            font-size: 1rem;
-            color: var(--admin-primary-contrast);
+            gap: .8rem;
+            color: inherit;
             text-decoration: none;
+            position: relative;
+        }
+
+        .admin-navbar__logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--admin-accent), rgba(255, 255, 255, 0.65));
+            color: #020617;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            letter-spacing: .05em;
+            box-shadow: 0 12px 28px rgba(34, 211, 238, 0.45);
+        }
+
+        .admin-navbar__title strong {
+            display: block;
+            font-size: 1rem;
+        }
+
+        .admin-navbar__title small {
+            display: block;
+            margin-top: -2px;
+            font-size: .75rem;
+            opacity: .85;
+        }
+
+        .admin-navbar__glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            background: var(--admin-accent-soft);
+            opacity: 0;
+            filter: blur(18px);
+            transition: opacity .35s ease;
+            z-index: -1;
+        }
+
+        .admin-navbar__brand:hover .admin-navbar__glow,
+        .admin-navbar__brand:focus-visible .admin-navbar__glow {
+            opacity: 1;
         }
 
         .admin-navbar__actions {
             display: flex;
             align-items: center;
-            gap: .45rem;
+            gap: .65rem;
         }
 
         .admin-navbar__toggle {
             background: transparent;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.35);
             color: var(--admin-primary-contrast);
+            border-radius: 10px;
             display: none;
             cursor: pointer;
-            padding: .35rem;
+            padding: .45rem .55rem;
+            transition: border-color .2s ease, background .2s ease;
+        }
+
+        .admin-navbar__toggle:hover {
+            border-color: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .admin-navbar__toggle span,
         .admin-navbar__toggle span::before,
         .admin-navbar__toggle span::after {
             display: block;
-            width: 1.5rem;
+            width: 1.45rem;
             height: 2px;
             background: currentColor;
             border-radius: 999px;
@@ -115,7 +187,7 @@
         .admin-navbar__menu {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.6rem;
             margin-inline-start: auto;
             margin-left: auto;
         }
@@ -123,44 +195,66 @@
         .admin-navbar__link {
             color: var(--admin-muted);
             text-decoration: none;
-            padding: 0.5rem 0.9rem;
+            padding: 0.55rem 1rem;
             border-radius: 999px;
             font-size: 0.95rem;
-            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            transition: color .25s ease, background .25s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
         }
 
         .admin-navbar__link:hover,
-        .admin-navbar__link:focus {
+        .admin-navbar__link:focus-visible {
             color: var(--admin-primary-contrast);
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.12);
         }
 
         .admin-navbar__link--active {
             color: var(--admin-primary);
             background: var(--admin-primary-contrast);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
+        }
+
+        .admin-navbar__link::after {
+            content: '';
+            position: absolute;
+            inset-inline-start: -30%;
+            top: 0;
+            width: 220%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            opacity: 0;
+            transform: translateX(-25%);
+            transition: opacity .35s ease, transform .35s ease;
+        }
+
+        .admin-navbar__link:hover::after,
+        .admin-navbar__link:focus-visible::after {
+            opacity: 1;
+            transform: translateX(25%);
         }
 
         .theme-toggle {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: var(--admin-primary-contrast);
             border-radius: 999px;
-            padding: 0.35rem 0.9rem;
+            padding: 0.4rem 0.95rem;
             display: inline-flex;
             align-items: center;
-            gap: .4rem;
+            gap: .45rem;
             cursor: pointer;
-            transition: background .2s ease, color .2s ease, border-color .2s ease;
+            transition: background .25s ease, border-color .25s ease;
             font-size: .9rem;
         }
 
         .theme-toggle:hover,
-        .theme-toggle:focus {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.45);
+        .theme-toggle:focus-visible {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
         body[data-theme='dark'] .theme-toggle {
@@ -170,7 +264,7 @@
         .admin-content {
             flex: 1;
             width: min(1200px, 100%);
-            margin: 1.5rem auto;
+            margin: 1.75rem auto 2rem;
             padding: 0 1rem 2rem;
             transition: background-color .3s ease;
         }
@@ -185,6 +279,9 @@
             align-items: center;
             gap: 1rem;
             color: var(--admin-muted-text);
+            border-radius: 18px;
+            margin: 0 1rem 1.5rem;
+            box-shadow: var(--admin-shadow);
         }
 
         .admin-footer a {
@@ -214,17 +311,18 @@
                 position: fixed;
                 inset-inline-start: 0;
                 inset-inline-end: 0;
-                top: 56px;
+                top: 70px;
                 background: var(--admin-primary);
                 flex-direction: column;
                 padding: 1rem;
-                gap: 0;
+                gap: .25rem;
                 transform-origin: top center;
                 transform: scaleY(0);
                 opacity: 0;
                 pointer-events: none;
                 transition: transform 0.2s ease, opacity 0.2s ease;
                 margin-inline-start: 0;
+                backdrop-filter: blur(20px);
             }
 
             .admin-navbar__menu.is-open {
@@ -236,7 +334,7 @@
             .admin-navbar__link {
                 width: 100%;
                 justify-content: center;
-                border-radius: 0.75rem;
+                border-radius: 0.85rem;
             }
 
             .admin-content {
@@ -259,8 +357,12 @@
 
 <header class="admin-navbar">
     <a href="{{ route('admin.dashboard') }}" class="admin-navbar__brand">
-        <span>Support AI</span>
-        <small style="opacity: .8; font-weight: 400;">{{ __('پنل مدیریت') }}</small>
+        <span class="admin-navbar__glow"></span>
+        <span class="admin-navbar__logo">SA</span>
+        <span class="admin-navbar__title">
+            <strong>Support AI</strong>
+            <small>{{ __('پنل مدیریت') }}</small>
+        </span>
     </a>
     <div class="admin-navbar__actions">
         <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">
