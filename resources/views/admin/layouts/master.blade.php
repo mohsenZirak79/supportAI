@@ -23,22 +23,6 @@
             --admin-shadow: 0 18px 35px rgba(15, 23, 42, 0.18);
         }
 
-        body[data-theme='dark'] {
-            --admin-primary: rgba(2, 6, 23, 0.82);
-            --admin-primary-contrast: #f8fafc;
-            --admin-accent: #38bdf8;
-            --admin-accent-soft: rgba(56, 189, 248, 0.25);
-            --admin-muted: #94a3b8;
-            --admin-bg: #020617;
-            --admin-bg-gradient: radial-gradient(circle at 20% 0%, rgba(59, 130, 246, 0.25), transparent 45%) fixed,
-                                 radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.2), transparent 50%) fixed;
-            --admin-surface: #0f172a;
-            --admin-border: rgba(226, 232, 240, 0.12);
-            --admin-text: #e2e8f0;
-            --admin-muted-text: #94a3b8;
-            --admin-shadow: 0 22px 45px rgba(8, 47, 73, 0.45);
-        }
-
         body {
             margin: 0;
             font-family: 'IRANSans', 'Vazirmatn', sans-serif;
@@ -237,30 +221,6 @@
             transform: translateX(25%);
         }
 
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--admin-primary-contrast);
-            border-radius: 999px;
-            padding: 0.4rem 0.95rem;
-            display: inline-flex;
-            align-items: center;
-            gap: .45rem;
-            cursor: pointer;
-            transition: background .25s ease, border-color .25s ease;
-            font-size: .9rem;
-        }
-
-        .theme-toggle:hover,
-        .theme-toggle:focus-visible {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        body[data-theme='dark'] .theme-toggle {
-            border-color: rgba(148, 163, 184, 0.4);
-        }
-
         .admin-content {
             flex: 1;
             width: min(1200px, 100%);
@@ -343,7 +303,7 @@
         }
     </style>
 </head>
-<body class="admin-layout" data-theme="light">
+<body class="admin-layout">
 @php
     $menuItems = [
         ['label' => 'داشبورد', 'route' => 'admin.dashboard', 'matches' => ['admin.dashboard']],
@@ -365,10 +325,6 @@
         </span>
     </a>
     <div class="admin-navbar__actions">
-        <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">
-            <span data-theme-icon>🌙</span>
-            <span data-theme-label>{{ __('حالت تیره') }}</span>
-        </button>
         <button class="admin-navbar__toggle" type="button" aria-label="{{ __('باز و بسته کردن منو') }}" data-menu-toggle>
             <span></span>
         </button>
@@ -408,50 +364,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const body = document.body;
         const menu = document.querySelector('[data-menu]');
         const toggles = document.querySelectorAll('[data-menu-toggle]');
-        const themeToggle = document.querySelector('[data-theme-toggle]');
-        const themeIcon = document.querySelector('[data-theme-icon]');
-        const themeLabel = document.querySelector('[data-theme-label]');
-        const THEME_KEY = 'admin-theme';
-
-        const applyTheme = (theme) => {
-            body.setAttribute('data-theme', theme);
-            if (themeToggle && themeIcon && themeLabel) {
-                const isDark = theme === 'dark';
-                themeIcon.textContent = isDark ? '☀️' : '🌙';
-                themeLabel.textContent = isDark ? '{{ __('حالت روشن') }}' : '{{ __('حالت تیره') }}';
-                themeToggle.setAttribute('aria-pressed', String(isDark));
-            }
-        };
-
-        const getSavedTheme = () => {
-            try {
-                return localStorage.getItem(THEME_KEY);
-            } catch (e) {
-                return null;
-            }
-        };
-
-        const saveTheme = (theme) => {
-            try {
-                localStorage.setItem(THEME_KEY, theme);
-            } catch (e) {
-                // ignore write errors
-            }
-        };
-
-        const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        applyTheme(getSavedTheme() || preferred);
-
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                const nextTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-                applyTheme(nextTheme);
-                saveTheme(nextTheme);
-            });
-        }
 
         if (menu) {
             toggles.forEach((toggle) => {
