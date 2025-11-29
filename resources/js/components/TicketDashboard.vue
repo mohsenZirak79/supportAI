@@ -33,7 +33,7 @@
                 </div>
 
                 <!-- دکمه‌ها: نسخه براق‌شده -->
-                <div class="flex items-center space-x-3 space-x-reverse py-3">
+                <div class="action-bar flex items-center space-x-3 space-x-reverse py-3">
                     <!-- Chat -->
                     <button
                         @click="goToChat"
@@ -78,7 +78,7 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+            <div class="stats-grid grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
                 <!-- کل تیکت‌ها -->
                 <div class="stat glossy p-4">
                     <div class="stat-row">
@@ -142,8 +142,8 @@
 
 
             <!-- Filters -->
-            <div class="glossy p-6 mb-4">
-                <div class="flex flex-wrap gap-4 items-center">
+            <div class="glossy p-6 mb-4 filters-panel">
+                <div class="flex flex-wrap gap-4 items-center filters-panel__content">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">فیلتر بر اساس وضعیت</label>
                         <select v-model="statusFilter"
@@ -177,7 +177,7 @@
             </div>
 
             <!-- Tickets List -->
-            <div class="space-y-6">
+            <div class="tickets-list">
                 <div v-if="loading" class="py-16 flex flex-col items-center">
                     <div class="w-14 h-14 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin"></div>
                     <p class="mt-4 text-gray-500">در حال بارگذاری…</p>
@@ -207,14 +207,14 @@
                     :key="ticket.id"
                     class="ticket-card glossy borderless-gradient overflow-hidden"
                 >
-                    <div class="p-4">
-                        <div class="flex justify-between items-start mb-4">
+                    <div class="ticket-card__body">
+                        <div class="ticket-card__header flex justify-between items-start mb-4">
                             <div class="flex-1">
-                                <div class="flex items-center space-x-3 space-x-reverse mb-2">
+                                <div class="ticket-card__title flex items-center space-x-3 space-x-reverse mb-2">
                                     <h3 class="text-lg font-semibold text-gray-900">{{ ticket.title }}</h3>
                                     <span class="text-sm text-gray-500"></span>
                                 </div>
-                                <div class="flex items-center space-x-4 space-x-reverse text-sm text-gray-600">
+                                <div class="ticket-card__meta flex items-center space-x-4 space-x-reverse text-sm text-gray-600">
                   <span class="flex items-center">
                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -234,7 +234,7 @@
                   </span>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-3 space-x-reverse">
+                            <div class="ticket-card__actions flex items-center space-x-3 space-x-reverse">
                 <span :class="['badge', getStatusClass(ticket.effective_status)]">
                   {{ getStatusLabel(ticket.effective_status) }}
                 </span>
@@ -1298,6 +1298,146 @@ header.bg-white {
 /* اگر قبلاً pseudo-element داشتی که نوار ایجاد می‌کرد، این خط آن را حذف می‌کند */
 
 .close-btn { display:flex; align-items:center; justify-content:center; background:transparent; }
+
+.action-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.action-bar button {
+    min-width: 150px;
+}
+
+.filters-panel {
+    overflow: hidden;
+}
+
+.filters-panel__content > div {
+    min-width: 220px;
+    flex: 1;
+}
+
+.stats-grid {
+    width: 100%;
+}
+
+.tickets-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.tickets-list > * {
+    width: 100%;
+}
+
+.ticket-card__body {
+    padding: 1.25rem;
+}
+
+.ticket-card__header {
+    gap: 1rem;
+}
+
+.ticket-card__meta {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.ticket-card__actions {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ticket-card__actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .action-bar button {
+        width: 100%;
+    }
+
+    .filters-panel {
+        padding: 1rem;
+    }
+
+    .filters-panel__content {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .filters-panel__content > div {
+        width: 100%;
+    }
+
+    .ticket-card__header {
+        flex-direction: column;
+    }
+
+    .ticket-card__actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .ticket-card__actions button {
+        width: 100%;
+    }
+
+    .ticket-card__body {
+        padding: 1rem;
+    }
+
+    .tickets-list {
+        gap: 1.25rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    header.bg-white {
+        position: static;
+    }
+
+    .ticket-card__meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .ticket-card__actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ticket-card__actions button {
+        justify-content: center;
+    }
+
+    .ticket-card__body {
+        padding: 0.9rem;
+    }
+
+    .tickets-list {
+        gap: 1rem;
+    }
+}
+
 .icon-5 { width: 1.25rem; height: 1.25rem; }      /* w-5 h-5 */
 .icon-6 { width: 1.5rem;  height: 1.5rem;  }      /* w-6 h-6 - برای کارت‌ها */
 .btn-icon { margin-inline-start: .25rem; }

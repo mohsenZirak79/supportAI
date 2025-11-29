@@ -11,6 +11,15 @@
         <!-- نوار بالا -->
         <header class="chat-header">
             <div class="header-content">
+                <button
+                    v-if="isMobile"
+                    class="mobile-sidebar-toggle"
+                    type="button"
+                    @click="toggleSidebar"
+                    aria-label="باز کردن لیست گفتگوها"
+                >
+                    ☰
+                </button>
                 <h1 @click="editCurrentTitle">{{ activeChat?.title || 'چت با هوش مصنوعی' }}</h1>
                 <button @click="goToTickets" class="nav-btn">تیکت‌ها</button>
             </div>
@@ -18,7 +27,7 @@
 
         <div class="chat-container">
             <!-- سایدبار چت‌ها -->
-            <aside class="sidebar">
+            <aside class="sidebar" :class="{ 'is-mobile': isMobile, 'is-open': isSidebarOpen }">
                 <div class="new-chat-btn" @click="startNewChat">
                     + چت جدید
                 </div>
@@ -35,6 +44,11 @@
                     </div>
                 </div>
             </aside>
+            <div
+                v-if="isMobile && isSidebarOpen"
+                class="sidebar-overlay"
+                @click="closeSidebar"
+            ></div>
 
             <!-- ناحیه چت اصلی -->
             <main class="chat-main" v-if="activeChatId">
@@ -105,6 +119,17 @@
                         </div>
                     </div>
                 </div>
+                <button
+                    v-if="showScrollButton"
+                    class="scroll-bottom-btn"
+                    type="button"
+                    aria-label="رفتن به آخرین پیام"
+                    @click="scrollToBottom"
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 16.5a1 1 0 0 1-.7-.29l-6-6a1 1 0 0 1 1.4-1.42L12 14.09l5.3-5.3a1 1 0 1 1 1.4 1.42l-6 6a1 1 0 0 1-.7.29Z"/>
+                    </svg>
+                </button>
 
 
                 <!-- فرم ارسال پیام -->
@@ -213,7 +238,36 @@ const inputMessage = ref('');
 const loading = ref(false);
 const textarea = ref(null);
 const messagesContainer = ref(null);
+const showScrollButton = ref(false);
+const SCROLL_OFFSET_THRESHOLD = 120;
 const mediaFetchedFor = new Set();
+const MOBILE_BREAKPOINT = 768;
+const isMobile = ref(false);
+const isSidebarOpen = ref(true);
+
+const updateLayoutFlags = () => {
+    if (typeof window === 'undefined') return;
+    const mobile = window.innerWidth <= MOBILE_BREAKPOINT;
+    isMobile.value = mobile;
+    isSidebarOpen.value = mobile ? false : true;
+};
+
+const toggleSidebar = () => {
+    if (!isMobile.value) return;
+    isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+const closeSidebar = () => {
+    if (!isMobile.value) return;
+    isSidebarOpen.value = false;
+};
+
+const handleScroll = () => {
+    const el = messagesContainer.value;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - (el.scrollTop + el.clientHeight);
+    showScrollButton.value = distanceFromBottom > SCROLL_OFFSET_THRESHOLD;
+};
 
 async function ensureMediaLoaded(msg) {
     if (!msg?.id) return;
@@ -414,6 +468,12 @@ onUnmounted(() => {
     if (mediaRecorder.value) {
         mediaRecorder.value.stream?.getTracks().forEach(track => track.stop());
     }
+    if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', updateLayoutFlags);
+    }
+    if (messagesContainer.value) {
+        messagesContainer.value.removeEventListener('scroll', handleScroll);
+    }
 });
 // const scrollToBottom = () => {
 //     if (messagesContainer.value) {
@@ -426,6 +486,7 @@ const scrollToBottom = () => {
             top: messagesContainer.value.scrollHeight,
             behavior: 'smooth'
         });
+        requestAnimationFrame(() => handleScroll());
     }
 };
 
@@ -433,6 +494,25 @@ const scrollToBottom = () => {
 const activeChat = computed(() => {
     return chats.value.find(chat => chat.id === activeChatId.value) || null;
 });
+watch(activeChatId, () => {
+    if (isMobile.value) {
+        closeSidebar();
+    }
+});
+
+watch(
+    () => activeChat.value?.messages?.length,
+    (newVal, oldVal) => {
+        if (!newVal) return;
+        nextTick(() => {
+            if (!showScrollButton.value) {
+                scrollToBottom();
+            } else {
+                handleScroll();
+            }
+        });
+    }
+);
 const autoResize = () => {
     const el = textarea.value;
     if (el) {
@@ -783,6 +863,23 @@ const onBubbleClick = async (message) => {
 onMounted(() => {
     loadChats();
     fetchDepartments();
+    if (typeof window !== 'undefined') {
+        updateLayoutFlags();
+        window.addEventListener('resize', updateLayoutFlags);
+    }
+});
+
+watch(() => messagesContainer.value, (el, prev) => {
+    if (prev) {
+        prev.removeEventListener('scroll', handleScroll);
+    }
+    if (el) {
+        el.addEventListener('scroll', handleScroll, {passive: true});
+        nextTick(() => {
+            handleScroll();
+            scrollToBottom();
+        });
+    }
 });
 
 
@@ -874,7 +971,8 @@ const stopSpeak = () => {
 .chat-app {
     font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
     background-color: #f9fafb;
-    height: 100vh;
+    min-height: 100vh;
+    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -906,6 +1004,7 @@ const stopSpeak = () => {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    transition: transform .3s ease, box-shadow .3s ease;
 }
 
 .new-chat-btn {
@@ -970,11 +1069,18 @@ const stopSpeak = () => {
     opacity: 1;
 }
 
+@media (hover: none) {
+    .delete-btn {
+        opacity: 1;
+    }
+}
+
 .chat-main {
     flex: 1;
     display: flex;
     flex-direction: column;
     background-color: #ffffff;
+    position: relative;
 }
 
 .empty-state {
@@ -1142,6 +1248,61 @@ const stopSpeak = () => {
     cursor: not-allowed;
 }
 
+.scroll-bottom-btn {
+    position: absolute;
+    inset-inline-end: 24px;
+    bottom: 110px;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 5;
+}
+
+.scroll-bottom-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+}
+
+.scroll-bottom-btn:hover {
+    transform: translateY(1px);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
+}
+
+.scroll-bottom-btn:focus-visible {
+    outline: 3px solid rgba(99, 102, 241, 0.4);
+    outline-offset: 2px;
+}
+
+.mobile-sidebar-toggle {
+    display: none;
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #fff;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.mobile-sidebar-toggle:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 2px;
+}
+
+.sidebar-overlay {
+    display: none;
+}
+
 /* --- حالت ضبط صدا --- */
 .recording-ui {
     display: flex;
@@ -1207,30 +1368,6 @@ const stopSpeak = () => {
 .input-form button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-}
-
-@media (max-width: 768px) {
-    .sidebar {
-        width: 80px;
-    }
-
-    .chat-item span {
-        display: none;
-    }
-
-    .chat-item::before {
-        content: "💬";
-        font-size: 1.2rem;
-    }
-
-    .new-chat-btn span {
-        display: none;
-    }
-
-    .new-chat-btn::before {
-        content: "+";
-        font-size: 1.5rem;
-    }
 }
 
 .message-meta {
@@ -1485,5 +1622,131 @@ const stopSpeak = () => {
     border-radius: 14px;
     padding: 12px 14px;
 }
+
+/* ——— تبلت و پایین‌تر (تا ۱۰۲۴) ——— */
+@media (max-width: 1024px) {
+    .chat-container {
+        flex-direction: column;
+    }
+
+    /* فقط وقتی موبایل نیست (تبلت افقی و…)
+       سایدبار بالای صفحه قرار بگیرد */
+    .sidebar:not(.is-mobile) {
+        width: 100%;
+        max-height: 240px;
+        border-left: none;
+        border-bottom: 1px solid #eaeaea;
+        flex-direction: row;
+    }
+
+    .chat-list {
+        flex: 1;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .messages-container {
+        padding: 20px;
+    }
+}
+
+/* ——— موبایل (زیر ۷۶۸) drawer از راست ——— */
+@media (max-width: 768px) {
+    .chat-header .header-content {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .mobile-sidebar-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chat-container {
+        position: relative;
+        overflow: visible;
+        flex-direction: column;
+    }
+
+    /* سایدبار به صورت drawer ثابت از راست */
+    .sidebar.is-mobile {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: auto;
+        right: 0;
+        width: min(85vw, 320px);
+        transform: translateX(110%);
+        border: none;
+        box-shadow: -8px 0 24px rgba(15, 23, 42, 0.25);
+        z-index: 40;
+        background: #fff;
+        max-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar.is-mobile.is-open {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        z-index: 30;
+    }
+
+    .messages-container {
+        padding: 16px 12px;
+    }
+
+    .message-bubble {
+        max-width: 100%;
+    }
+
+    .input-form {
+        padding: 12px;
+    }
+
+    .text-input-area {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .input-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .input-actions button {
+        flex: 1;
+    }
+
+    .nav-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .sidebar.is-mobile .chat-item {
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .sidebar.is-mobile .delete-btn {
+        opacity: 1;
+        margin-right: 0;
+        margin-left: 8px;
+    }
+
+    .scroll-bottom-btn {
+        inset-inline-end: 12px;
+        bottom: 95px;
+    }
+}
+
 
 </style>
