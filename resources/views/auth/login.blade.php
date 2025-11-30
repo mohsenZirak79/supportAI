@@ -125,6 +125,8 @@
         // ارسال شماره (OTP request)
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = ''; // Clear previous errors
             const phone = normalizeDigits(phoneInput.value.trim());
             phoneInput.value = phone;
             if (!phone) return;
@@ -155,6 +157,8 @@
         // تأیید OTP
         document.getElementById('otpForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = ''; // Clear previous errors
             const phone = document.querySelector('#otpForm input[name="phone"]').value;
             const otp = normalizeDigits(otpInput.value.trim());
             otpInput.value = otp;
