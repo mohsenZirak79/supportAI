@@ -36,14 +36,14 @@
 @endif
 <main class="main-content mt-0">
     <section>
-        <div class="page-header min-vh-75">
+        <div class="page-header min-vh-100">
             <div class="container">
 
 
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="oblique position-absolute top-0 h-100 d-md-block d-none me-n8">
-                            <div class="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6"
+                        <div class="oblique d-md-block d-none">
+                            <div class="oblique-image bg-cover"
                                  style="background-image:url({{ asset('images/login_img.jpg') }})"></div>
                         </div>
                     </div>

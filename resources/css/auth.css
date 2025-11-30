@@ -127,6 +127,41 @@ body.auth-page::before {
     padding: 2rem;
 }
 
+/* Register page specific - compact spacing to avoid scroll */
+.auth-page.register-page .card-body {
+    padding: 1.5rem 2rem;
+}
+
+.auth-page.register-page .mb-1 {
+    margin-bottom: 0.75rem !important;
+}
+
+.auth-page.register-page .form-control {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+}
+
+.auth-page.register-page .card-header {
+    padding: 1.5rem 2rem 0.75rem;
+}
+
+.auth-page.register-page textarea.form-control {
+    min-height: 80px;
+}
+
+/* Hide footer on register page to avoid scroll */
+.auth-page.register-page .footer {
+    display: none;
+}
+
+/* Ensure register page fits in viewport */
+.auth-page.register-page .page-header {
+    padding: 1rem 0;
+    min-height: calc(100vh - 2rem);
+    display: flex;
+    align-items: center;
+}
+
 /* Form Styling */
 .auth-page .form-control {
     border: 2px solid #e5e7eb;
@@ -338,9 +373,10 @@ body.auth-page::before {
     }
 }
 
-/* Card Footer */
+/* Card Footer - More spacing from content above */
 .auth-page .card-footer {
-    padding: 1.5rem 2rem;
+    padding: 2rem 2rem 1.5rem;
+    margin-top: 1.5rem;
     background: rgba(245, 241, 235, 0.5);
     border-top: 1px solid rgba(45, 212, 191, 0.1);
     border-radius: 0 0 24px 24px;
@@ -350,28 +386,39 @@ body.auth-page::before {
     color: var(--kish-gray);
     font-size: 0.875rem;
     margin: 0;
+    padding-top: 0.5rem;
 }
 
-/* Background Image Enhancement - Make it visible and not covered */
+/* Background Image Enhancement - Full height, clear and properly positioned */
 .auth-page .oblique {
     z-index: 1;
     position: relative;
+    width: 100%;
+    height: 100vh;
+    top: 0;
+    right: 0;
 }
 
 .auth-page .oblique-image {
-    opacity: 0.5;
-    filter: blur(0.5px) brightness(1.1);
+    opacity: 0.7;
+    filter: brightness(1.05) contrast(1.1);
     transition: opacity 0.3s ease;
     z-index: 1;
     background-size: cover;
-    background-position: center;
+    background-position: center center;
     background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
 /* Ensure the image column is above the gradient */
 .auth-page .col-md-6:first-child {
     position: relative;
     z-index: 1;
+    min-height: 100vh;
 }
 
 /* Responsive Adjustments */
