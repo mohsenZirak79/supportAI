@@ -8,7 +8,7 @@
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
     <title>ورود کاربر</title>
     <title>@yield('title')</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/js/app.js'])
     <script>
         var win = navigator.platform.indexOf('Win') > -1;
         if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -20,7 +20,7 @@
     </script>
 </head>
 
-<body class="g-sidenav-show rtl bg-gray-100">
+<body class="g-sidenav-show rtl bg-gray-100 auth-page">
 <div class="container position-sticky z-index-sticky top-0">
     <!-- Navbar ... (همانند قبل) -->
 </div>
@@ -58,7 +58,7 @@
 
                             <div class="card-body">
                                 <!-- فرم شماره تلفن -->
-                                <form id="loginForm" method="POST">
+                                <form id="loginForm" method="POST" style="transition: opacity 0.3s ease-out, transform 0.3s ease-out;">
                                     @csrf
                                     <label>شماره تلفن</label>
                                     <div class="mb-3">
@@ -71,7 +71,7 @@
                                 </form>
 
                                 <!-- فرم OTP -->
-                                <form id="otpForm" method="POST" style="display:none; margin-top:20px;">
+                                <form id="otpForm" method="POST" style="display:none; margin-top:20px; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease-out, transform 0.4s ease-out;">
                                     @csrf
                                     <input type="hidden" name="phone">
                                     <input type="text" name="otp" placeholder="کد تایید" class="form-control" required>
@@ -131,9 +131,18 @@
 
             try {
                 const res = await axios.post('/api/v1/auth/login', { phone });
-                document.getElementById('loginForm').style.display = 'none';
+                const loginForm = document.getElementById('loginForm');
                 const otpForm = document.getElementById('otpForm');
-                otpForm.style.display = 'block';
+                loginForm.style.opacity = '0';
+                loginForm.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    loginForm.style.display = 'none';
+                    otpForm.style.display = 'block';
+                    setTimeout(() => {
+                        otpForm.style.opacity = '1';
+                        otpForm.style.transform = 'translateY(0)';
+                    }, 10);
+                }, 200);
                 otpForm.querySelector('input[name="phone"]').value = phone;
 
                 if (res.data.otp) alert('Test OTP: ' + res.data.otp);

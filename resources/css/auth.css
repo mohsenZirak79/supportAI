@@ -1,0 +1,414 @@
+/* ============================================
+   Kish Island Auth Pages - Modern & Formal Design
+   ============================================ */
+
+/* Color Palette - Kish Island Inspired */
+:root {
+    --kish-turquoise: #2dd4bf;
+    --kish-turquoise-light: #5eead4;
+    --kish-turquoise-dark: #14b8a6;
+    --kish-deep-blue: #0e7490;
+    --kish-blue: #0891b2;
+    --kish-sandy-beige: #f5f1eb;
+    --kish-sand: #e8ddd4;
+    --kish-white: #ffffff;
+    --kish-gray-light: #f8f9fa;
+    --kish-gray: #6b7280;
+    --kish-gray-dark: #374151;
+    --kish-error: #ef4444;
+    --kish-success: #10b981;
+}
+
+/* Base Styles */
+body.auth-page {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Subtle wave background pattern */
+body.auth-page::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(45, 212, 191, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(8, 145, 178, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Main Content Container */
+.auth-page .main-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Page Header Enhancement */
+.auth-page .page-header {
+    position: relative;
+    padding: 2rem 0;
+}
+
+/* Card Styling - Modern & Minimal */
+.auth-page .card {
+    background: var(--kish-white);
+    border: none;
+    border-radius: 24px;
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 15px -3px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(45, 212, 191, 0.05);
+    backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Card entrance animation */
+.auth-page .card {
+    animation: cardFadeIn 0.6s ease-out;
+}
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card hover effect (subtle) */
+.auth-page .card:hover {
+    box-shadow: 
+        0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(45, 212, 191, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Card Header */
+.auth-page .card-header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid rgba(45, 212, 191, 0.1);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
+}
+
+.auth-page .card-header h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--kish-deep-blue);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.auth-page .card-header p {
+    color: var(--kish-gray);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Card Body */
+.auth-page .card-body {
+    padding: 2rem;
+}
+
+/* Form Styling */
+.auth-page .form-control {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0.875rem 1.25rem;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--kish-white);
+    color: var(--kish-gray-dark);
+}
+
+.auth-page .form-control:focus {
+    border-color: var(--kish-turquoise);
+    outline: none;
+    box-shadow: 
+        0 0 0 4px rgba(45, 212, 191, 0.1),
+        0 2px 4px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+}
+
+.auth-page .form-control::placeholder {
+    color: #9ca3af;
+    opacity: 0.7;
+}
+
+/* Labels */
+.auth-page label {
+    font-weight: 600;
+    color: var(--kish-gray-dark);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    letter-spacing: 0.01em;
+}
+
+/* Buttons - Kish Island Accent */
+.auth-page .btn {
+    border-radius: 12px;
+    padding: 0.875rem 2rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    border: none;
+}
+
+.auth-page .btn.bg-gradient-info {
+    background: linear-gradient(135deg, var(--kish-turquoise) 0%, var(--kish-blue) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
+}
+
+.auth-page .btn.bg-gradient-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(45, 212, 191, 0.4);
+    background: linear-gradient(135deg, var(--kish-turquoise-dark) 0%, var(--kish-deep-blue) 100%);
+}
+
+.auth-page .btn.bg-gradient-info:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(45, 212, 191, 0.3);
+}
+
+/* Button ripple effect */
+.auth-page .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.auth-page .btn:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Links */
+.auth-page a.text-info.text-gradient {
+    color: var(--kish-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.auth-page a.text-info.text-gradient::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--kish-turquoise);
+    transition: width 0.3s ease;
+}
+
+.auth-page a.text-info.text-gradient:hover {
+    color: var(--kish-turquoise-dark);
+}
+
+.auth-page a.text-info.text-gradient:hover::after {
+    width: 100%;
+}
+
+/* Error Messages */
+.auth-page #error,
+.auth-page .text-danger {
+    color: var(--kish-error);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 8px;
+    border-right: 3px solid var(--kish-error);
+    animation: errorSlideIn 0.3s ease-out;
+}
+
+@keyframes errorSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Alert Messages */
+.auth-page .alert {
+    border-radius: 12px;
+    border: none;
+    padding: 1rem 1.5rem;
+    animation: alertFadeIn 0.4s ease-out;
+}
+
+@keyframes alertFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-page .alert-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--kish-error);
+    border-right: 3px solid var(--kish-error);
+}
+
+.auth-page .alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--kish-success);
+    border-right: 3px solid var(--kish-success);
+}
+
+/* Form Row Spacing */
+.auth-page .row {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+}
+
+.auth-page .row > [class*="col-"] {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.auth-page .mb-1 {
+    margin-bottom: 1rem !important;
+}
+
+/* Textarea */
+.auth-page textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* OTP Form Animation */
+.auth-page #otpForm {
+    animation: formSlideIn 0.4s ease-out;
+}
+
+@keyframes formSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card Footer */
+.auth-page .card-footer {
+    padding: 1.5rem 2rem;
+    background: rgba(245, 241, 235, 0.5);
+    border-top: 1px solid rgba(45, 212, 191, 0.1);
+    border-radius: 0 0 24px 24px;
+}
+
+.auth-page .card-footer p {
+    color: var(--kish-gray);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Background Image Enhancement */
+.auth-page .oblique-image {
+    opacity: 0.15;
+    filter: blur(1px);
+    transition: opacity 0.3s ease;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .auth-page .card {
+        border-radius: 20px;
+        margin: 1rem;
+    }
+    
+    .auth-page .card-header,
+    .auth-page .card-body {
+        padding: 1.5rem;
+    }
+    
+    .auth-page .card-header h3 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Input Focus Animation Enhancement */
+.auth-page .form-control:focus {
+    animation: inputFocusPulse 0.3s ease-out;
+}
+
+@keyframes inputFocusPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(45, 212, 191, 0.1);
+    }
+    100% {
+        box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.1);
+    }
+}
+
+/* Loading State (if needed) */
+.auth-page .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Smooth transitions for all interactive elements */
+.auth-page * {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Subtle decorative element */
+.auth-page .card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(45, 212, 191, 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.auth-page .card-header,
+.auth-page .card-body,
+.auth-page .card-footer {
+    position: relative;
+    z-index: 1;
+}
+
