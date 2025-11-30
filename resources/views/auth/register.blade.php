@@ -29,18 +29,11 @@
 
 <main class="main-content mt-0">
     <section>
-        <div class="page-header min-vh-100">
+        <div class="page-header min-vh-100 d-flex align-items-center">
             <div class="container">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="oblique d-md-block d-none">
-                            <div class="oblique-image bg-cover"
-                                 style="background-image:url({{ asset('images/login_img.jpg') }})"></div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-5 col-lg-5 col-md-6 d-flex flex-column mx-auto">
-                        <div class="card card-plain mt-2 mb-2">
+                <div class="row justify-content-center">
+                    <div class="col-xl-6 col-lg-7 col-md-9 col-sm-11">
+                        <div class="card card-plain">
                             <div class="card-header pb-0 text-left bg-transparent">
                                 <h3 class="font-weight-bolder text-info text-gradient">خوش آمدید</h3>
                                 <p class="mb-0">لطفا اطلاعات خود را وارد کنید.</p>
