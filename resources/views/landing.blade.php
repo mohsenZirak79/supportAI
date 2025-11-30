@@ -41,15 +41,18 @@
            HEADER / NAVBAR
            ============================================ */
         .landing-header {
-            position: sticky;
+            position: absolute;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 100;
             transition: all 0.3s ease;
             padding: 0;
+            pointer-events: none;
         }
 
         .landing-header.scrolled {
-            padding: 0;
+            position: fixed;
         }
 
         .navbar {
@@ -66,6 +69,7 @@
             border-bottom: 1px solid rgba(229, 231, 235, 0.5);
             border-radius: 0 0 20px 20px;
             transition: all 0.3s ease;
+            pointer-events: auto;
         }
 
         .landing-header.scrolled .navbar {
@@ -216,10 +220,12 @@
             text-align: center;
             position: relative;
             overflow: hidden;
-            min-height: 90vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-top: 0;
+            padding-top: 8rem;
         }
 
         .hero-slider {
@@ -944,7 +950,7 @@
         window.addEventListener('scroll', () => {
             const currentScroll = window.pageYOffset;
             
-            if (currentScroll > 50) {
+            if (currentScroll > 100) {
                 header.classList.add('scrolled');
             } else {
                 header.classList.remove('scrolled');

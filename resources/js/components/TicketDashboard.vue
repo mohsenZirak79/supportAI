@@ -26,51 +26,26 @@
                 </div>-->
 
         <!-- Header -->
-        <header class="bg-white shadow-sm border-b">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center space-x-4 space-x-reverse">
-                    <!-- می‌تونی آیکون/عنوان اضافه کنی -->
+        <header class="ticket-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="ticket-logo">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(255,255,255,0.3)"/>
+                            <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(255,255,255,0.2)"/>
+                            <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(255,255,255,0.4)"/>
+                            <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
+                            <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
+                        </svg>
+                    </div>
+                    <h1>تیکت‌های پشتیبانی</h1>
                 </div>
-
-                <!-- دکمه‌ها: نسخه براق‌شده -->
-                <div class="flex items-center space-x-3 space-x-reverse py-3">
-                    <!-- Chat -->
-                    <button
-                        @click="goToChat"
-                        class="relative group px-4 py-2 rounded-xl font-medium transition-all
-                   bg-gradient-to-r from-sky-50 via-blue-50 to-indigo-50
-                   border border-blue-200 text-blue-700
-                   hover:from-sky-100 hover:via-blue-100 hover:to-indigo-100
-                   hover:border-blue-300 hover:text-blue-800
-                   shadow-sm hover:shadow-md"
-                    >
-                        <span
-                            class="absolute inset-0 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-blue-200/40 to-indigo-200/40"></span>
-                        <span class="relative flex items-center space-x-2 space-x-reverse">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-              </svg>
-              <span>چت</span>
-            </span>
+                <div class="header-actions">
+                    <button @click="goToChat" class="nav-btn ghost" type="button">
+                        چت
                     </button>
-
-                    <!-- New Ticket -->
-                    <button
-                        @click="showNewTicketForm = true"
-                        class="relative group px-4 py-2 rounded-xl font-semibold text-white transition-all
-                   bg-gradient-to-r from-blue-600 to-indigo-600
-                   hover:from-blue-700 hover:to-indigo-700
-                   shadow-md hover:shadow-lg"
-                    >
-                        <span
-                            class="absolute inset-0 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity bg-white/10"></span>
-                        <span class="relative flex items-center space-x-2 space-x-reverse">
-                          <svg class="icon-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 4v16m8-8H4"></path>
-                          </svg>
-                          <span>تیکت جدید</span>
-            </span>
+                    <button @click="showNewTicketForm = true" class="nav-btn" type="button">
+                        تیکت جدید
                     </button>
                 </div>
             </div>
@@ -1229,13 +1204,88 @@ onMounted(() => {
 }
 
 /* ---------- Header ---------- */
-header.bg-white {
-    background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .98));
-    backdrop-filter: blur(6px);
-    border-bottom: 1px solid rgba(226, 232, 240, .9);
-    position: sticky;
-    top: 0;
-    z-index: 30;
+.ticket-header {
+    background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+    color: white;
+    padding: 16px 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.ticket-header h1 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ticket-logo {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ticket-logo svg {
+    width: 100%;
+    height: 100%;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-btn {
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.nav-btn.ghost {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.nav-btn.ghost:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.6);
 }
 
 .close-btn {
