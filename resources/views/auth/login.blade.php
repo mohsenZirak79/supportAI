@@ -105,11 +105,28 @@
     document.addEventListener('DOMContentLoaded', () => {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+        const normalizeDigits = (value = '') => {
+            const persianZero = 1776;
+            const arabicZero = 1632;
+            return value.replace(/[۰-۹٠-٩]/g, (char) => {
+                const code = char.charCodeAt(0);
+                if (code >= persianZero && code <= persianZero + 9) {
+                    return String(code - persianZero);
+                }
+                if (code >= arabicZero && code <= arabicZero + 9) {
+                    return String(code - arabicZero);
+                }
+                return char;
+            });
+        };
+        const phoneInput = document.querySelector('#loginForm input[name="phone"]');
+        const otpInput = document.querySelector('#otpForm input[name="otp"]');
 
         // ارسال شماره (OTP request)
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const phone = document.querySelector('#loginForm input[name="phone"]').value.trim();
+            const phone = normalizeDigits(phoneInput.value.trim());
+            phoneInput.value = phone;
             if (!phone) return;
 
             try {
@@ -130,7 +147,8 @@
         document.getElementById('otpForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const phone = document.querySelector('#otpForm input[name="phone"]').value;
-            const otp = document.querySelector('#otpForm input[name="otp"]').value;
+            const otp = normalizeDigits(otpInput.value.trim());
+            otpInput.value = otp;
 
             try {
                 const res = await axios.post('/login', { phone, otp });

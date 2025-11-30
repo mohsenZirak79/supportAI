@@ -10,7 +10,7 @@
  *   Bootstrap 5 5.3.0, JSZip 3.10.1, pdfmake 0.2.7, DataTables 2.3.4, Buttons 3.2.5, Column visibility 3.2.5, HTML5 export 3.2.5, Print view 3.2.5
  */
 
-/*@charset "UTF-8";*/
+@charset "UTF-8";
 /*!
  * Bootstrap  v5.3.0 (https://getbootstrap.com/)
  * Copyright 2011-2023 The Bootstrap Authors
@@ -13107,87 +13107,4 @@ div.dt-button-info {
   border: 1px solid var(--bs-border-color-translucent);
 }
 
-/* ------------------------------
-   Custom Responsive Overrides
------------------------------- */
-@media (max-width: 1200px) {
-  div.dt-container div.dt-layout-row {
-    gap: 0.75rem;
-    align-items: stretch;
-  }
-}
-
-@media (max-width: 992px) {
-  div.dt-container div.dt-layout-row {
-    flex-direction: column;
-  }
-
-  div.dt-container div.dt-length,
-  div.dt-container div.dt-search,
-  div.dt-container div.dt-buttons {
-    width: 100%;
-    justify-content: center;
-    text-align: center;
-    margin: 0;
-  }
-
-  div.dt-container div.dt-search label,
-  div.dt-container div.dt-length label {
-    width: 100%;
-    justify-content: center;
-  }
-
-  div.dt-container div.dt-search input,
-  div.dt-container div.dt-length select {
-    width: min(320px, 100%);
-  }
-
-  div.dt-container div.dt-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  div.dt-container div.dt-layout-table > div {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-@media (max-width: 768px) {
-  div.dt-container div.dt-buttons .dt-button {
-    flex: 1 1 calc(50% - 0.5rem);
-    justify-content: center;
-  }
-
-  div.dt-container div.dt-layout-table table {
-    min-width: 600px;
-  }
-}
-
-@media (max-width: 576px) {
-  div.dt-container {
-    padding: 0.75rem;
-  }
-
-  div.dt-container div.dt-buttons .dt-button {
-    flex: 1 1 100%;
-  }
-
-  div.dt-container div.dt-search input,
-  div.dt-container div.dt-length select {
-    width: 100%;
-  }
-
-  div.dt-container div.dt-paging {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-  }
-
-  div.dt-container div.dt-layout-table table {
-    min-width: 520px;
-  }
-}
 

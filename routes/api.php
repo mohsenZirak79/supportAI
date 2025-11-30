@@ -65,6 +65,7 @@ Route::prefix('v1')
         Route::delete('conversations/{conversation}', [ConversationController::class, 'destroy']);
         Route::post('conversations/{conversation}/messages', [ConversationController::class, 'sendMessage']);
         Route::get('conversations/{conversation}/messages', [ConversationController::class, 'messages']);
+        Route::get('conversations/{conversation}/referrals', [ConversationController::class, 'referrals']);
 
         Route::post('messages/{message}/handoff', [ConversationController::class, 'handoff']);
 

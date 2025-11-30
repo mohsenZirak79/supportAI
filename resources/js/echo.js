@@ -1,4 +1,4 @@
-import Echo from 'laravel-echo';
+/*import Echo from 'laravel-echo';
 
 import Pusher from 'pusher-js';
 window.Pusher = Pusher;
@@ -12,7 +12,7 @@ window.Echo = new Echo({
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
 });
-
+*/
 // const roleName = 'support_technical'; // هر نقشی که کاربر فعلی دارد
 // window.Echo.private(`role.${roleName}`)
 //     .listen('.referral.created', (payload) => {

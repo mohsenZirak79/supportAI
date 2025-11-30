@@ -44,7 +44,15 @@ class WebController
 
     public function showUsers()
     {
-        $users = User::with('roles')->skip(1)->get();
+        if (auth()->user()->hasRole('برنامه نویس')){
+            $users = User::with('roles')->get();
+        }else{
+            $users = User::with('roles')
+                ->whereDoesntHave('roles', function ($query) {
+                    $query->where('name', 'برنامه نویس');
+                })->get();
+        }
+
         $roles = Role::where('id', '<>', 1)->get();
         return view('admin.users', compact('users' , 'roles'));
     }
