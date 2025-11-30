@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>پنل پشتیبانی کیش - سیستم مدیریت تیکت‌ها و گفت‌وگوها</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#0e7490">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="پشتیبانی کیش">
+    
     @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/js/app.js'])
     <style>
         * {
@@ -26,19 +41,15 @@
            HEADER / NAVBAR
            ============================================ */
         .landing-header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
             position: sticky;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
             transition: all 0.3s ease;
+            padding: 0;
         }
 
         .landing-header.scrolled {
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            background: rgba(255, 255, 255, 0.98);
+            padding: 0;
         }
 
         .navbar {
@@ -49,6 +60,17 @@
             justify-content: space-between;
             align-items: center;
             animation: slideDown 0.6s ease-out;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+            border-radius: 0 0 20px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .landing-header.scrolled .navbar {
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.98);
         }
 
         @keyframes slideDown {
@@ -106,6 +128,15 @@
             font-size: 1.25rem;
             box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .navbar-brand-icon img,
+        .navbar-brand-icon svg {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 8px;
         }
 
         .navbar-brand:hover .navbar-brand-icon {
@@ -754,7 +785,18 @@
     <header class="landing-header" id="header">
         <nav class="navbar">
             <a href="/" class="navbar-brand">
-                <div class="navbar-brand-icon">SA</div>
+                <div class="navbar-brand-icon">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Wave pattern representing sea -->
+                        <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(255,255,255,0.3)"/>
+                        <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(255,255,255,0.2)"/>
+                        <!-- Island shape -->
+                        <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(255,255,255,0.4)"/>
+                        <!-- Support symbol (chat bubble) -->
+                        <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
+                        <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
+                    </svg>
+                </div>
                 <span>پنل پشتیبانی کیش</span>
             </a>
             <div class="navbar-actions">
@@ -912,7 +954,7 @@
         // Hero Image Slider
         const heroSlides = document.querySelectorAll('.hero-slide');
         let currentSlide = 0;
-        const slideInterval = 3000; // 3 seconds
+        const slideInterval = 6000; // 6 seconds (slower)
 
         function nextSlide() {
             // Remove active class from current slide

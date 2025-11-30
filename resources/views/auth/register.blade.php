@@ -3,8 +3,20 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#0e7490">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="پشتیبانی کیش">
+    
     <title>ثبت‌نام کاربر</title>
     <title>@yield('title')</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">

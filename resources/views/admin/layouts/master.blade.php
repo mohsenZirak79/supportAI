@@ -4,7 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', __('پنل مدیریت'))</title>
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#0e7490">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="پشتیبانی کیش">
+    
     @vite(['resources/css/admin.css', 'resources/js/admin.js', 'resources/js/register.js'])
     @stack('styles')
     <style>
@@ -89,6 +103,15 @@
             font-weight: 700;
             letter-spacing: .05em;
             box-shadow: 0 12px 28px rgba(34, 211, 238, 0.45);
+            overflow: hidden;
+        }
+
+        .admin-navbar__logo img,
+        .admin-navbar__logo svg {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 8px;
         }
 
         .admin-navbar__title strong {
@@ -318,7 +341,18 @@
 <header class="admin-navbar">
     <a href="{{ route('admin.dashboard') }}" class="admin-navbar__brand">
         <span class="admin-navbar__glow"></span>
-        <span class="admin-navbar__logo">SA</span>
+        <span class="admin-navbar__logo">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Wave pattern representing sea -->
+                <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(0,0,0,0.2)"/>
+                <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(0,0,0,0.15)"/>
+                <!-- Island shape -->
+                <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(0,0,0,0.25)"/>
+                <!-- Support symbol (chat bubble) -->
+                <circle cx="50" cy="35" r="12" fill="currentColor" opacity="0.9"/>
+                <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="currentColor" opacity="0.9"/>
+            </svg>
+        </span>
         <span class="admin-navbar__title">
             <strong>Support AI</strong>
             <small>{{ __('پنل مدیریت') }}</small>

@@ -21,6 +21,15 @@
                     >
                         ☰
                     </button>
+                    <div class="chat-logo">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(255,255,255,0.3)"/>
+                            <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(255,255,255,0.2)"/>
+                            <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(255,255,255,0.4)"/>
+                            <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
+                            <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
+                        </svg>
+                    </div>
                     <h1>{{ activeChat?.title || 'چت با هوش مصنوعی' }}</h1>
                 </div>
                 <div class="header-actions">
@@ -1416,6 +1425,24 @@ function handleMenuClickOutside(event) {
     font-weight: 600;
     cursor: pointer;
     color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.chat-logo {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.chat-logo svg {
+    width: 100%;
+    height: 100%;
 }
 
 .chat-container {
