@@ -34,7 +34,7 @@ export default defineConfig({
                 'resources/js/register.js',
             ],
             refresh: true,
-            manifest: '.vite/manifest.json',
+            // manifest: '.vite/manifest.json',
         }),
         vue({
             template: {

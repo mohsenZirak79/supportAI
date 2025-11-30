@@ -121,8 +121,8 @@
                                 <div id="error" class="text-danger mt-2"></div>
                             </div>
 
-                            <div class="card-footer text-center pt-0 px-lg-2 px-1">
-                                <p class="mb-4 text-sm mx-auto">
+                            <div class="card-footer text-center">
+                                <p class="mb-0 text-sm">
                                     قبلاً حساب کاربری دارید؟ <a href="{{ route('login') }}" class="text-info text-gradient font-weight-bold">ورود</a>
                                 </p>
                             </div>
