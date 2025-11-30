@@ -59,13 +59,14 @@ class LandingController extends Controller
                 return redirect()->intended(route('admin.dashboard'));
             }
 
-            // Regular users go to chat or ticket page
+            // Regular users go to chat page
             return redirect()->intended(route('chat'));
         }
 
-        return back()->withErrors([
-            'email' => 'اطلاعات ورود صحیح نیست.',
-        ])->withInput($request->only('email'));
+        return redirect()->route('landing')
+            ->withErrors(['email' => 'اطلاعات ورود صحیح نیست.'])
+            ->withInput($request->only('email'))
+            ->with('login_errors', true);
     }
 
     /**
@@ -73,16 +74,16 @@ class LandingController extends Controller
      */
     public function register(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
         ]);
 
         // Assign default role (user role with id 3)
@@ -96,7 +97,11 @@ class LandingController extends Controller
 
         $request->session()->regenerate();
 
-        // Redirect based on user role (regular users go to chat)
+        // Redirect based on user role
+        if ($user->hasRole('ادمین') || $user->hasRole('برنامه نویس')) {
+            return redirect()->route('admin.dashboard')->with('success', 'ثبت‌نام با موفقیت انجام شد.');
+        }
+
         return redirect()->route('chat')->with('success', 'ثبت‌نام با موفقیت انجام شد.');
     }
 }
