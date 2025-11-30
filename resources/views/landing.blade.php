@@ -731,6 +731,8 @@
             .navbar {
                 padding: 1rem;
                 flex-wrap: wrap;
+                margin: 0 1rem;
+                max-width: calc(100% - 2rem);
             }
 
             .navbar-actions {
