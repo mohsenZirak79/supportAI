@@ -19,27 +19,47 @@
             -moz-osx-font-smoothing: grayscale;
             color: #1f2937;
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         /* ============================================
            HEADER / NAVBAR
            ============================================ */
         .landing-header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
             position: sticky;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .landing-header.scrolled {
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.98);
         }
 
         .navbar {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 1rem 2rem;
+            padding: 1.25rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .navbar-brand {
@@ -50,24 +70,47 @@
             color: #0e7490;
             font-size: 1.5rem;
             font-weight: 700;
-            transition: transform 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .navbar-brand::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            right: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #0e7490, #0891b2);
+            transition: width 0.3s ease;
+        }
+
+        .navbar-brand:hover::after {
+            width: 100%;
         }
 
         .navbar-brand:hover {
-            transform: scale(1.05);
+            transform: translateX(-3px);
         }
 
         .navbar-brand-icon {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 700;
             font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .navbar-brand:hover .navbar-brand-icon {
+            transform: rotate(5deg) scale(1.05);
+            box-shadow: 0 6px 20px rgba(14, 116, 144, 0.4);
         }
 
         .navbar-actions {
@@ -77,17 +120,37 @@
         }
 
         .btn-nav {
-            padding: 0.625rem 1.5rem;
+            padding: 0.75rem 1.75rem;
             border-radius: 12px;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 2px solid transparent;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-nav::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-nav:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn-nav-outline {
@@ -100,7 +163,7 @@
             background: #0e7490;
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
+            box-shadow: 0 6px 20px rgba(14, 116, 144, 0.3);
         }
 
         .btn-nav-primary {
@@ -111,7 +174,7 @@
 
         .btn-nav-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(14, 116, 144, 0.4);
+            box-shadow: 0 8px 25px rgba(14, 116, 144, 0.4);
         }
 
         /* ============================================
@@ -119,35 +182,64 @@
            ============================================ */
         .hero {
             background: linear-gradient(135deg, #f8fafb 0%, #e5e7eb 100%);
-            padding: 6rem 2rem;
+            padding: 8rem 2rem;
             text-align: center;
             position: relative;
             overflow: hidden;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .hero::before {
             content: '';
             position: absolute;
-            top: -50%;
+            top: -30%;
             right: -10%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(14, 116, 144, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: -5%;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(14, 116, 144, 0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(8, 145, 178, 0.06) 0%, transparent 70%);
             border-radius: 50%;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            33% {
+                transform: translate(30px, -30px) rotate(120deg);
+            }
+            66% {
+                transform: translate(-20px, 20px) rotate(240deg);
+            }
         }
 
         .hero-content {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
-            animation: fadeInUp 0.8s ease-out;
+            animation: fadeInUp 1s ease-out;
         }
 
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(40px);
             }
             to {
                 opacity: 1;
@@ -156,71 +248,101 @@
         }
 
         .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: #0e7490;
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 1.5rem;
-            letter-spacing: -0.02em;
-            line-height: 1.2;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            animation: fadeInUp 1s ease-out 0.2s both;
         }
 
         .hero p {
-            font-size: 1.25rem;
+            font-size: 1.375rem;
             color: #6b7280;
-            margin-bottom: 2.5rem;
+            margin-bottom: 3rem;
             line-height: 1.8;
+            animation: fadeInUp 1s ease-out 0.4s both;
         }
 
         .hero-cta {
             display: flex;
-            gap: 1rem;
+            gap: 1.25rem;
             justify-content: center;
             flex-wrap: wrap;
+            animation: fadeInUp 1s ease-out 0.6s both;
         }
 
         .btn-hero {
-            padding: 1rem 2.5rem;
+            padding: 1.125rem 2.75rem;
             border-radius: 16px;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.125rem;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-hero:hover::before {
+            width: 400px;
+            height: 400px;
         }
 
         .btn-hero-primary {
             background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
+            box-shadow: 0 6px 20px rgba(14, 116, 144, 0.3);
         }
 
         .btn-hero-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(14, 116, 144, 0.4);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(14, 116, 144, 0.4);
         }
 
         .btn-hero-secondary {
             background: white;
             color: #0e7490;
             border: 2px solid #0e7490;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .btn-hero-secondary:hover {
-            background: #0e7490;
+            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
             color: white;
-            transform: translateY(-3px);
+            border-color: transparent;
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(14, 116, 144, 0.3);
         }
 
         /* ============================================
            FEATURES SECTION
            ============================================ */
         .features {
-            padding: 6rem 2rem;
+            padding: 8rem 2rem;
             background: white;
+            position: relative;
         }
 
         .features-container {
@@ -230,252 +352,142 @@
 
         .section-title {
             text-align: center;
-            margin-bottom: 4rem;
+            margin-bottom: 5rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .section-title.visible {
+            animation-delay: 0.2s;
         }
 
         .section-title h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #0e7490;
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 1rem;
+            letter-spacing: -0.02em;
         }
 
         .section-title p {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             color: #6b7280;
         }
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
         }
 
         .feature-card {
-            background: #f8fafb;
-            border-radius: 20px;
-            padding: 2.5rem;
+            background: linear-gradient(135deg, #f8fafb 0%, #ffffff 100%);
+            border-radius: 24px;
+            padding: 3rem;
             text-align: center;
-            transition: all 0.3s ease;
-            border: 1px solid #e5e7eb;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .feature-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(14, 116, 144, 0.05) 0%, rgba(8, 145, 178, 0.02) 100%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
         }
 
         .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(14, 116, 144, 0.15);
             border-color: #0891b2;
         }
 
         .feature-icon {
-            width: 64px;
-            height: 64px;
+            width: 80px;
+            height: 80px;
             background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
-            border-radius: 16px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 2rem;
-            color: white;
+            margin: 0 auto 2rem;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 20px rgba(14, 116, 144, 0.2);
+            position: relative;
+        }
+
+        .feature-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: rotate(10deg) scale(1.1);
+            box-shadow: 0 12px 30px rgba(14, 116, 144, 0.3);
         }
 
         .feature-card h3 {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: 700;
             color: #0e7490;
             margin-bottom: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .feature-card:hover h3 {
+            color: #0891b2;
         }
 
         .feature-card p {
             color: #6b7280;
-            line-height: 1.8;
-        }
-
-        /* ============================================
-           AUTH MODALS
-           ============================================ */
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 2.5rem;
-            max-width: 480px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            animation: slideUp 0.3s ease-out;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .modal-header h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #0e7490;
-            margin: 0;
-        }
-
-        .modal-close {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: none;
-            background: #f1f5f9;
-            color: #6b7280;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            font-size: 1.25rem;
-        }
-
-        .modal-close:hover {
-            background: #e2e8f0;
-            transform: rotate(90deg);
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.875rem 1.25rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #f9fafb;
-            font-family: inherit;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #0891b2;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.1);
-        }
-
-        .form-check {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-check-input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .form-check-label {
-            font-size: 0.9rem;
-            color: #6b7280;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(14, 116, 144, 0.4);
-        }
-
-        .text-danger {
-            color: #ef4444;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-            display: block;
-        }
-
-        .alert {
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-        }
-
-        .alert-success {
-            background: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #34d399;
-        }
-
-        .alert-danger {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
+            line-height: 1.9;
+            font-size: 1.05rem;
         }
 
         /* ============================================
            FOOTER
            ============================================ */
         .footer {
-            background: #1f2937;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
             color: #e5e7eb;
-            padding: 3rem 2rem 2rem;
+            padding: 4rem 2rem 2rem;
             margin-top: 6rem;
+            position: relative;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(14, 116, 144, 0.3), transparent);
         }
 
         .footer-content {
@@ -484,36 +496,74 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 3rem;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
 
+        .footer-section {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .footer-section:nth-child(1) { animation-delay: 0.1s; }
+        .footer-section:nth-child(2) { animation-delay: 0.2s; }
+        .footer-section:nth-child(3) { animation-delay: 0.3s; }
+
         .footer-section h3 {
-            font-size: 1.25rem;
+            font-size: 1.375rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.75rem;
+        }
+
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, #0e7490, #0891b2);
         }
 
         .footer-section p,
         .footer-section a {
             color: #9ca3af;
             text-decoration: none;
-            line-height: 1.8;
-            transition: color 0.2s ease;
+            line-height: 2;
+            transition: all 0.3s ease;
+            display: block;
+            margin-bottom: 0.5rem;
         }
 
         .footer-section a:hover {
-            color: white;
+            color: #0891b2;
+            transform: translateX(-5px);
         }
 
         .footer-bottom {
             max-width: 1200px;
             margin: 0 auto;
             padding-top: 2rem;
-            border-top: 1px solid #374151;
+            border-top: 1px solid rgba(55, 65, 81, 0.5);
             text-align: center;
             color: #9ca3af;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+        }
+
+        /* ============================================
+           SCROLL ANIMATIONS
+           ============================================ */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ============================================
@@ -532,15 +582,16 @@
             }
 
             .hero {
-                padding: 4rem 1.5rem;
+                padding: 5rem 1.5rem;
+                min-height: 80vh;
             }
 
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 2.75rem;
             }
 
             .hero p {
-                font-size: 1.1rem;
+                font-size: 1.125rem;
             }
 
             .hero-cta {
@@ -553,26 +604,27 @@
             }
 
             .features {
-                padding: 4rem 1.5rem;
+                padding: 5rem 1.5rem;
             }
 
             .section-title h2 {
-                font-size: 2rem;
+                font-size: 2.25rem;
             }
 
             .features-grid {
                 grid-template-columns: 1fr;
+                gap: 2rem;
             }
 
-            .modal-content {
-                padding: 2rem;
+            .feature-card {
+                padding: 2.5rem;
             }
         }
     </style>
 </head>
 <body>
     <!-- Header / Navbar -->
-    <header class="landing-header">
+    <header class="landing-header" id="header">
         <nav class="navbar">
             <a href="/" class="navbar-brand">
                 <div class="navbar-brand-icon">SA</div>
@@ -584,12 +636,12 @@
                         ورود به داشبورد
                     </a>
                 @else
-                    <button onclick="openModal('loginModal')" class="btn-nav btn-nav-outline">
+                    <a href="{{ route('login') }}" class="btn-nav btn-nav-outline">
                         ورود
-                    </button>
-                    <button onclick="openModal('registerModal')" class="btn-nav btn-nav-primary">
+                    </a>
+                    <a href="{{ route('register') }}" class="btn-nav btn-nav-primary">
                         ثبت‌نام
-                    </button>
+                    </a>
                 @endauth
             </div>
         </nav>
@@ -606,12 +658,12 @@
                         ورود به داشبورد
                     </a>
                 @else
-                    <button onclick="openModal('registerModal')" class="btn-hero btn-hero-primary">
+                    <a href="{{ route('register') }}" class="btn-hero btn-hero-primary">
                         شروع کنید
-                    </button>
-                    <button onclick="openModal('loginModal')" class="btn-hero btn-hero-secondary">
+                    </a>
+                    <a href="{{ route('login') }}" class="btn-hero btn-hero-secondary">
                         ورود به حساب کاربری
-                    </button>
+                    </a>
                 @endauth
             </div>
         </div>
@@ -620,38 +672,72 @@
     <!-- Features Section -->
     <section class="features">
         <div class="features-container">
-            <div class="section-title">
+            <div class="section-title visible">
                 <h2>ویژگی‌های پلتفرم</h2>
                 <p>ابزارهای قدرتمند برای مدیریت بهتر پشتیبانی</p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">💬</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
                     <h3>گفت‌وگوی هوشمند</h3>
                     <p>سیستم چت پیشرفته با پشتیبانی از هوش مصنوعی برای پاسخگویی سریع و دقیق به کاربران</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🎫</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                    </div>
                     <h3>مدیریت تیکت‌ها</h3>
                     <p>سیستم کامل مدیریت تیکت‌های پشتیبانی با امکان پیگیری، اولویت‌بندی و پاسخگویی</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">👥</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
                     <h3>تیم پشتیبانی</h3>
                     <p>مدیریت تیم‌های پشتیبانی با سیستم نقش‌ها و دسترسی‌های پیشرفته</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">📊</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <line x1="18" y1="20" x2="18" y2="10"/>
+                            <line x1="12" y1="20" x2="12" y2="4"/>
+                            <line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                    </div>
                     <h3>گزارش‌گیری</h3>
                     <p>داشبورد تحلیلی برای بررسی عملکرد و آمار تیکت‌ها و گفت‌وگوها</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
                     <h3>امنیت بالا</h3>
                     <p>سیستم امنیتی پیشرفته با احراز هویت چندمرحله‌ای و مدیریت دسترسی‌ها</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
                     <h3>عملکرد سریع</h3>
                     <p>پلتفرم بهینه‌شده با سرعت بالا و تجربه کاربری روان و حرفه‌ای</p>
                 </div>
@@ -668,15 +754,15 @@
             </div>
             <div class="footer-section">
                 <h3>لینک‌های مفید</h3>
-                <p><a href="#">راهنما</a></p>
-                <p><a href="#">مستندات</a></p>
-                <p><a href="#">تماس با ما</a></p>
+                <a href="#">راهنما</a>
+                <a href="#">مستندات</a>
+                <a href="#">تماس با ما</a>
             </div>
             <div class="footer-section">
                 <h3>پشتیبانی</h3>
-                <p><a href="#">مرکز راهنمایی</a></p>
-                <p><a href="#">سوالات متداول</a></p>
-                <p><a href="#">گزارش مشکل</a></p>
+                <a href="#">مرکز راهنمایی</a>
+                <a href="#">سوالات متداول</a>
+                <a href="#">گزارش مشکل</a>
             </div>
         </div>
         <div class="footer-bottom">
@@ -684,216 +770,56 @@
         </div>
     </footer>
 
-    <!-- Login Modal -->
-    <div id="loginModal" class="modal" onclick="closeModalOnBackdrop(event, 'loginModal')">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h2>ورود</h2>
-                <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
-            </div>
-
-            @if(session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if($errors->any() && (session('login_errors') || request()->routeIs('landing.login')))
-                <div class="alert alert-danger">
-                    <ul style="margin: 0; padding-right: 1.5rem;">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('landing.login') }}">
-                @csrf
-
-                <div class="form-group">
-                    <label class="form-label" for="login_email">ایمیل</label>
-                    <input
-                        type="email"
-                        id="login_email"
-                        name="email"
-                        class="form-control @error('email') is-invalid @enderror"
-                        value="{{ old('email') }}"
-                        required
-                        autofocus
-                        placeholder="example@email.com"
-                    >
-                    @error('email')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="login_password">رمز عبور</label>
-                    <input
-                        type="password"
-                        id="login_password"
-                        name="password"
-                        class="form-control @error('password') is-invalid @enderror"
-                        required
-                        placeholder="••••••••"
-                    >
-                    @error('password')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="form-check">
-                    <input
-                        type="checkbox"
-                        id="remember"
-                        name="remember"
-                        class="form-check-input"
-                        value="1"
-                    >
-                    <label class="form-check-label" for="remember">
-                        مرا به خاطر بسپار
-                    </label>
-                </div>
-
-                <button type="submit" class="btn-primary">
-                    ورود
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Register Modal -->
-    <div id="registerModal" class="modal" onclick="closeModalOnBackdrop(event, 'registerModal')">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h2>ثبت‌نام</h2>
-                <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
-            </div>
-
-            @if($errors->any() && request()->routeIs('landing.register'))
-                <div class="alert alert-danger">
-                    <ul style="margin: 0; padding-right: 1.5rem;">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('landing.register') }}">
-                @csrf
-
-                <div class="form-group">
-                    <label class="form-label" for="register_name">نام</label>
-                    <input
-                        type="text"
-                        id="register_name"
-                        name="name"
-                        class="form-control @error('name') is-invalid @enderror"
-                        value="{{ old('name') }}"
-                        required
-                        autofocus
-                        placeholder="نام خود را وارد کنید"
-                    >
-                    @error('name')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="register_email">ایمیل</label>
-                    <input
-                        type="email"
-                        id="register_email"
-                        name="email"
-                        class="form-control @error('email') is-invalid @enderror"
-                        value="{{ old('email') }}"
-                        required
-                        placeholder="example@email.com"
-                    >
-                    @error('email')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="register_password">رمز عبور</label>
-                    <input
-                        type="password"
-                        id="register_password"
-                        name="password"
-                        class="form-control @error('password') is-invalid @enderror"
-                        required
-                        placeholder="حداقل 6 کاراکتر"
-                    >
-                    @error('password')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="register_password_confirmation">تکرار رمز عبور</label>
-                    <input
-                        type="password"
-                        id="register_password_confirmation"
-                        name="password_confirmation"
-                        class="form-control"
-                        required
-                        placeholder="رمز عبور را دوباره وارد کنید"
-                    >
-                </div>
-
-                <button type="submit" class="btn-primary">
-                    ثبت‌نام
-                </button>
-            </form>
-        </div>
-    </div>
-
     <script>
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function closeModalOnBackdrop(event, modalId) {
-            if (event.target.id === modalId) {
-                closeModal(modalId);
+        // Header scroll effect
+        let lastScroll = 0;
+        const header = document.getElementById('header');
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
             }
-        }
-
-        // Close modal on ESC key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal.active').forEach(modal => {
-                    modal.classList.remove('active');
-                    document.body.style.overflow = '';
-                });
-            }
+            
+            lastScroll = currentScroll;
         });
 
-        // Auto-open modal if there are errors
-        @if(session('login_errors') || ($errors->any() && request()->routeIs('landing.login')))
-            document.addEventListener('DOMContentLoaded', function() {
-                openModal('loginModal');
-            });
-        @endif
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
 
-        @if($errors->any() && request()->routeIs('landing.register'))
-            document.addEventListener('DOMContentLoaded', function() {
-                openModal('registerModal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
             });
-        @endif
+        }, observerOptions);
+
+        // Observe feature cards
+        document.querySelectorAll('.feature-card').forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+            observer.observe(card);
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html>
-
-
-
-
