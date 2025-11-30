@@ -26,11 +26,12 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/css/auth.css',
                 'resources/css/user.css',
-                'resources/css/admin.css',   // ← اضافه
+                'resources/css/admin.css',
+                'resources/css/admin-support.css',   // ← اضافه
                 'resources/js/app.js',
                 'resources/js/chat.js',
                 'resources/js/tickets.js',
-                'resources/js/admin.js',     // ← اضافه
+                'resources/js/admin.js',
                 'resources/js/register.js',
             ],
             refresh: true,

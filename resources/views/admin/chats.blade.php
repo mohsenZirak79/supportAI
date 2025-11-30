@@ -5,6 +5,7 @@
 @push('styles')
     <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    @vite(['resources/css/admin-support.css'])
     <style>
             .voice-card {
                 background: #f6f9fc;
@@ -266,12 +267,12 @@
                     }
 
                     item.innerHTML = `
-          <div class="d-flex justify-content-${side}">
-            <div class="p-2 rounded ${side === 'end' ? 'bg-light' : 'bg-white'}" style="max-width: 90%;">
-              <div class="small text-muted mb-1">${m.sender_type === 'ai' ? '🤖 هوش مصنوعی' : '👤 کاربر'}</div>
-              <div>${escapeHtml(m.content || '')}</div>
+          <div class="d-flex justify-content-${side} mb-3">
+            <div class="message-bubble ${side === 'end' ? 'bubble-agent' : 'bubble-user'}" style="max-width: 85%;">
+              <div class="small mb-2 fw-semibold" style="opacity: 0.8;">${m.sender_type === 'ai' ? '🤖 هوش مصنوعی' : '👤 کاربر'}</div>
+              <div style="white-space: pre-wrap; word-break: break-word;">${escapeHtml(m.content || '')}</div>
               ${mediaHtml}
-              <div class="mt-1 text-muted" style="font-size:12px">${fmtDate(m.created_at)}</div>
+              <div class="msg-time mt-2">${fmtDate(m.created_at)}</div>
             </div>
           </div>
         `;
@@ -498,17 +499,20 @@
 @endpush
 
 @section('content')
-<section class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ">
-    <!-- Navbar -->
-    <!-- End Navbar -->
-    <div class="container-fluid py-4">
+<div class="admin-support-page">
+    <section class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg">
         <div class="container-fluid py-4">
-            <div class="card">
-                <div class="card-header pb-0">
+            <div class="page-header mb-4">
+                <h1 class="page-title">گفت‌وگوها</h1>
+                <p class="page-subtitle">مدیریت و مشاهده تمام مکالمات کاربران</p>
+            </div>
+            
+            <div class="support-card">
+                <div class="support-card-header">
                     <h6>لیست مکالمات</h6>
                 </div>
-                <div class="card-body px-0 pt-0 pb-2">
-                    <div class="table-responsive p-0">
+                <div class="support-card-body">
+                    <div class="table-responsive">
                         <table class="table align-items-center mb-0 datatable" id="example">
                             <thead>
                             <tr>
@@ -553,8 +557,8 @@
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+</div>
 
 <div class="fixed-plugin">
 
@@ -645,16 +649,15 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
             </div>
             <div class="modal-body">
-                <div id="convMeta" class="mb-3 text-sm text-muted"></div>
+                <div id="convMeta" class="mb-4 p-3 bg-light rounded-3" style="background: #f8fafb !important; border: 1px solid #e5e7eb;"></div>
 
                 <div class="mb-4">
-                    <h6 class="mb-2">پیام‌ها</h6>
-                    <div id="msgList" class="list-group"
-                         style="max-height: 45vh; overflow-y: auto; border:1px solid #eee;"></div>
+                    <h6 class="mb-3 fw-bold" style="color: var(--support-deep-blue);">پیام‌ها</h6>
+                    <div id="msgList" class="d-flex flex-column gap-3 p-3 rounded-3" style="max-height: 45vh; overflow-y: auto; background: #f8fafb; border: 1px solid #e5e7eb;"></div>
                 </div>
 
                 <div class="mt-4">
-                    <h6 class="mb-2">ارجاع‌ها</h6>
+                    <h6 class="mb-3 fw-bold" style="color: var(--support-deep-blue);">ارجاع‌ها</h6>
                     <div id="refList" class="d-flex flex-column gap-3"></div>
                 </div>
             </div>

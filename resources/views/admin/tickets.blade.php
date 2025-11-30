@@ -1,10 +1,14 @@
 @extends('admin.layouts.master')
+@php
+use Illuminate\Support\Facades\Auth;
+@endphp
 
 @section('title', 'تیکت ها')
 
 @push('styles')
     <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    @vite(['resources/css/admin-support.css'])
     <style>
             .ticket-chip{display:inline-flex;align-items:center;gap:.35rem;max-width:230px;padding:.35rem .6rem;border-radius:9999px;font-size:.78rem;line-height:1;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}
             .ticket-chip .truncate{display:inline-block;max-width:150px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -81,12 +85,12 @@
 
                     const box = document.createElement('div');
                     box.innerHTML = `
-                  <div class="d-flex justify-content-${side}">
-                    <div class="bubble ${isSupport ? 'bubble-agent' : 'bubble-user'}" dir="rtl">
-                        <div class="small text-muted mb-1">${who}</div>
+                  <div class="d-flex justify-content-${side} mb-3">
+                    <div class="message-bubble ${isSupport ? 'bubble-agent' : 'bubble-user'}" dir="rtl" style="max-width: 85%;">
+                        <div class="small mb-2 fw-semibold" style="opacity: 0.8;">${who}</div>
                         <div class="mb-2" style="white-space:pre-wrap;word-break:break-word;">${escapeHtml(m.message || '')}</div>
                         ${renderFiles(m.attachments||[])}
-                        <div class="mt-1 msg-time">${toEnDate(m.created_at)}</div>
+                        <div class="msg-time mt-2">${toEnDate(m.created_at)}</div>
                     </div>
                   </div>
                 `;
@@ -156,17 +160,58 @@
 @endpush
 
 @section('content')
-<section class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ">
-    <!-- Navbar -->
-    <!-- End Navbar -->
-    <div class="container-fluid py-4">
+<div class="admin-support-page">
+    <section class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg">
         <div class="container-fluid py-4">
-            <div class="card">
-                <div class="card-header pb-0">
-                    <h6>لیست تیکت ها</h6>
+            <div class="page-header mb-4">
+                <h1 class="page-title">تیکت‌ها</h1>
+                <p class="page-subtitle">مدیریت و پیگیری درخواست‌های پشتیبانی</p>
+            </div>
+
+            @php
+                $user = Auth::user();
+                $hasInternal = $user->roles()->where('is_internal', 1)->exists();
+                $isAdmin = $user->hasRole('ادمین') || $hasInternal;
+                $query = \App\Domains\Shared\Models\Ticket::whereNull('parent_id');
+                if (!$isAdmin) {
+                    $roleIds = $user->roles()->pluck('id')->all();
+                    $query->whereIn('department_role_id', $roleIds);
+                }
+                $totalTickets = $query->count();
+                $pendingCount = (clone $query)->where('status', 'pending')->count();
+                $answeredCount = (clone $query)->where('status', 'answered')->count();
+                $closedCount = (clone $query)->where('status', 'closed')->count();
+            @endphp
+
+            <div class="summary-grid mb-4">
+                <div class="summary-card">
+                    <div class="summary-card__icon">📋</div>
+                    <div class="summary-card__label">کل تیکت‌ها</div>
+                    <div class="summary-card__value">{{ $totalTickets }}</div>
                 </div>
-                <div class="card-body px-0 pt-0 pb-2">
-                    <div class="table-responsive p-0">
+                <div class="summary-card">
+                    <div class="summary-card__icon">⏳</div>
+                    <div class="summary-card__label">در انتظار پاسخ</div>
+                    <div class="summary-card__value" style="color: #f59e0b;">{{ $pendingCount }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card__icon">✅</div>
+                    <div class="summary-card__label">پاسخ داده شده</div>
+                    <div class="summary-card__value" style="color: #10b981;">{{ $answeredCount }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card__icon">🔒</div>
+                    <div class="summary-card__label">بسته شده</div>
+                    <div class="summary-card__value" style="color: #6b7280;">{{ $closedCount }}</div>
+                </div>
+            </div>
+
+            <div class="support-card">
+                <div class="support-card-header">
+                    <h6>لیست تیکت‌ها</h6>
+                </div>
+                <div class="support-card-body">
+                    <div class="table-responsive">
                         <table class="table align-items-center mb-0 datatable" id="example">
                             <thead>
                             <tr>
@@ -209,15 +254,15 @@
                             @endforeach
                             </tbody>
                         </table>
-                        <div class="px-3">
+                        <div class="px-3 mt-3">
                             {{ $tickets->links() }}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+</div>
 
 <!-- Modal -->
 <div class="modal fade" id="ticketModal" tabindex="-1" aria-labelledby="ticketModalLabel" aria-hidden="true">
@@ -228,29 +273,28 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
             </div>
             <div class="modal-body">
-                <div id="tkMeta" class="mb-3 text-sm text-muted"></div>
+                <div id="tkMeta" class="mb-4 p-3 bg-light rounded-3" style="background: #f8fafb !important; border: 1px solid #e5e7eb;"></div>
 
                 <div class="mb-4">
-                    <h6 class="mb-2">پیام‌ها</h6>
-                    <div id="tkMsgList" class="d-flex flex-column gap-3" style="max-height:45vh; overflow-y:auto; border:1px solid #eee; padding:10px;"></div>
+                    <h6 class="mb-3 fw-bold" style="color: var(--support-deep-blue);">پیام‌ها</h6>
+                    <div id="tkMsgList" class="d-flex flex-column gap-3 p-3 rounded-3" style="max-height:45vh; overflow-y:auto; background: #f8fafb; border: 1px solid #e5e7eb;"></div>
                 </div>
 
-                <div id="replyBox" class="mt-3" style="display:none;">
-                    <hr>
-                    <h6 class="mb-2">ارسال پاسخ</h6>
+                <div id="replyBox" class="mt-4" style="display:none;">
+                    <hr class="my-4">
+                    <h6 class="mb-3 fw-bold" style="color: var(--support-deep-blue);">ارسال پاسخ</h6>
                     <form id="replyForm">
-                        <div class="mb-2">
-                            <label class="form-label small">پاسخ شما</label>
-                            <textarea name="message" class="form-control" rows="4" required></textarea>
+                        <div class="mb-3">
+                            <label class="form-label">پاسخ شما</label>
+                            <textarea name="message" class="form-control" rows="4" required placeholder="پاسخ خود را وارد کنید..."></textarea>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label small d-block">فایل‌های پیوست (اختیاری)</label>
-                            <input type="file" name="files[]" class="form-control form-control-sm" multiple>
+                        <div class="mb-3">
+                            <label class="form-label">فایل‌های پیوست (اختیاری)</label>
+                            <input type="file" name="files[]" class="form-control" multiple>
                             <div class="form-text">حداکثر 10 فایل، هر کدام تا 5MB</div>
                         </div>
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success btn-sm">ثبت پاسخ</button>
-
+                            <button type="submit" class="btn btn-success">ثبت پاسخ</button>
                         </div>
                     </form>
                 </div>

@@ -1,0 +1,683 @@
+/* ============================================
+   Admin Support Pages - Modern & Minimal Design
+   Chat & Ticket Pages Redesign
+   ============================================ */
+
+/* Color System - Kish Island Inspired */
+:root {
+    --support-bg: #f8fafb;
+    --support-surface: #ffffff;
+    --support-border: #e5e7eb;
+    --support-turquoise: #2dd4bf;
+    --support-blue: #0891b2;
+    --support-deep-blue: #0e7490;
+    --support-text: #1f2937;
+    --support-text-muted: #6b7280;
+    --support-success: #10b981;
+    --support-warning: #f59e0b;
+    --support-error: #ef4444;
+    --support-info: #3b82f6;
+    --support-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --support-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --support-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   COMMON STYLES
+   ============================================ */
+
+.admin-support-page {
+    background: var(--support-bg);
+    min-height: 100vh;
+}
+
+/* Page Header */
+.admin-support-page .page-header {
+    margin-bottom: 2rem;
+    animation: fadeInDown 0.5s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-support-page .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--support-deep-blue);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.admin-support-page .page-subtitle {
+    color: var(--support-text-muted);
+    font-size: 0.95rem;
+}
+
+/* Cards - Modern & Minimal */
+.admin-support-page .support-card {
+    background: var(--support-surface);
+    border: none;
+    border-radius: 20px;
+    box-shadow: var(--support-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    animation: cardFadeIn 0.6s ease-out;
+}
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-support-page .support-card:hover {
+    box-shadow: var(--support-shadow-lg);
+    transform: translateY(-2px);
+}
+
+.admin-support-page .support-card-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--support-border);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
+}
+
+.admin-support-page .support-card-header h6 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--support-deep-blue);
+    margin: 0;
+}
+
+.admin-support-page .support-card-body {
+    padding: 1.5rem 2rem;
+}
+
+/* ============================================
+   TICKET PAGE SPECIFIC
+   ============================================ */
+
+/* Summary Cards */
+.admin-support-page .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.admin-support-page .summary-card {
+    background: var(--support-surface);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--support-shadow);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    animation: cardFadeIn 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.admin-support-page .summary-card:nth-child(1) { animation-delay: 0.1s; }
+.admin-support-page .summary-card:nth-child(2) { animation-delay: 0.2s; }
+.admin-support-page .summary-card:nth-child(3) { animation-delay: 0.3s; }
+.admin-support-page .summary-card:nth-child(4) { animation-delay: 0.4s; }
+
+.admin-support-page .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--support-turquoise);
+    transition: width 0.3s ease;
+}
+
+.admin-support-page .summary-card:hover::before {
+    width: 100%;
+    opacity: 0.05;
+}
+
+.admin-support-page .summary-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--support-shadow-lg);
+}
+
+.admin-support-page .summary-card__label {
+    font-size: 0.875rem;
+    color: var(--support-text-muted);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.admin-support-page .summary-card__value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--support-deep-blue);
+    margin-bottom: 0.25rem;
+}
+
+.admin-support-page .summary-card__icon {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    opacity: 0.15;
+}
+
+/* Status Badges */
+.admin-support-page .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.875rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+}
+
+.admin-support-page .status-badge.st-pending {
+    background: #fff7ed;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.admin-support-page .status-badge.st-answered {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #34d399;
+}
+
+.admin-support-page .status-badge.st-closed {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+
+/* Table Improvements */
+.admin-support-page .table-responsive {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.admin-support-page table.dataTable {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.admin-support-page table.dataTable thead th {
+    background: linear-gradient(to bottom, #f8fafb, #f1f5f9);
+    color: var(--support-deep-blue);
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.5rem;
+    border-bottom: 2px solid var(--support-border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.admin-support-page table.dataTable tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--support-border);
+}
+
+.admin-support-page table.dataTable tbody tr:hover {
+    background: #f8fafb;
+    transform: scale(1.01);
+    box-shadow: var(--support-shadow-sm);
+}
+
+.admin-support-page table.dataTable tbody td {
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+    color: var(--support-text);
+    font-size: 0.9rem;
+}
+
+/* Action Buttons */
+.admin-support-page .btn-view-conv,
+.admin-support-page .btn-view-ticket {
+    background: linear-gradient(135deg, var(--support-turquoise) 0%, var(--support-blue) 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.5rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-support-page .btn-view-conv::before,
+.admin-support-page .btn-view-ticket::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.admin-support-page .btn-view-conv:active::before,
+.admin-support-page .btn-view-ticket:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.admin-support-page .btn-view-conv:hover,
+.admin-support-page .btn-view-ticket:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(45, 212, 191, 0.4);
+}
+
+/* ============================================
+   MODAL IMPROVEMENTS
+   ============================================ */
+
+.admin-support-page .modal-content {
+    border: none;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: modalFadeIn 0.4s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.admin-support-page .modal-header {
+    background: linear-gradient(135deg, var(--support-turquoise) 0%, var(--support-blue) 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-bottom: none;
+}
+
+.admin-support-page .modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.admin-support-page .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+}
+
+.admin-support-page .btn-close:hover {
+    opacity: 1;
+}
+
+.admin-support-page .modal-body {
+    padding: 2rem;
+    background: var(--support-bg);
+}
+
+/* Message Bubbles in Modal */
+.admin-support-page .message-bubble {
+    max-width: 85%;
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    animation: messageSlideIn 0.3s ease-out;
+    word-wrap: break-word;
+    line-height: 1.6;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-support-page .bubble-user {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    margin-right: auto;
+    margin-left: 0;
+}
+
+.admin-support-page .bubble-agent {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid #a7f3d0;
+    color: #064e3b;
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.admin-support-page .msg-time {
+    font-size: 0.75rem;
+    color: var(--support-text-muted);
+    margin-top: 0.5rem;
+    display: block;
+}
+
+/* Voice Cards */
+.admin-support-page .voice-card {
+    background: #f8fafb;
+    border: 1px solid var(--support-border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.admin-support-page .voice-card:hover {
+    background: #f1f5f9;
+    box-shadow: var(--support-shadow-sm);
+}
+
+.admin-support-page .voice-card audio {
+    width: 100%;
+    outline: none;
+    border-radius: 8px;
+}
+
+/* Referral Cards */
+.admin-support-page .referral-card {
+    background: var(--support-surface);
+    border: 1px solid var(--support-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    animation: cardFadeIn 0.4s ease-out;
+}
+
+.admin-support-page .referral-card:hover {
+    box-shadow: var(--support-shadow);
+    transform: translateY(-2px);
+}
+
+/* Form Improvements */
+.admin-support-page .form-control,
+.admin-support-page .form-select {
+    border: 2px solid var(--support-border);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background: var(--support-surface);
+}
+
+.admin-support-page .form-control:focus,
+.admin-support-page .form-select:focus {
+    border-color: var(--support-turquoise);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.1);
+    transform: translateY(-1px);
+}
+
+.admin-support-page .form-label {
+    font-weight: 600;
+    color: var(--support-text);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Buttons */
+.admin-support-page .btn-success {
+    background: linear-gradient(135deg, var(--support-success) 0%, #059669 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.admin-support-page .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.admin-support-page .btn-secondary {
+    background: #f1f5f9;
+    color: var(--support-text);
+    border: 1px solid var(--support-border);
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.admin-support-page .btn-secondary:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+}
+
+/* Empty State */
+.admin-support-page .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--support-text-muted);
+}
+
+.admin-support-page .empty-state__icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.admin-support-page .empty-state__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--support-text);
+    margin-bottom: 0.5rem;
+}
+
+.admin-support-page .empty-state__message {
+    font-size: 0.95rem;
+    color: var(--support-text-muted);
+}
+
+/* Loading States */
+.admin-support-page .loading-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--support-text-muted);
+}
+
+.admin-support-page .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--support-border);
+    border-top-color: var(--support-turquoise);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-support-page .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .admin-support-page .support-card-header,
+    .admin-support-page .support-card-body {
+        padding: 1rem 1.5rem;
+    }
+    
+    .admin-support-page .page-title {
+        font-size: 1.5rem;
+    }
+}
+
+/* Scrollbar Styling */
+.admin-support-page ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.admin-support-page ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.admin-support-page ::-webkit-scrollbar-thumb {
+    background: var(--support-turquoise);
+    border-radius: 4px;
+}
+
+.admin-support-page ::-webkit-scrollbar-thumb:hover {
+    background: var(--support-blue);
+}
+
+/* List Group Improvements */
+.admin-support-page .list-group {
+    border: none;
+    border-radius: 12px;
+}
+
+.admin-support-page .list-group-item {
+    border: none;
+    border-bottom: 1px solid var(--support-border);
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.admin-support-page .list-group-item:last-child {
+    border-bottom: none;
+}
+
+.admin-support-page .list-group-item:hover {
+    background: #f8fafb;
+}
+
+/* Ticket Chip Improvements */
+.admin-support-page .ticket-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 240px;
+    padding: 0.5rem 0.875rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    line-height: 1;
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.admin-support-page .ticket-chip:hover {
+    background: #e0e7ff;
+    border-color: #a5b4fc;
+    transform: translateY(-1px);
+    box-shadow: var(--support-shadow-sm);
+    color: #4338ca;
+    text-decoration: none;
+}
+
+/* Modal Message List Container */
+.admin-support-page #msgList,
+.admin-support-page #tkMsgList {
+    scrollbar-width: thin;
+    scrollbar-color: var(--support-turquoise) #f1f5f9;
+}
+
+/* Referral Form Improvements */
+.admin-support-page .referral-reply-form {
+    background: #f8fafb;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--support-border);
+}
+
+.admin-support-page .referral-reply-form .form-control,
+.admin-support-page .referral-reply-form .form-select {
+    background: white;
+}
+
+/* Badge Colors for Referrals */
+.admin-support-page .badge.bg-warning {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    border: 1px solid #fcd34d;
+}
+
+.admin-support-page .badge.bg-info {
+    background: #dbeafe !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #93c5fd;
+}
+
+.admin-support-page .badge.bg-success {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    border: 1px solid #86efac;
+}
+
+.admin-support-page .badge.bg-secondary {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1;
+}
+
+/* Empty Table State */
+.admin-support-page table.dataTable tbody tr td.dataTables_empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--support-text-muted);
+}
+
+.admin-support-page table.dataTable tbody tr td.dataTables_empty::before {
+    content: '📭';
+    display: block;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
