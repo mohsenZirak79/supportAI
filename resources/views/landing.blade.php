@@ -181,7 +181,6 @@
            HERO SECTION
            ============================================ */
         .hero {
-            background: linear-gradient(135deg, #f8fafb 0%, #e5e7eb 100%);
             padding: 8rem 2rem;
             text-align: center;
             position: relative;
@@ -192,18 +191,51 @@
             justify-content: center;
         }
 
+        .hero-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .hero-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+        }
+
+        .hero-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Overlay برای خوانایی متن */
         .hero::before {
             content: '';
             position: absolute;
-            top: -30%;
-            right: -10%;
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(14, 116, 144, 0.08) 0%, transparent 70%);
-            border-radius: 50%;
-            animation: float 20s ease-in-out infinite;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(14, 116, 144, 0.7) 0%, rgba(8, 145, 178, 0.6) 100%);
+            z-index: 1;
         }
 
+        /* دایره‌های شناور برای افکت بصری */
         .hero::after {
             content: '';
             position: absolute;
@@ -211,9 +243,10 @@
             left: -5%;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(8, 145, 178, 0.06) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
             border-radius: 50%;
             animation: float 25s ease-in-out infinite reverse;
+            z-index: 1;
         }
 
         @keyframes float {
@@ -248,24 +281,25 @@
         }
 
         .hero h1 {
-            font-size: 4rem;
+            font-size: 4.5rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1.5rem;
+            color: white;
+            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
             letter-spacing: -0.03em;
             line-height: 1.1;
             animation: fadeInUp 1s ease-out 0.2s both;
+            position: relative;
         }
 
         .hero p {
-            font-size: 1.375rem;
-            color: #6b7280;
-            margin-bottom: 3rem;
-            line-height: 1.8;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.98);
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 3.5rem;
+            line-height: 1.9;
             animation: fadeInUp 1s ease-out 0.4s both;
+            font-weight: 400;
         }
 
         .hero-cta {
@@ -313,46 +347,77 @@
         .btn-hero-primary {
             background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
             color: white;
-            box-shadow: 0 6px 20px rgba(14, 116, 144, 0.3);
+            box-shadow: 0 8px 25px rgba(14, 116, 144, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .btn-hero-primary:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 10px 30px rgba(14, 116, 144, 0.4);
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 12px 35px rgba(14, 116, 144, 0.5);
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
         }
 
         .btn-hero-secondary {
-            background: white;
+            background: rgba(255, 255, 255, 0.98);
             color: #0e7490;
-            border: 2px solid #0e7490;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(15px);
+            font-weight: 700;
         }
 
         .btn-hero-secondary:hover {
-            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
-            color: white;
-            border-color: transparent;
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 10px 30px rgba(14, 116, 144, 0.3);
+            background: white;
+            color: #0891b2;
+            border-color: white;
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
         }
 
         /* ============================================
            FEATURES SECTION
            ============================================ */
         .features {
-            padding: 8rem 2rem;
-            background: white;
+            padding: 10rem 2rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafb 50%, #ffffff 100%);
             position: relative;
+            overflow: hidden;
+        }
+
+        .features::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(14, 116, 144, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 30s ease-in-out infinite;
+        }
+
+        .features::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(8, 145, 178, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 35s ease-in-out infinite reverse;
         }
 
         .features-container {
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         .section-title {
             text-align: center;
-            margin-bottom: 5rem;
+            margin-bottom: 6rem;
             opacity: 0;
             animation: fadeInUp 0.8s ease-out forwards;
         }
@@ -362,122 +427,184 @@
         }
 
         .section-title h2 {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+            background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #06b6d4 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 1rem;
-            letter-spacing: -0.02em;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #0e7490, #0891b2);
+            border-radius: 2px;
         }
 
         .section-title p {
-            font-size: 1.25rem;
+            font-size: 1.375rem;
             color: #6b7280;
+            font-weight: 400;
         }
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 3rem;
         }
 
         .feature-card {
-            background: linear-gradient(135deg, #f8fafb 0%, #ffffff 100%);
-            border-radius: 24px;
-            padding: 3rem;
+            background: white;
+            border-radius: 28px;
+            padding: 3.5rem 2.5rem;
             text-align: center;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(229, 231, 235, 0.5);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(229, 231, 235, 0.6);
             position: relative;
             overflow: hidden;
             opacity: 0;
-            transform: translateY(30px);
-        }
-
-        .feature-card.visible {
-            opacity: 1;
-            transform: translateY(0);
-            animation: fadeInUp 0.6s ease-out forwards;
+            transform: translateY(40px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
         }
 
         .feature-card::before {
             content: '';
             position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(14, 116, 144, 0.08) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
             top: 0;
             right: 0;
             width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(14, 116, 144, 0.05) 0%, rgba(8, 145, 178, 0.02) 100%);
-            opacity: 0;
-            transition: opacity 0.5s ease;
+            height: 4px;
+            background: linear-gradient(90deg, #0e7490, #0891b2);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.6s ease;
+        }
+
+        .feature-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+            animation: fadeInUp 0.8s ease-out forwards;
         }
 
         .feature-card:hover::before {
             opacity: 1;
         }
 
+        .feature-card:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
         .feature-card:hover {
-            transform: translateY(-12px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(14, 116, 144, 0.15);
-            border-color: #0891b2;
+            transform: translateY(-16px) scale(1.03);
+            box-shadow: 0 25px 50px rgba(14, 116, 144, 0.2);
+            border-color: rgba(8, 145, 178, 0.3);
         }
 
         .feature-icon {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
-            border-radius: 20px;
+            border-radius: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 2rem;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 20px rgba(14, 116, 144, 0.2);
+            margin: 0 auto 2.5rem;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px rgba(14, 116, 144, 0.25);
             position: relative;
         }
 
+        .feature-icon::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, #0e7490, #0891b2);
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            z-index: -1;
+        }
+
         .feature-icon svg {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             stroke: white;
             fill: none;
-            stroke-width: 2;
+            stroke-width: 2.5;
+            transition: transform 0.6s ease;
         }
 
         .feature-card:hover .feature-icon {
-            transform: rotate(10deg) scale(1.1);
-            box-shadow: 0 12px 30px rgba(14, 116, 144, 0.3);
+            transform: rotate(12deg) scale(1.15);
+            box-shadow: 0 15px 35px rgba(14, 116, 144, 0.35);
+        }
+
+        .feature-card:hover .feature-icon::before {
+            opacity: 0.3;
+        }
+
+        .feature-card:hover .feature-icon svg {
+            transform: scale(1.1);
         }
 
         .feature-card h3 {
-            font-size: 1.75rem;
+            font-size: 1.875rem;
             font-weight: 700;
             color: #0e7490;
-            margin-bottom: 1rem;
-            transition: color 0.3s ease;
+            margin-bottom: 1.25rem;
+            transition: all 0.4s ease;
+            position: relative;
         }
 
         .feature-card:hover h3 {
             color: #0891b2;
+            transform: translateY(-2px);
         }
 
         .feature-card p {
             color: #6b7280;
-            line-height: 1.9;
-            font-size: 1.05rem;
+            line-height: 2;
+            font-size: 1.1rem;
+            transition: color 0.4s ease;
+        }
+
+        .feature-card:hover p {
+            color: #4b5563;
         }
 
         /* ============================================
            FOOTER
            ============================================ */
         .footer {
-            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
             color: #e5e7eb;
-            padding: 4rem 2rem 2rem;
-            margin-top: 6rem;
+            padding: 5rem 2rem 3rem;
+            margin-top: 8rem;
             position: relative;
+            overflow: hidden;
         }
 
         .footer::before {
@@ -486,70 +613,70 @@
             top: 0;
             right: 0;
             width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(14, 116, 144, 0.3), transparent);
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(14, 116, 144, 0.5), rgba(8, 145, 178, 0.5), transparent);
+        }
+
+        .footer::after {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(14, 116, 144, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 40s ease-in-out infinite;
         }
 
         .footer-content {
             max-width: 1200px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
-            margin-bottom: 3rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
-        .footer-section {
+        .footer-brand {
+            margin-bottom: 3rem;
             opacity: 0;
             animation: fadeInUp 0.8s ease-out forwards;
         }
 
-        .footer-section:nth-child(1) { animation-delay: 0.1s; }
-        .footer-section:nth-child(2) { animation-delay: 0.2s; }
-        .footer-section:nth-child(3) { animation-delay: 0.3s; }
-
-        .footer-section h3 {
-            font-size: 1.375rem;
+        .footer-brand h3 {
+            font-size: 2rem;
             font-weight: 700;
-            color: white;
-            margin-bottom: 1.5rem;
-            position: relative;
-            padding-bottom: 0.75rem;
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            display: inline-block;
         }
 
-        .footer-section h3::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 40px;
-            height: 2px;
-            background: linear-gradient(90deg, #0e7490, #0891b2);
-        }
-
-        .footer-section p,
-        .footer-section a {
-            color: #9ca3af;
-            text-decoration: none;
-            line-height: 2;
-            transition: all 0.3s ease;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .footer-section a:hover {
-            color: #0891b2;
-            transform: translateX(-5px);
+        .footer-brand p {
+            color: #94a3b8;
+            font-size: 1.125rem;
+            line-height: 1.8;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .footer-bottom {
             max-width: 1200px;
-            margin: 0 auto;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(55, 65, 81, 0.5);
+            margin: 3rem auto 0;
+            padding-top: 3rem;
+            border-top: 1px solid rgba(55, 65, 81, 0.6);
             text-align: center;
-            color: #9ca3af;
+            color: #64748b;
             font-size: 0.95rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-bottom p {
+            margin: 0;
+            opacity: 0.8;
         }
 
         /* ============================================
@@ -649,6 +776,13 @@
 
     <!-- Hero Section -->
     <section class="hero">
+        <!-- Background Image Slider -->
+        <div class="hero-slider">
+            <div class="hero-slide active" style="background-image: url('/images/1.jpg');"></div>
+            <div class="hero-slide" style="background-image: url('/images/2.jpg');"></div>
+            <div class="hero-slide" style="background-image: url('/images/3.jpg');"></div>
+        </div>
+        
         <div class="hero-content">
             <h1>سیستم مدیریت پشتیبانی کیش</h1>
             <p>پلتفرم جامع برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط با کاربران</p>
@@ -748,21 +882,9 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-            <div class="footer-section">
-                <h3>درباره ما</h3>
-                <p>پلتفرم پشتیبانی کیش، راه‌حل جامع برای مدیریت ارتباط با کاربران و ارائه خدمات پشتیبانی حرفه‌ای</p>
-            </div>
-            <div class="footer-section">
-                <h3>لینک‌های مفید</h3>
-                <a href="#">راهنما</a>
-                <a href="#">مستندات</a>
-                <a href="#">تماس با ما</a>
-            </div>
-            <div class="footer-section">
-                <h3>پشتیبانی</h3>
-                <a href="#">مرکز راهنمایی</a>
-                <a href="#">سوالات متداول</a>
-                <a href="#">گزارش مشکل</a>
+            <div class="footer-brand">
+                <h3>پنل پشتیبانی کیش</h3>
+                <p>راه‌حل جامع و پیشرفته برای مدیریت ارتباط با کاربران و ارائه خدمات پشتیبانی حرفه‌ای با استفاده از تکنولوژی‌های روز دنیا</p>
             </div>
         </div>
         <div class="footer-bottom">
@@ -786,6 +908,27 @@
             
             lastScroll = currentScroll;
         });
+
+        // Hero Image Slider
+        const heroSlides = document.querySelectorAll('.hero-slide');
+        let currentSlide = 0;
+        const slideInterval = 3000; // 3 seconds
+
+        function nextSlide() {
+            // Remove active class from current slide
+            heroSlides[currentSlide].classList.remove('active');
+            
+            // Move to next slide
+            currentSlide = (currentSlide + 1) % heroSlides.length;
+            
+            // Add active class to next slide
+            heroSlides[currentSlide].classList.add('active');
+        }
+
+        // Start slider
+        if (heroSlides.length > 0) {
+            setInterval(nextSlide, slideInterval);
+        }
 
         // Intersection Observer for scroll animations
         const observerOptions = {
