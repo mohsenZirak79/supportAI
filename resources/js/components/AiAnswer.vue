@@ -5,21 +5,24 @@
 
         <!-- TTS -->
         <div v-if="canTTS" class="tts-actions">
-            <button type="button" class="btn" @click="play" :disabled="speaking || !textTrim">
-                ▶️ پخش
+            <button type="button" class="btn" @click="play" :disabled="speaking || loading || !textTrim">
+                <span v-if="loading">⏳ در حال تولید...</span>
+                <span v-else>▶️ پخش</span>
             </button>
-            <button type="button" class="btn" @click="stop" :disabled="!speaking">
+            <button type="button" class="btn" @click="stop" :disabled="!speaking && !loading">
                 ⏹️ توقف
             </button>
         </div>
-        <small v-else class="muted">
-            مرورگر شما از خواندن خودکار متن (TTS) پشتیبانی نمی‌کند.
+        <small v-if="error" class="error-text">{{ error }}</small>
+        <small v-else-if="!canTTS" class="muted">
+            مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
         </small>
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onBeforeUnmount, defineProps } from 'vue';
+import { apiFetch } from '../lib/http';
 
 const props = defineProps({
     text:  { type: String, default: '' },
@@ -100,32 +103,87 @@ function renderMiniMd(src) {
 
 const html = computed(() => renderMiniMd(textTrim.value));
 
-/* ------------------ TTS (Web Speech API) ------------------ */
+/* ------------------ TTS (Backend API) ------------------ */
 const speaking = ref(false);
-const canTTS = typeof window !== 'undefined' && 'speechSynthesis' in window;
-let currentUtterance = null;
+const canTTS = typeof window !== 'undefined' && 'Audio' in window;
+let currentAudio = null;
+const loading = ref(false);
+const error = ref('');
 
-function play() {
+async function play() {
     if (!canTTS || !textTrim.value) return;
+    if (loading.value) return;
+    
     stop();
 
-    currentUtterance = new SpeechSynthesisUtterance(textTrim.value);
-    currentUtterance.lang = 'fa-IR';  // برای فارسی
-    currentUtterance.rate = props.rate;
-    currentUtterance.pitch = props.pitch;
+    try {
+        loading.value = true;
+        error.value = '';
 
-    currentUtterance.onstart = () => { speaking.value = true; };
-    currentUtterance.onend   = () => { speaking.value = false; currentUtterance = null; };
-    currentUtterance.onerror = () => { speaking.value = false; currentUtterance = null; };
+        // Call backend TTS API
+        const response = await apiFetch('/text-to-speech', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text: textTrim.value,
+                chunk_index: 0
+            })
+        });
 
-    window.speechSynthesis.speak(currentUtterance);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'خطا در تولید صوت');
+        }
+
+        const data = await response.json();
+        
+        if (!data.success || !data.audio) {
+            throw new Error(data.error || 'خطا در تولید صوت');
+        }
+
+        // Create audio element and play
+        const audio = new Audio(data.audio);
+        currentAudio = audio;
+
+        audio.onplay = () => {
+            speaking.value = true;
+            loading.value = false;
+        };
+
+        audio.onended = () => {
+            speaking.value = false;
+            loading.value = false;
+            currentAudio = null;
+        };
+
+        audio.onerror = (e) => {
+            error.value = 'خطا در پخش صوت';
+            speaking.value = false;
+            loading.value = false;
+            currentAudio = null;
+        };
+
+        await audio.play();
+
+    } catch (err) {
+        console.error('TTS error:', err);
+        error.value = err.message || 'خطا در تولید صوت';
+        speaking.value = false;
+        loading.value = false;
+        currentAudio = null;
+    }
 }
 
 function stop() {
-    if (!canTTS) return;
-    window.speechSynthesis.cancel();
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
     speaking.value = false;
-    currentUtterance = null;
+    loading.value = false;
 }
 
 onBeforeUnmount(() => stop());
@@ -178,4 +236,5 @@ onBeforeUnmount(() => stop());
 .btn:disabled { opacity: .6; cursor: not-allowed; }
 
 .muted { color: #94a3b8; font-size: 13px; }
+.error-text { color: #ef4444; font-size: 13px; display: block; margin-top: 4px; }
 </style>
