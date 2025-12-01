@@ -188,7 +188,7 @@ def split_text_for_tts(text, max_length=350):
     return processed_chunks
 
 
-async def main():
+def main():
     """Main function to handle TTS request - matches reference app.py exactly"""
     try:
         # Read input from stdin (JSON)
@@ -256,7 +256,7 @@ async def main():
                 
                 return None
             
-            # Run async function - exactly like reference
+            # Run async function - exactly like reference app.py
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
@@ -306,5 +306,6 @@ async def main():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    # main() is now synchronous and handles its own event loop internally
+    main()
 
