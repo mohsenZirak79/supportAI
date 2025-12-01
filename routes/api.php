@@ -110,6 +110,10 @@ Route::prefix('v1')
 
             return response()->json(['data' => $media]);
         });
+
+        // Text-to-Speech endpoints
+        Route::post('text-to-speech', [ConversationController::class, 'textToSpeech']);
+        Route::post('text-to-speech/chunks', [ConversationController::class, 'textToSpeechChunks']);
     });
 
 // مسیرهای auth (ثبت‌نام/لاگین/OTP) بیرون از auth:jwt بمانند:

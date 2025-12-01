@@ -342,13 +342,19 @@ class ConversationController extends Controller
     /** یک حدس ساده برای پسوند از روی mime */
     private function guessAudioExtension(string $mime): string
     {
-        return match ($mime) {
-            'audio/wav', 'audio/x-wav' => 'wav',
-            'audio/mpeg' => 'mp3',
-            'audio/ogg' => 'ogg',
-            'audio/webm' => 'webm',
-            default => 'webm',
-        };
+        switch ($mime) {
+            case 'audio/wav':
+            case 'audio/x-wav':
+                return 'wav';
+            case 'audio/mpeg':
+                return 'mp3';
+            case 'audio/ogg':
+                return 'ogg';
+            case 'audio/webm':
+                return 'webm';
+            default:
+                return 'webm';
+        }
     }
 
     // لیست چت‌ها (فقط active)
@@ -440,18 +446,18 @@ class ConversationController extends Controller
                     'assigned_role'      => $referral->assigned_role,
                     'status'             => $referral->status,
                     'description'        => $referral->description,
-                    'created_at'         => optional($referral->created_at)?->toIso8601String(),
+                    'created_at'         => $referral->created_at ? $referral->created_at->toIso8601String() : null,
                     'trigger_message_id' => $referral->trigger_message_id,
                     'trigger_message'    => $referral->triggerMessage ? [
                         'id'          => $referral->triggerMessage->id,
                         'sender_type' => $referral->triggerMessage->sender_type,
                         'content'     => $referral->triggerMessage->content,
-                        'created_at'  => optional($referral->triggerMessage->created_at)?->toIso8601String(),
+                        'created_at'  => $referral->triggerMessage->created_at ? $referral->triggerMessage->created_at->toIso8601String() : null,
                     ] : null,
                     'response'           => $responseIsPublic ? [
                         'text'        => $referral->agent_response,
                         'visibility'  => $referral->response_visibility,
-                        'created_at'  => optional($referral->updated_at ?? $referral->created_at)?->toIso8601String(),
+                        'created_at'  => ($referral->updated_at ?? $referral->created_at) ? ($referral->updated_at ?? $referral->created_at)->toIso8601String() : null,
                         'files'       => $files,
                     ] : null,
                 ];
@@ -558,5 +564,372 @@ class ConversationController extends Controller
             $referral->load(['conversation']),
             201
         );
+    }
+
+    /**
+     * Convert text to speech using Microsoft Edge TTS (FREE) with Persian support
+     * Matches the implementation from the reference app.py
+     */
+    public function textToSpeech(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'text' => 'required|string',
+                'chunk_index' => 'nullable|integer|min:0',
+            ]);
+
+            $text = $validated['text'];
+            $chunkIndex = $validated['chunk_index'] ?? 0;
+
+            if (empty($text)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'متن خالی است'
+                ], 400);
+            }
+
+            // Get the path to the Python script
+            $scriptPath = base_path('scripts/tts.py');
+            
+            if (!file_exists($scriptPath)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'اسکریپت TTS یافت نشد'
+                ], 500);
+            }
+
+            // Prepare input data
+            $inputData = json_encode([
+                'text' => $text,
+                'chunk_index' => $chunkIndex,
+            ], JSON_UNESCAPED_UNICODE);
+
+            // Execute Python script - try python3 first, fallback to python
+            $pythonCommand = $this->findPythonCommand();
+            if (!$pythonCommand) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Python یافت نشد. لطفا Python را نصب کنید.'
+                ], 500);
+            }
+
+            $process = new Process([
+                $pythonCommand,
+                $scriptPath,
+            ]);
+
+            $process->setInput($inputData);
+            $process->setTimeout(60);
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                $errorOutput = $process->getErrorOutput();
+                Log::error('TTS Python script failed', [
+                    'exit_code' => $process->getExitCode(),
+                    'error' => $errorOutput,
+                ]);
+
+                // Try to parse error output as JSON
+                $errorJson = json_decode($errorOutput, true);
+                if ($errorJson && isset($errorJson['error'])) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => $errorJson['error']
+                    ], 500);
+                }
+
+                return response()->json([
+                    'success' => false,
+                    'error' => 'خطا در تولید صوت'
+                ], 500);
+            }
+
+            $output = $process->getOutput();
+            $result = json_decode($output, true);
+
+            if (!$result) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'خطا در پردازش پاسخ از اسکریپت TTS'
+                ], 500);
+            }
+
+            return response()->json($result);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'داده‌های ورودی نامعتبر است',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('TTS error: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'خطا در پردازش درخواست'
+            ], 500);
+        }
+    }
+
+    /**
+     * Split text into chunks for streaming TTS
+     * Matches the implementation from the reference app.py
+     */
+    public function textToSpeechChunks(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'text' => 'required|string',
+            ]);
+
+            $text = $validated['text'];
+
+            if (empty($text)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'متن خالی است'
+                ], 400);
+            }
+
+            // Clean the text first (using PHP implementation)
+            $cleanedText = $this->cleanTextForTTS($text);
+
+            // Split into chunks (max_length=400 as in reference)
+            $chunks = $this->splitTextForTTS($cleanedText, 400);
+
+            return response()->json([
+                'success' => true,
+                'chunks' => $chunks,
+                'total' => count($chunks)
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'داده‌های ورودی نامعتبر است',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('TTS chunks error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'error' => 'خطا در پردازش متن'
+            ], 500);
+        }
+    }
+
+    /**
+     * Find Python command (python3 or python)
+     */
+    private function findPythonCommand(): ?string
+    {
+        $commands = ['python3', 'python'];
+        foreach ($commands as $cmd) {
+            $process = new Process([$cmd, '--version']);
+            $process->run();
+            if ($process->isSuccessful()) {
+                return $cmd;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Clean text for TTS - PHP implementation matching Python version
+     */
+    private function cleanTextForTTS(string $text): string
+    {
+        // If text contains HTML, clean it first
+        if (strpos($text, '<') !== false && strpos($text, '>') !== false) {
+            $text = $this->cleanHtmlForTTS($text);
+        }
+
+        // Remove HTML/XML tags
+        $text = preg_replace('/<[^>]+>/', '', $text);
+
+        // Remove markdown formatting
+        $text = preg_replace('/#{1,6}\s*/', '', $text); // headers
+        $text = preg_replace('/\*{1,3}([^*]+)\*{1,3}/', '$1', $text); // bold/italic
+        $text = preg_replace('/_{1,3}([^_]+)_{1,3}/', '$1', $text); // underline
+        $text = preg_replace('/`{1,3}[^`]*`{1,3}/', '', $text); // code blocks
+        $text = preg_replace('/\[([^\]]+)\]\([^\)]+\)/', '$1', $text); // links
+
+        // Remove bullet points and numbers
+        $text = preg_replace('/^[\s]*[-\*\+•▪▫◦‣⁃]\s+/m', '', $text);
+        $text = preg_replace('/^[\s]*\d+[\.\)]\s+/m', '', $text);
+        $text = preg_replace('/^[\s]*[a-zA-Z][\.\)]\s+/m', '', $text);
+
+        // Remove emoji and special characters
+        $text = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $text); // emoji
+        $text = preg_replace('/[\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', $text); // symbols
+
+        // Remove control characters
+        $text = preg_replace('/[\x00-\x1F\x7F-\x9F]/', '', $text);
+        $text = preg_replace('/[\x{200B}-\x{200D}\x{FEFF}]/u', '', $text); // zero-width
+        $text = preg_replace('/[\x{2000}-\x{200F}]/u', ' ', $text); // various spaces
+
+        // Remove ZWNJ
+        $text = str_replace("\xE2\x80\x8C", '', $text); // ZWNJ in UTF-8
+        $text = preg_replace('/\x{200C}/u', '', $text);
+
+        // Normalize Arabic to Persian
+        $arabicToPersian = [
+            'ك' => 'ک',
+            'ي' => 'ی',
+            'ى' => 'ی',
+            'ة' => 'ه',
+            'ؤ' => 'و',
+            'إ' => 'ا',
+            'أ' => 'ا',
+            'ء' => '',
+            'ئ' => 'ی'
+        ];
+        foreach ($arabicToPersian as $arabic => $persian) {
+            $text = str_replace($arabic, $persian, $text);
+        }
+
+        // Replace English punctuation with Persian equivalents
+        $text = str_replace(',', '،', $text);
+        $text = str_replace('?', '؟', $text);
+        $text = str_replace('!', '.', $text);
+        $text = str_replace(';', '،', $text);
+        $text = str_replace(':', '،', $text);
+
+        // Remove all other symbols except Persian letters, numbers, spaces, and basic punctuation
+        $text = preg_replace('/[^\x{0600}-\x{06FF}\x{06F0}-\x{06F9}\s\.،؟]/u', '', $text);
+
+        // Normalize multiple spaces to single space
+        $text = preg_replace('/\s+/', ' ', $text);
+
+        // Clean up punctuation spacing
+        $text = preg_replace('/([\.،؟])\s*/', '$1 ', $text);
+        $text = preg_replace('/\s+([\.،؟])/', '$1', $text);
+
+        // Remove multiple consecutive punctuation marks
+        $text = preg_replace('/([\.،؟]){2,}/', '$1', $text);
+
+        // Normalize line breaks to spaces
+        $text = preg_replace('/\n+/', ' ', $text);
+
+        // Final cleanup
+        $text = preg_replace('/\s+/', ' ', $text);
+        $text = trim($text);
+
+        return $text;
+    }
+
+    /**
+     * Clean HTML for TTS
+     */
+    private function cleanHtmlForTTS(string $htmlText): string
+    {
+        $text = preg_replace('/<[^>]+>/', ' ', $htmlText);
+        $text = preg_replace('/\s+/', ' ', $text);
+        return trim($text);
+    }
+
+    /**
+     * Split text into chunks for TTS - PHP implementation matching Python version
+     */
+    private function splitTextForTTS(string $text, int $maxLength = 400): array
+    {
+        // Clean text first
+        $text = $this->cleanTextForTTS($text);
+
+        if (mb_strlen($text) <= $maxLength) {
+            return [$text];
+        }
+
+        $chunks = [];
+        $currentChunk = '';
+
+        // Split by paragraphs first
+        $paragraphs = preg_split('/\n\n+|\n+/', $text);
+
+        foreach ($paragraphs as $paragraph) {
+            $paragraph = trim($paragraph);
+            if (empty($paragraph)) {
+                continue;
+            }
+
+            if (mb_strlen($paragraph) <= $maxLength) {
+                // Can add to current chunk
+                if (!empty($currentChunk) && mb_strlen($currentChunk) + mb_strlen($paragraph) + 2 <= $maxLength) {
+                    $currentChunk .= ' . ' . $paragraph;
+                } else {
+                    if (!empty($currentChunk)) {
+                        $chunks[] = trim($currentChunk);
+                    }
+                    $currentChunk = $paragraph;
+                }
+            } else {
+                // Paragraph too long, save current chunk
+                if (!empty($currentChunk)) {
+                    $chunks[] = trim($currentChunk);
+                    $currentChunk = '';
+                }
+
+                // Split by sentences
+                $sentences = preg_split('/(?<=[.!?؟])\s+/u', $paragraph);
+
+                foreach ($sentences as $sentence) {
+                    $sentence = trim($sentence);
+                    if (empty($sentence)) {
+                        continue;
+                    }
+
+                    if (mb_strlen($sentence) <= $maxLength) {
+                        if (!empty($currentChunk) && mb_strlen($currentChunk) + mb_strlen($sentence) + 1 <= $maxLength) {
+                            $currentChunk .= ' ' . $sentence;
+                        } else {
+                            if (!empty($currentChunk)) {
+                                $chunks[] = trim($currentChunk);
+                            }
+                            $currentChunk = $sentence;
+                        }
+                    } else {
+                        // Sentence too long, split by commas
+                        if (!empty($currentChunk)) {
+                            $chunks[] = trim($currentChunk);
+                            $currentChunk = '';
+                        }
+
+                        $parts = preg_split('/[،,؛;]\s*/u', $sentence);
+                        foreach ($parts as $i => $part) {
+                            $part = trim($part);
+                            if (empty($part)) {
+                                continue;
+                            }
+
+                            if ($i > 0) {
+                                $part = '، ' . $part;
+                            }
+
+                            if (mb_strlen($currentChunk) + mb_strlen($part) <= $maxLength) {
+                                $currentChunk .= $part;
+                            } else {
+                                if (!empty($currentChunk)) {
+                                    $chunks[] = trim($currentChunk);
+                                }
+                                $currentChunk = $part;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Don't forget the last chunk
+        if (!empty($currentChunk)) {
+            $chunks[] = trim($currentChunk);
+        }
+
+        // Filter out empty chunks
+        return array_filter($chunks, fn($chunk) => !empty(trim($chunk)));
     }
 }
