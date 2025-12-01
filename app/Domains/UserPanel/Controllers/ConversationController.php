@@ -624,12 +624,16 @@ class ConversationController extends Controller
 
             if (!$process->isSuccessful()) {
                 $errorOutput = $process->getErrorOutput();
+                $standardOutput = $process->getOutput();
+                
                 Log::error('TTS Python script failed', [
                     'exit_code' => $process->getExitCode(),
-                    'error' => $errorOutput,
+                    'error_output' => $errorOutput,
+                    'standard_output' => $standardOutput,
+                    'command' => $pythonCommand . ' ' . $scriptPath,
                 ]);
 
-                // Try to parse error output as JSON
+                // Try to parse error output as JSON (Python script writes errors to stderr)
                 $errorJson = json_decode($errorOutput, true);
                 if ($errorJson && isset($errorJson['error'])) {
                     return response()->json([
@@ -638,19 +642,67 @@ class ConversationController extends Controller
                     ], 500);
                 }
 
+                // Try to parse standard output as JSON (in case error was written to stdout)
+                $outputJson = json_decode($standardOutput, true);
+                if ($outputJson && isset($outputJson['error'])) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => $outputJson['error']
+                    ], 500);
+                }
+
+                // Return more detailed error
+                $errorMessage = 'خطا در تولید صوت';
+                if ($errorOutput) {
+                    $errorMessage .= ' (' . mb_substr(strip_tags($errorOutput), 0, 100) . ')';
+                }
+                
                 return response()->json([
                     'success' => false,
-                    'error' => 'خطا در تولید صوت'
+                    'error' => $errorMessage,
+                    'debug' => [
+                        'exit_code' => $process->getExitCode(),
+                        'error_preview' => mb_substr($errorOutput, 0, 200),
+                    ]
                 ], 500);
             }
 
             $output = $process->getOutput();
+            
+            // If output is empty, check error output
+            if (empty($output)) {
+                $errorOutput = $process->getErrorOutput();
+                Log::warning('TTS Python script returned empty output', [
+                    'error_output' => $errorOutput,
+                ]);
+                
+                $errorJson = json_decode($errorOutput, true);
+                if ($errorJson && isset($errorJson['error'])) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => $errorJson['error']
+                    ], 500);
+                }
+                
+                return response()->json([
+                    'success' => false,
+                    'error' => 'اسکریپت TTS خروجی نداشت'
+                ], 500);
+            }
+            
             $result = json_decode($output, true);
 
             if (!$result) {
+                Log::error('TTS Python script output is not valid JSON', [
+                    'output' => mb_substr($output, 0, 500),
+                ]);
+                
                 return response()->json([
                     'success' => false,
-                    'error' => 'خطا در پردازش پاسخ از اسکریپت TTS'
+                    'error' => 'خطا در پردازش پاسخ از اسکریپت TTS',
+                    'debug' => [
+                        'output_preview' => mb_substr($output, 0, 200),
+                    ]
                 ], 500);
             }
 
