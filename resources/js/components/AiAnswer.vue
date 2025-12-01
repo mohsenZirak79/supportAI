@@ -143,9 +143,45 @@ async function play() {
             throw new Error(data.error || 'خطا در تولید صوت');
         }
 
+        // Convert data URL to Blob URL (more reliable for browser security)
+        let audioUrl = data.audio;
+        
+        // If it's a data URL, convert to Blob URL
+        if (audioUrl.startsWith('data:')) {
+            try {
+                // Extract MIME type and base64 data
+                const matches = audioUrl.match(/^data:([^;]+);base64,(.+)$/);
+                if (matches) {
+                    const mimeType = matches[1];
+                    const base64Data = matches[2];
+                    
+                    // Convert base64 to binary
+                    const binaryString = atob(base64Data);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    
+                    // Create Blob and Blob URL
+                    const blob = new Blob([bytes], { type: mimeType });
+                    audioUrl = URL.createObjectURL(blob);
+                }
+            } catch (blobError) {
+                console.error('Error creating Blob URL:', blobError);
+                // Fall back to data URL
+            }
+        }
+
         // Create audio element
-        const audio = new Audio(data.audio);
+        const audio = new Audio(audioUrl);
         currentAudio = audio;
+        
+        // Clean up Blob URL when audio ends or errors
+        const cleanupBlobUrl = () => {
+            if (audioUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(audioUrl);
+            }
+        };
 
         // Set up playback event handlers
         audio.onplay = () => {
@@ -158,6 +194,7 @@ async function play() {
             console.log('Audio finished playing');
             speaking.value = false;
             loading.value = false;
+            cleanupBlobUrl();
             currentAudio = null;
         };
 
@@ -222,6 +259,7 @@ async function play() {
                     error.value = errorMsg;
                     speaking.value = false;
                     loading.value = false;
+                    cleanupBlobUrl();
                     currentAudio = null;
                     reject(new Error(errorMsg));
                 };
@@ -234,6 +272,7 @@ async function play() {
                         error.value = 'زمان بارگذاری صوت به پایان رسید';
                         speaking.value = false;
                         loading.value = false;
+                        cleanupBlobUrl();
                         currentAudio = null;
                         reject(new Error('Audio loading timeout'));
                     }
@@ -257,6 +296,10 @@ function stop() {
     if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
+        // Clean up Blob URL if it exists
+        if (currentAudio.src && currentAudio.src.startsWith('blob:')) {
+            URL.revokeObjectURL(currentAudio.src);
+        }
         currentAudio = null;
     }
     speaking.value = false;
