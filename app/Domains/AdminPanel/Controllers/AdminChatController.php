@@ -16,9 +16,8 @@ class AdminChatController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $isAdmin = $user->hasRole('ادمین');
-        $roleNames = $user->roles()->pluck('name')->all();
-
+        $isAdmin = $user->hasRole('ادمین') || $user->hasRole('برنامه نویس');
+        $roleNames = $user->roles()->pluck('id')->all();
         $query = Conversation::query()
             ->with(['user:id,name'])
             ->latest();
@@ -134,7 +133,7 @@ class AdminChatController extends Controller
     public function assignMe(Request $request, Referral $referral)
     {
         $user = Auth::user();
-        $isAdmin = $user->hasRole('ادمین');
+        $isAdmin = $user->hasRole('ادمین') || $user->hasRole('برنامه نویس');
         $roleNames = $user->roles()->pluck('name')->all();
 
         abort_if($referral->assigned_agent_id, 422, 'این ارجاع از قبل به شخصی تخصیص داده شده است.');
