@@ -19,68 +19,12 @@ use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-Route::get('/', function () {
-//    User::create([
-//      'phone'=>'09129876543',
-//      'name'=>'محسن',
-//      'family'=>'زیرک',
-//      'email'=>'mohsen@gmail.com'
-//    ]);
+// Landing page - redirects authenticated users to dashboard
+Route::get('/', [\App\Domains\Auth\Controllers\LandingController::class, 'index'])->name('landing');
 
-
-//    $roles = ['برنامه نویس', 'ادمین' , 'کاربر عادی'];
-//    foreach ($roles as $role) {
-//        Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
-//    }
-//
-//    // 2. پرمیشن‌ها
-//    $permissions = [
-//        // CRUD یوزر
-//        'create-user', 'read-user', 'update-user', 'delete-user',
-//        // CRUD تیکت
-//        'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket',
-//        // چت
-//        'create-chat', 'read-chat', 'update-chat', 'delete-chat',
-//        // Role
-//        'create-role', 'read-role', 'update-role', 'delete-role',
-//    ];
-//
-//    foreach ($permissions as $permission) {
-//        Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
-//    }
-//
-//    // 3. تخصیص پرمیشن‌ها به رول‌ها
-//    $programmer = Role::where('name', 'برنامه نویس')->first();
-//    $programmer->syncPermissions(Permission::all());
-//
-//    $admin = Role::where('name', 'ادمین')->first();
-//    $admin->syncPermissions(Permission::all());
-//
-//    /*$support = Role::where('name', 'پشتیبان')->first();
-//    $support->syncPermissions([
-//        'create-ticket', 'read-ticket', 'update-ticket', 'delete-ticket',
-//        'create-chat', 'read-chat', 'update-chat', 'delete-chat',
-//    ]);*/
-//
-//    // 4. یوزرهای تستی + assign role
-//    $users = [
-//        ['name' => 'admin', 'password' => '123456789' , 'role' => 'ادمین'],
-//        ['name' => 'programmer','password' => '123456789' , 'role' => 'برنامه نویس']
-//    ];
-//
-//    foreach ($users as $u) {
-//        $user = User::updateOrCreate(
-//            [
-//                'name' => $u['name'],
-//                'password' => Hash::make($u['password'])
-//            ]
-//        );
-//
-//        // اتصال یوزر به نقش
-//        $user->assignRole($u['role']);
-//        }
-    return redirect()->route('login');
-});
+// Landing page auth routes (email/password with remember me)
+Route::post('/landing/login', [\App\Domains\Auth\Controllers\LandingController::class, 'login'])->name('landing.login');
+Route::post('/landing/register', [\App\Domains\Auth\Controllers\LandingController::class, 'register'])->name('landing.register');
 
 Route::get('/chat', fn() => View::make('chat.index'))->name('chat')->middleware('ensure.jwt.cookie');
 Route::get('/ticket', fn() => View::make('tickets.index'))->middleware('ensure.jwt.cookie');

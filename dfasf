@@ -1,0 +1,6 @@
+                  id                  |    name    | family | email | phone |                           password                           | national_id | postal_code | birth_date | address | otp_sent_at | kyc_status | org_id | device_id |     created_at      |     updated_at      | deleted_at 
+--------------------------------------+------------+--------+-------+-------+--------------------------------------------------------------+-------------+-------------+------------+---------+-------------+------------+--------+-----------+---------------------+---------------------+------------
+ f23d2943-12d0-4bb1-a274-20cf4606cce5 | admin      |        |       |       | $2y$12$XLX3l1cQrXm6o7Cray1KZu5VfG26AC8qfRpPA80GszFefWGT2C7.O |             |             |            |         |             | pending    |        |           | 2025-11-04 11:31:58 | 2025-11-04 11:31:58 | 
+ c66f4a62-6952-4dad-8b6e-79866227cddb | programmer |        |       |       | $2y$12$JV/3R0FrVtY5Ficf285GSO/FgkvRJtiXNbnwKkih54H/lVwjIxxgG |             |             |            |         |             | pending    |        |           | 2025-11-04 11:31:59 | 2025-11-04 11:31:59 | 
+(2 rows)
+

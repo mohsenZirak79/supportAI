@@ -26,51 +26,26 @@
                 </div>-->
 
         <!-- Header -->
-        <header class="bg-white shadow-sm border-b">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center space-x-4 space-x-reverse">
-                    <!-- می‌تونی آیکون/عنوان اضافه کنی -->
+        <header class="ticket-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="ticket-logo">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(255,255,255,0.3)"/>
+                            <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(255,255,255,0.2)"/>
+                            <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(255,255,255,0.4)"/>
+                            <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
+                            <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
+                        </svg>
+                    </div>
+                    <h1>تیکت‌های پشتیبانی</h1>
                 </div>
-
-                <!-- دکمه‌ها: نسخه براق‌شده -->
-                <div class="action-bar flex items-center space-x-3 space-x-reverse py-3">
-                    <!-- Chat -->
-                    <button
-                        @click="goToChat"
-                        class="relative group px-4 py-2 rounded-xl font-medium transition-all
-                   bg-gradient-to-r from-sky-50 via-blue-50 to-indigo-50
-                   border border-blue-200 text-blue-700
-                   hover:from-sky-100 hover:via-blue-100 hover:to-indigo-100
-                   hover:border-blue-300 hover:text-blue-800
-                   shadow-sm hover:shadow-md"
-                    >
-                        <span
-                            class="absolute inset-0 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-blue-200/40 to-indigo-200/40"></span>
-                        <span class="relative flex items-center space-x-2 space-x-reverse">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-              </svg>
-              <span>چت</span>
-            </span>
+                <div class="header-actions">
+                    <button @click="goToChat" class="nav-btn ghost" type="button">
+                        چت
                     </button>
-
-                    <!-- New Ticket -->
-                    <button
-                        @click="showNewTicketForm = true"
-                        class="relative group px-4 py-2 rounded-xl font-semibold text-white transition-all
-                   bg-gradient-to-r from-blue-600 to-indigo-600
-                   hover:from-blue-700 hover:to-indigo-700
-                   shadow-md hover:shadow-lg"
-                    >
-                        <span
-                            class="absolute inset-0 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity bg-white/10"></span>
-                        <span class="relative flex items-center space-x-2 space-x-reverse">
-                          <svg class="icon-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 4v16m8-8H4"></path>
-                          </svg>
-                          <span>تیکت جدید</span>
-            </span>
+                    <button @click="showNewTicketForm = true" class="nav-btn" type="button">
+                        تیکت جدید
                     </button>
                 </div>
             </div>
@@ -78,7 +53,7 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
             <!-- Stats Cards -->
-            <div class="stats-grid grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
                 <!-- کل تیکت‌ها -->
                 <div class="stat glossy p-4">
                     <div class="stat-row">
@@ -142,8 +117,8 @@
 
 
             <!-- Filters -->
-            <div class="glossy p-6 mb-4 filters-panel">
-                <div class="flex flex-wrap gap-4 items-center filters-panel__content">
+            <div class="glossy p-6 mb-4">
+                <div class="flex flex-wrap gap-4 items-center">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">فیلتر بر اساس وضعیت</label>
                         <select v-model="statusFilter"
@@ -177,7 +152,7 @@
             </div>
 
             <!-- Tickets List -->
-            <div class="tickets-list">
+            <div class="space-y-6">
                 <div v-if="loading" class="py-16 flex flex-col items-center">
                     <div class="w-14 h-14 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin"></div>
                     <p class="mt-4 text-gray-500">در حال بارگذاری…</p>
@@ -207,14 +182,14 @@
                     :key="ticket.id"
                     class="ticket-card glossy borderless-gradient overflow-hidden"
                 >
-                    <div class="ticket-card__body">
-                        <div class="ticket-card__header flex justify-between items-start mb-4">
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-4">
                             <div class="flex-1">
-                                <div class="ticket-card__title flex items-center space-x-3 space-x-reverse mb-2">
+                                <div class="flex items-center space-x-3 space-x-reverse mb-2">
                                     <h3 class="text-lg font-semibold text-gray-900">{{ ticket.title }}</h3>
                                     <span class="text-sm text-gray-500"></span>
                                 </div>
-                                <div class="ticket-card__meta flex items-center space-x-4 space-x-reverse text-sm text-gray-600">
+                                <div class="flex items-center space-x-4 space-x-reverse text-sm text-gray-600">
                   <span class="flex items-center">
                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -234,7 +209,7 @@
                   </span>
                                 </div>
                             </div>
-                            <div class="ticket-card__actions flex items-center space-x-3 space-x-reverse">
+                            <div class="flex items-center space-x-3 space-x-reverse">
                 <span :class="['badge', getStatusClass(ticket.effective_status)]">
                   {{ getStatusLabel(ticket.effective_status) }}
                 </span>
@@ -1229,13 +1204,88 @@ onMounted(() => {
 }
 
 /* ---------- Header ---------- */
-header.bg-white {
-    background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .98));
-    backdrop-filter: blur(6px);
-    border-bottom: 1px solid rgba(226, 232, 240, .9);
-    position: sticky;
-    top: 0;
-    z-index: 30;
+.ticket-header {
+    background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+    color: white;
+    padding: 16px 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.ticket-header h1 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ticket-logo {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ticket-logo svg {
+    width: 100%;
+    height: 100%;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-btn {
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.nav-btn.ghost {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.nav-btn.ghost:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.6);
 }
 
 .close-btn {
@@ -1298,146 +1348,6 @@ header.bg-white {
 /* اگر قبلاً pseudo-element داشتی که نوار ایجاد می‌کرد، این خط آن را حذف می‌کند */
 
 .close-btn { display:flex; align-items:center; justify-content:center; background:transparent; }
-
-.action-bar {
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.action-bar button {
-    min-width: 150px;
-}
-
-.filters-panel {
-    overflow: hidden;
-}
-
-.filters-panel__content > div {
-    min-width: 220px;
-    flex: 1;
-}
-
-.stats-grid {
-    width: 100%;
-}
-
-.tickets-list {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.tickets-list > * {
-    width: 100%;
-}
-
-.ticket-card__body {
-    padding: 1.25rem;
-}
-
-.ticket-card__header {
-    gap: 1rem;
-}
-
-.ticket-card__meta {
-    flex-wrap: wrap;
-    gap: 0.75rem;
-}
-
-.ticket-card__actions {
-    flex-wrap: wrap;
-    gap: 0.75rem;
-}
-
-@media (max-width: 1024px) {
-    .stats-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .ticket-card__actions {
-        justify-content: flex-start;
-    }
-}
-
-@media (max-width: 768px) {
-    .action-bar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .action-bar button {
-        width: 100%;
-    }
-
-    .filters-panel {
-        padding: 1rem;
-    }
-
-    .filters-panel__content {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .filters-panel__content > div {
-        width: 100%;
-    }
-
-    .ticket-card__header {
-        flex-direction: column;
-    }
-
-    .ticket-card__actions {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .ticket-card__actions button {
-        width: 100%;
-    }
-
-    .ticket-card__body {
-        padding: 1rem;
-    }
-
-    .tickets-list {
-        gap: 1.25rem;
-    }
-}
-
-@media (max-width: 640px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    header.bg-white {
-        position: static;
-    }
-
-    .ticket-card__meta {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-
-    .ticket-card__actions {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .ticket-card__actions button {
-        justify-content: center;
-    }
-
-    .ticket-card__body {
-        padding: 0.9rem;
-    }
-
-    .tickets-list {
-        gap: 1rem;
-    }
-}
-
 .icon-5 { width: 1.25rem; height: 1.25rem; }      /* w-5 h-5 */
 .icon-6 { width: 1.5rem;  height: 1.5rem;  }      /* w-6 h-6 - برای کارت‌ها */
 .btn-icon { margin-inline-start: .25rem; }

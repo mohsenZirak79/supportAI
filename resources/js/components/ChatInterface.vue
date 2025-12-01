@@ -21,6 +21,15 @@
                     >
                         ☰
                     </button>
+                    <div class="chat-logo">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(255,255,255,0.3)"/>
+                            <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(255,255,255,0.2)"/>
+                            <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(255,255,255,0.4)"/>
+                            <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
+                            <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
+                        </svg>
+                    </div>
                     <h1>{{ activeChat?.title || 'چت با هوش مصنوعی' }}</h1>
                 </div>
                 <div class="header-actions">
@@ -1405,7 +1414,7 @@ function handleMenuClickOutside(event) {
 }
 
 .chat-header {
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
     color: white;
     padding: 16px 24px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -1416,6 +1425,24 @@ function handleMenuClickOutside(event) {
     font-weight: 600;
     cursor: pointer;
     color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.chat-logo {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.chat-logo svg {
+    width: 100%;
+    height: 100%;
 }
 
 .chat-container {
@@ -1437,7 +1464,7 @@ function handleMenuClickOutside(event) {
 
 .new-chat-btn {
     padding: 14px 20px;
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
     color: white;
     font-weight: 600;
     cursor: pointer;
@@ -1480,7 +1507,7 @@ function handleMenuClickOutside(event) {
 .chat-item.active {
     background-color: #eef2ff;
     border-right: 3px solid transparent;
-    border-image: linear-gradient(180deg, #6a11cb, #2575fc) 1;
+    border-image: linear-gradient(180deg, #0e7490, #0891b2) 1;
 }
 
 .chat-item__title {
@@ -1714,8 +1741,8 @@ function handleMenuClickOutside(event) {
 }
 
 .input-form textarea:focus {
-    border-color: #2575fc;
-    box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.2);
+    border-color: #0891b2;
+    box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.2);
 }
 
 .input-actions button {
@@ -1745,8 +1772,8 @@ function handleMenuClickOutside(event) {
     height: 44px;
     border-radius: 999px;
     border: none;
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
-    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    box-shadow: 0 10px 25px rgba(14, 116, 144, 0.35);
     color: #fff;
     cursor: pointer;
     display: inline-flex;
@@ -1812,13 +1839,13 @@ function handleMenuClickOutside(event) {
 
 /*.bar {
     width: 6px;
-    background: linear-gradient(to top, #2575fc, #6a11cb);
+    background: linear-gradient(to top, #0891b2, #0e7490);
     border-radius: 3px;
     transition: height 0.1s ease;
 }*/
 .bar {
-    background: linear-gradient(to top, #2575fc, #6a11cb);
-    box-shadow: 0 0 8px rgba(37, 117, 252, 0.4);
+    background: linear-gradient(to top, #0891b2, #0e7490);
+    box-shadow: 0 0 8px rgba(14, 116, 144, 0.4);
 }
 
 .recording-controls {
@@ -1900,7 +1927,7 @@ function handleMenuClickOutside(event) {
 
 .bar {
     width: 6px;
-    background: linear-gradient(to top, #2575fc, #6a11cb);
+    background: linear-gradient(to top, #0891b2, #0e7490);
     border-radius: 3px;
     transition: height 0.1s ease;
 }
@@ -2128,8 +2155,8 @@ function handleMenuClickOutside(event) {
 }
 
 .rename-input:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    border-color: #0891b2;
+    box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.25);
     outline: none;
 }
 
@@ -2156,9 +2183,9 @@ function handleMenuClickOutside(event) {
 }
 
 .modal-btn.primary {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: linear-gradient(135deg, #0e7490, #0891b2);
     color: #fff;
-    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+    box-shadow: 0 10px 20px rgba(14, 116, 144, 0.25);
 }
 
 .modal-btn.primary:disabled {
@@ -2268,7 +2295,7 @@ function handleMenuClickOutside(event) {
     height: 32px;
     border-radius: 999px;
     border: 3px solid #e2e8f0;
-    border-top-color: #6366f1;
+    border-top-color: #0891b2;
     animation: spin .8s linear infinite;
 }
 

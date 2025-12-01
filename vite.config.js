@@ -30,10 +30,11 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/chat.js',
                 'resources/js/tickets.js',
-                'resources/js/admin.js',
-                'resources/js/register.js',// ← اضافه
+                'resources/js/admin.js',     // ← اضافه
+                'resources/js/register.js',
             ],
             refresh: true,
+            // manifest: '.vite/manifest.json',
         }),
         vue({
             template: {

@@ -4,11 +4,23 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
+
+    <!-- Manifest -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#0e7490">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="پشتیبانی کیش">
+
     <title>ورود کاربر</title>
     <title>@yield('title')</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/js/app.js'])
     <script>
         var win = navigator.platform.indexOf('Win') > -1;
         if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -20,7 +32,7 @@
     </script>
 </head>
 
-<body class="g-sidenav-show rtl bg-gray-100">
+<body class="g-sidenav-show rtl bg-gray-100 auth-page">
 <div class="container position-sticky z-index-sticky top-0">
     <!-- Navbar ... (همانند قبل) -->
 </div>
@@ -36,21 +48,13 @@
 @endif
 <main class="main-content mt-0">
     <section>
-        <div class="page-header min-vh-75">
+        <div class="page-header min-vh-100 d-flex align-items-center">
             <div class="container">
 
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="oblique position-absolute top-0 h-100 d-md-block d-none me-n8">
-                            <div class="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6"
-                                 style="background-image:url({{ asset('images/login_img.jpg') }})"></div>
-                        </div>
-                    </div>
-
-
-                    <div class="col-xl-4 col-lg-5 col-md-6 d-flex flex-column mx-auto">
-                        <div class="card card-plain mt-8">
+                <div class="row justify-content-center">
+                    <div class="col-xl-5 col-lg-6 col-md-8 col-sm-10">
+                        <div class="card card-plain">
                             <div class="card-header pb-0 text-left bg-transparent">
                                 <h3 class="font-weight-bolder text-info text-gradient">خوش آمدید</h3>
                                 <p class="mb-0">شماره تلفن همراه خود را وارد کنید.</p>
@@ -58,7 +62,7 @@
 
                             <div class="card-body">
                                 <!-- فرم شماره تلفن -->
-                                <form id="loginForm" method="POST">
+                                <form id="loginForm" method="POST" style="transition: opacity 0.3s ease-out, transform 0.3s ease-out;">
                                     @csrf
                                     <label>شماره تلفن</label>
                                     <div class="mb-3">
@@ -71,7 +75,7 @@
                                 </form>
 
                                 <!-- فرم OTP -->
-                                <form id="otpForm" method="POST" style="display:none; margin-top:20px;">
+                                <form id="otpForm" method="POST" style="display:none; margin-top:20px; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease-out, transform 0.4s ease-out;">
                                     @csrf
                                     <input type="hidden" name="phone">
                                     <input type="text" name="otp" placeholder="کد تایید" class="form-control" required>
@@ -83,8 +87,8 @@
                                 <div id="error" class="text-danger mt-2"></div>
                             </div>
 
-                            <div class="card-footer text-center pt-0 px-lg-2 px-1">
-                                <p class="mb-4 text-sm mx-auto">
+                            <div class="card-footer text-center">
+                                <p class="mb-0 text-sm">
                                     حساب کاربری ندارید؟ <a href="{{ route('register') }}" class="text-info text-gradient font-weight-bold">ثبت‌نام</a>
                                 </p>
                             </div>
@@ -125,15 +129,26 @@
         // ارسال شماره (OTP request)
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = ''; // Clear previous errors
             const phone = normalizeDigits(phoneInput.value.trim());
             phoneInput.value = phone;
             if (!phone) return;
 
             try {
                 const res = await axios.post('/api/v1/auth/login', { phone });
-                document.getElementById('loginForm').style.display = 'none';
+                const loginForm = document.getElementById('loginForm');
                 const otpForm = document.getElementById('otpForm');
-                otpForm.style.display = 'block';
+                loginForm.style.opacity = '0';
+                loginForm.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    loginForm.style.display = 'none';
+                    otpForm.style.display = 'block';
+                    setTimeout(() => {
+                        otpForm.style.opacity = '1';
+                        otpForm.style.transform = 'translateY(0)';
+                    }, 10);
+                }, 200);
                 otpForm.querySelector('input[name="phone"]').value = phone;
 
                 if (res.data.otp) alert('Test OTP: ' + res.data.otp);
@@ -146,6 +161,8 @@
         // تأیید OTP
         document.getElementById('otpForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = ''; // Clear previous errors
             const phone = document.querySelector('#otpForm input[name="phone"]').value;
             const otp = normalizeDigits(otpInput.value.trim());
             otpInput.value = otp;

@@ -3,14 +3,26 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#0e7490">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="پشتیبانی کیش">
+    
     <title>ثبت‌نام کاربر</title>
     <title>@yield('title')</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js' , 'resources/js/register.js'])
+    @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/js/app.js'])
     <script>
         var win = navigator.platform.indexOf('Win') > -1;
         if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -22,25 +34,18 @@
     </script>
 </head>
 
-<body class="g-sidenav-show rtl bg-gray-100">
+<body class="g-sidenav-show rtl bg-gray-100 auth-page register-page">
 <div class="container position-sticky z-index-sticky top-0">
     <!-- Navbar ... (همانند قبل) -->
 </div>
 
 <main class="main-content mt-0">
     <section>
-        <div class="page-header min-vh-75">
+        <div class="page-header min-vh-100 d-flex align-items-center">
             <div class="container">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="oblique position-absolute top-0 h-50 d-md-block d-none me-n8">
-                            <div class="oblique-image bg-cover position-absolute fixed-top   h-100 z-index-0 ms-n6"
-                                 style="background-image:url({{ asset('images/login_img.jpg') }})"></div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-5 col-lg-5 col-md-6 d-flex flex-column mx-auto">
-                        <div class="card card-plain mt-4">
+                <div class="row justify-content-center">
+                    <div class="col-xl-6 col-lg-7 col-md-9 col-sm-11">
+                        <div class="card card-plain">
                             <div class="card-header pb-0 text-left bg-transparent">
                                 <h3 class="font-weight-bolder text-info text-gradient">خوش آمدید</h3>
                                 <p class="mb-0">لطفا اطلاعات خود را وارد کنید.</p>
@@ -128,8 +133,8 @@
                                 <div id="error" class="text-danger mt-2"></div>
                             </div>
 
-                            <div class="card-footer text-center pt-0 px-lg-2 px-1">
-                                <p class="mb-4 text-sm mx-auto">
+                            <div class="card-footer text-center">
+                                <p class="mb-0 text-sm">
                                     قبلاً حساب کاربری دارید؟ <a href="{{ route('login') }}" class="text-info text-gradient font-weight-bold">ورود</a>
                                 </p>
                             </div>
