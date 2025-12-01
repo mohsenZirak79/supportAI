@@ -145,6 +145,7 @@ async function play() {
 
         // Convert data URL to Blob URL (more reliable for browser security)
         let audioUrl = data.audio;
+        let blobUrlCreated = false;
         
         // If it's a data URL, convert to Blob URL
         if (audioUrl.startsWith('data:')) {
@@ -152,8 +153,26 @@ async function play() {
                 // Extract MIME type and base64 data
                 const matches = audioUrl.match(/^data:([^;]+);base64,(.+)$/);
                 if (matches) {
-                    const mimeType = matches[1];
+                    let mimeType = matches[1];
                     const base64Data = matches[2];
+                    
+                    console.log('Original MIME type:', mimeType);
+                    console.log('Base64 data length:', base64Data.length);
+                    
+                    // Detect actual format from first bytes if needed
+                    // Edge TTS returns WebM format, but let's verify
+                    if (mimeType === 'audio/mp3' || mimeType === 'audio/mpeg') {
+                        // Check if it's actually WebM by looking at magic bytes
+                        try {
+                            const binaryPreview = atob(base64Data.substring(0, 20));
+                            if (binaryPreview.startsWith('\x1aE\xdf\xa3')) {
+                                console.log('Detected WebM format from magic bytes');
+                                mimeType = 'audio/webm';
+                            }
+                        } catch (e) {
+                            console.log('Could not check magic bytes:', e);
+                        }
+                    }
                     
                     // Convert base64 to binary
                     const binaryString = atob(base64Data);
@@ -162,13 +181,19 @@ async function play() {
                         bytes[i] = binaryString.charCodeAt(i);
                     }
                     
-                    // Create Blob and Blob URL
+                    console.log('Created binary data, length:', bytes.length);
+                    
+                    // Create Blob with correct MIME type
                     const blob = new Blob([bytes], { type: mimeType });
                     audioUrl = URL.createObjectURL(blob);
+                    blobUrlCreated = true;
+                    console.log('Created Blob URL:', audioUrl);
+                } else {
+                    console.error('Could not parse data URL format');
                 }
             } catch (blobError) {
                 console.error('Error creating Blob URL:', blobError);
-                // Fall back to data URL
+                throw new Error('خطا در تبدیل صوت: ' + blobError.message);
             }
         }
 
