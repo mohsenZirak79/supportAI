@@ -143,29 +143,106 @@ async function play() {
             throw new Error(data.error || 'خطا در تولید صوت');
         }
 
-        // Create audio element and play
+        // Create audio element
         const audio = new Audio(data.audio);
         currentAudio = audio;
 
+        // Set up playback event handlers
         audio.onplay = () => {
+            console.log('Audio started playing');
             speaking.value = true;
             loading.value = false;
         };
 
         audio.onended = () => {
+            console.log('Audio finished playing');
             speaking.value = false;
             loading.value = false;
             currentAudio = null;
         };
 
         audio.onerror = (e) => {
-            error.value = 'خطا در پخش صوت';
+            console.error('Audio error:', e, audio.error);
+            const errorMsg = audio.error ? 
+                `خطا ${audio.error.code}: ${audio.error.message}` : 
+                'خطا در بارگذاری صوت';
+            error.value = errorMsg;
             speaking.value = false;
             loading.value = false;
             currentAudio = null;
         };
 
-        await audio.play();
+        // Try to play immediately, or wait for it to be ready
+        try {
+            // Try playing immediately (might work if audio is small)
+            await audio.play();
+            console.log('Audio play() called successfully');
+        } catch (playError) {
+            console.log('Immediate play failed, waiting for audio to load:', playError);
+            
+            // Wait for audio to be ready
+            await new Promise((resolve, reject) => {
+                let resolved = false;
+
+                const cleanup = () => {
+                    if (resolved) return;
+                    resolved = true;
+                    clearTimeout(timeout);
+                };
+
+                audio.oncanplaythrough = async () => {
+                    console.log('Audio can play through, starting playback');
+                    cleanup();
+                    
+                    try {
+                        await audio.play();
+                        console.log('Audio play() called successfully');
+                        resolve();
+                    } catch (playError2) {
+                        console.error('Error calling audio.play():', playError2);
+                        if (playError2.name === 'NotAllowedError') {
+                            error.value = 'لطفا ابتدا روی دکمه پخش کلیک کنید';
+                        } else {
+                            error.value = 'خطا در پخش صوت: ' + playError2.message;
+                        }
+                        speaking.value = false;
+                        loading.value = false;
+                        currentAudio = null;
+                        reject(playError2);
+                    }
+                };
+
+                audio.onerror = (e) => {
+                    console.error('Audio loading error:', e, audio.error);
+                    cleanup();
+                    
+                    const errorMsg = audio.error ? 
+                        `خطا ${audio.error.code}: ${audio.error.message}` : 
+                        'خطا در بارگذاری صوت';
+                    error.value = errorMsg;
+                    speaking.value = false;
+                    loading.value = false;
+                    currentAudio = null;
+                    reject(new Error(errorMsg));
+                };
+
+                // Set a timeout
+                const timeout = setTimeout(() => {
+                    if (!resolved && audio.readyState < 2) {
+                        console.error('Audio loading timeout, readyState:', audio.readyState);
+                        cleanup();
+                        error.value = 'زمان بارگذاری صوت به پایان رسید';
+                        speaking.value = false;
+                        loading.value = false;
+                        currentAudio = null;
+                        reject(new Error('Audio loading timeout'));
+                    }
+                }, 10000);
+
+                // Start loading
+                audio.load();
+            });
+        }
 
     } catch (err) {
         console.error('TTS error:', err);
