@@ -266,9 +266,10 @@ def main():
             
             if audio_data and len(audio_data) > 0:
                 audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+                # Edge TTS returns WebM format (OPUS codec), not MP3
                 print(json.dumps({
                     "success": True,
-                    "audio": f"data:audio/mp3;base64,{audio_base64}",
+                    "audio": f"data:audio/webm;base64,{audio_base64}",
                     "chunk_index": chunk_index
                 }))
             else:
