@@ -11,17 +11,30 @@
         <!-- نوار بالا -->
         <header class="chat-header">
             <div class="header-content">
-                <button
-                    v-if="isMobile"
-                    class="mobile-sidebar-toggle"
-                    type="button"
-                    @click="toggleSidebar"
-                    aria-label="باز کردن لیست گفتگوها"
-                >
-                    ☰
-                </button>
-                <h1 @click="editCurrentTitle">{{ activeChat?.title || 'چت با هوش مصنوعی' }}</h1>
-                <button @click="goToTickets" class="nav-btn">تیکت‌ها</button>
+                <div class="header-left">
+                    <button
+                        v-if="isMobile"
+                        class="mobile-sidebar-toggle"
+                        type="button"
+                        @click="toggleSidebar"
+                        aria-label="باز کردن لیست گفتگوها"
+                    >
+                        ☰
+                    </button>
+                    <h1>{{ activeChat?.title || 'چت با هوش مصنوعی' }}</h1>
+                </div>
+                <div class="header-actions">
+                    <button
+                        class="nav-btn ghost"
+                        type="button"
+                        :disabled="!activeChatId"
+                        @click="toggleReferralPanel"
+                    >
+                        <span class="nav-btn__dot" v-if="hasPublicReferralResponses"></span>
+                        ارجاع‌ها
+                    </button>
+                    <button @click="goToTickets" class="nav-btn" type="button">تیکت‌ها</button>
+                </div>
             </div>
         </header>
 
@@ -39,8 +52,30 @@
                         :class="{ active: chat.id === activeChatId }"
                         @click="setActiveChat(chat.id)"
                     >
-                        <span @click.stop="editTitle(chat)">{{ chat.title }}</span>
-                        <button @click.stop="deleteChat(chat.id)" class="delete-btn">×</button>
+                        <span class="chat-item__title">{{ chat.title }}</span>
+                        <button
+                            class="chat-menu-btn"
+                            type="button"
+                            aria-label="تنظیمات چت"
+                            @click.stop="toggleChatMenu(chat.id)"
+                        >
+                            <svg viewBox="0 0 24 24" aria-hidden="true" class="chat-menu-icon">
+                                <circle cx="12" cy="5" r="1.5" />
+                                <circle cx="12" cy="12" r="1.5" />
+                                <circle cx="12" cy="19" r="1.5" />
+                            </svg>
+                        </button>
+                        <div v-if="chatMenuOpenId === chat.id" class="chat-menu">
+                            <button type="button" @click.stop="openRenameModal(chat)">تغییر عنوان</button>
+                            <button
+                                type="button"
+                                class="danger"
+                                :disabled="deletingChatId === chat.id"
+                                @click.stop="deleteChat(chat.id)"
+                            >
+                                حذف چت
+                            </button>
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -58,6 +93,7 @@
                         :key="message.id || message._tmpKey || Math.random()"
                         class="message"
                         :class="{ 'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot' }"
+                        :data-msg-id="message.id || ''"
                     >
                         <div class="message-bubble" @click="onBubbleClick(message)">
 
@@ -184,12 +220,152 @@
                 </div>
             </main>
         </div>
+        <transition name="fade">
+            <div
+                v-if="referralPanelOpen"
+                class="referral-panel-backdrop"
+                @click="closeReferralPanel"
+            ></div>
+        </transition>
+
+        <transition name="slide-panel">
+            <section
+                v-if="referralPanelOpen"
+                class="referral-panel"
+                :class="{ 'is-mobile': isMobile }"
+                aria-label="پاسخ‌های ارجاع شده"
+            >
+                <div class="referral-panel__header">
+                    <div>
+                        <p class="referral-panel__eyebrow">ارجاعات فعال</p>
+                        <h3>{{ activeChat?.title || 'چت جاری' }}</h3>
+                    </div>
+                    <div class="panel-actions">
+                        <button
+                            class="panel-icon-btn"
+                            type="button"
+                            :disabled="referralsLoading"
+                            @click="refreshCurrentReferrals"
+                            aria-label="به‌روزرسانی ارجاعات"
+                        >
+                            ↻
+                        </button>
+                        <button class="panel-icon-btn" type="button" @click="closeReferralPanel" aria-label="بستن پنل">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+                <div class="referral-panel__body">
+                    <div v-if="referralsLoading" class="referral-panel__placeholder">
+                        <div class="spinner"></div>
+                        <p>در حال بارگذاری ارجاعات…</p>
+                    </div>
+                    <div v-else-if="referralsError" class="referral-panel__placeholder error">
+                        <p>{{ referralsError }}</p>
+                        <button type="button" class="panel-retry" @click="refreshCurrentReferrals">تلاش مجدد</button>
+                    </div>
+                    <div v-else-if="!currentReferrals.length" class="referral-panel__placeholder">
+                        <p>هنوز ارجاعی برای نمایش وجود ندارد.</p>
+                        <small class="text-muted">می‌توانید پیام موردنظر را به پشتیبان ارجاع دهید.</small>
+                    </div>
+                    <div v-else class="referral-card-list">
+                        <article v-for="referral in currentReferrals" :key="referral.id" class="referral-card">
+                            <div class="referral-card__header">
+                                <div>
+                                    <p class="referral-card__eyebrow">ارجاع به {{ referral.assigned_role || 'پشتیبان' }}</p>
+                                    <h4>{{ activeChat?.title || 'چت جاری' }}</h4>
+                                </div>
+                                <span class="referral-status" :class="'referral-status--' + referral.status">
+                                    {{ referralStatusLabel(referral.status) }}
+                                </span>
+                            </div>
+
+                            <div class="referral-card__section">
+                                <div class="section-title">پیام ارجاع‌شده</div>
+                                <p class="section-body" v-if="referral.trigger_message?.content">
+                                    {{ referral.trigger_message.content }}
+                                </p>
+                                <p class="section-body muted" v-else>
+                                    این پیام شامل ویس یا فایل است.
+                                </p>
+                                <div class="section-footer">
+                                    <span>{{ formatDate(referral.trigger_message?.created_at) }}</span>
+                                    <button
+                                        type="button"
+                                        class="section-link"
+                                        @click="scrollToReferredMessage(referral.trigger_message_id)"
+                                    >
+                                        مشاهده در گفتگو
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div v-if="referral.description" class="referral-card__section">
+                                <div class="section-title">توضیح شما</div>
+                                <p class="section-body">{{ referral.description }}</p>
+                            </div>
+
+                            <div v-if="referral.response" class="referral-card__section response">
+                                <div class="section-title">پاسخ پشتیبان</div>
+                                <p class="section-body">{{ referral.response.text }}</p>
+                                <div class="section-footer">
+                                    <span>{{ formatDate(referral.response.created_at) }}</span>
+                                </div>
+                                <div v-if="referral.response.files?.length" class="referral-files">
+                                    <a
+                                        v-for="file in referral.response.files"
+                                        :key="file.id"
+                                        :href="file.url"
+                                        target="_blank"
+                                        rel="noopener"
+                                        class="file-chip file-chip-link"
+                                    >
+                                        <span>{{ getFileEmoji(file.mime) }}</span>
+                                        <span class="truncate">{{ file.name || 'فایل' }}</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div v-else class="referral-card__section muted">
+                                <div class="section-title">پاسخ پشتیبان</div>
+                                <p class="section-body">پاسخی برای نمایش ثبت نشده است.</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </section>
+        </transition>
+
+        <transition name="fade">
+            <div v-if="renameModal.open" class="modal-backdrop" @click.self="closeRenameModal">
+                <form class="rename-modal" @submit.prevent="submitRename">
+                    <h3>تغییر عنوان گفتگو</h3>
+                    <p class="modal-desc">برای مدیریت بهتر گفتگوها، عنوانی انتخاب کنید که محتوا را توصیف کند.</p>
+                    <input
+                        type="text"
+                        ref="renameInputRef"
+                        v-model="renameModal.title"
+                        class="rename-input"
+                        maxlength="100"
+                        placeholder="عنوان جدید"
+                        :disabled="renameModal.loading"
+                    />
+                    <div class="modal-actions">
+                        <button type="button" class="modal-btn ghost" @click="closeRenameModal" :disabled="renameModal.loading">
+                            انصراف
+                        </button>
+                        <button type="submit" class="modal-btn primary" :disabled="renameModal.loading">
+                            {{ renameModal.loading ? 'در حال ذخیره…' : 'ذخیره عنوان' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </transition>
     </div>
 </template>
 
 
 <script setup>
-import {ref, computed, nextTick, onMounted, onUnmounted, watch} from 'vue';
+import {ref, computed, nextTick, onMounted, onUnmounted, reactive, watch} from 'vue';
 import HandoffModal from './HandoffModal.vue';
 import AiAnswer from './AiAnswer.vue'
 import {useToast} from 'vue-toast-notification'
@@ -205,6 +381,15 @@ const recordingInterval = ref(null);
 const mediaRecorder = ref(null);
 const audioChunks = ref([]);
 const availableRoles = ref([]);
+const chatMenuOpenId = ref(null);
+const deletingChatId = ref(null);
+const renameModal = reactive({
+    open: false,
+    chatId: null,
+    title: '',
+    loading: false
+});
+const renameInputRef = ref(null);
 const fetchDepartments = async () => {  // ← این تابع رو کامل اضافه کن
     try {
         const response = await apiFetch('/support-roles');
@@ -231,6 +416,30 @@ const formatDate = (isoString) => {
         year: 'numeric'
     });
 };
+const referralStatusLabel = (status) => {
+    switch (status) {
+        case 'pending':
+            return 'در انتظار';
+        case 'assigned':
+            return 'در حال بررسی';
+        case 'responded':
+            return 'پاسخ داده شد';
+        case 'closed':
+            return 'بسته شده';
+        default:
+            return status || '-';
+    }
+};
+const getFileEmoji = (mimeOrType = '') => {
+    const type = String(mimeOrType || '').toLowerCase();
+    if (type.startsWith('image/')) return '🖼️';
+    if (type.includes('pdf')) return '📄';
+    if (type.includes('word') || type.includes('doc')) return '📝';
+    if (type.includes('zip') || type.includes('rar')) return '📦';
+    if (type.includes('sheet') || type.includes('excel') || type.includes('csv')) return '📊';
+    if (type.startsWith('audio/')) return '🎧';
+    return '📎';
+};
 // --- State ---
 const chats = ref([]); // لیست چت‌ها از API
 const activeChatId = ref(null);
@@ -244,6 +453,27 @@ const mediaFetchedFor = new Set();
 const MOBILE_BREAKPOINT = 768;
 const isMobile = ref(false);
 const isSidebarOpen = ref(true);
+const referralPanelOpen = ref(false);
+const referralStore = reactive({});
+
+const currentReferrals = computed(() => {
+    const chatId = activeChatId.value;
+    if (!chatId || !referralStore[chatId]) return [];
+    return referralStore[chatId].items || [];
+});
+const referralsLoading = computed(() => {
+    const chatId = activeChatId.value;
+    if (!chatId || !referralStore[chatId]) return false;
+    return referralStore[chatId].loading || false;
+});
+const referralsError = computed(() => {
+    const chatId = activeChatId.value;
+    if (!chatId || !referralStore[chatId]) return '';
+    return referralStore[chatId].error || '';
+});
+const hasPublicReferralResponses = computed(() =>
+    currentReferrals.value.some((item) => !!item.response)
+);
 
 const updateLayoutFlags = () => {
     if (typeof window === 'undefined') return;
@@ -262,12 +492,153 @@ const closeSidebar = () => {
     isSidebarOpen.value = false;
 };
 
+const ensureReferralState = (chatId) => {
+    if (!chatId) return null;
+    if (!referralStore[chatId]) {
+        referralStore[chatId] = {
+            items: [],
+            loading: false,
+            loaded: false,
+            error: ''
+        };
+    }
+    return referralStore[chatId];
+};
+
+async function loadReferrals(chatId, {force = false} = {}) {
+    if (!chatId) return;
+    const state = ensureReferralState(chatId);
+    if (!state) return;
+    if (state.loading) return;
+    if (state.loaded && !force) return;
+    state.loading = true;
+    state.error = '';
+    try {
+        const res = await apiFetch(`/conversations/${chatId}/referrals`);
+        if (!res.ok) throw new Error('failed');
+        const {data} = await res.json();
+        state.items = data || [];
+        state.loaded = true;
+    } catch (err) {
+        console.error('Failed to load referrals', err);
+        state.error = 'خطا در بارگذاری ارجاع‌ها. دوباره تلاش کنید.';
+    } finally {
+        state.loading = false;
+    }
+}
+
+const refreshCurrentReferrals = async () => {
+    const chatId = activeChatId.value;
+    if (!chatId) return;
+    const state = ensureReferralState(chatId);
+    if (!state) return;
+    state.loaded = false;
+    await loadReferrals(chatId, {force: true});
+};
+
+const closeReferralPanel = () => {
+    referralPanelOpen.value = false;
+};
+
+const toggleReferralPanel = async () => {
+    if (!activeChatId.value) return;
+    if (referralPanelOpen.value) {
+        referralPanelOpen.value = false;
+        return;
+    }
+    referralPanelOpen.value = true;
+    await loadReferrals(activeChatId.value);
+};
+
+const handleReferralEsc = (event) => {
+    if (event.key === 'Escape') {
+        closeReferralPanel();
+    }
+};
+
+const handleRenameEsc = (event) => {
+    if (event.key === 'Escape' && renameModal.open) {
+        closeRenameModal();
+    }
+};
+
+const toggleChatMenu = (chatId) => {
+    chatMenuOpenId.value = chatMenuOpenId.value === chatId ? null : chatId;
+};
+
+const closeChatMenu = () => {
+    chatMenuOpenId.value = null;
+};
+
+const openRenameModal = (chat) => {
+    closeChatMenu();
+    if (!chat) return;
+    renameModal.open = true;
+    renameModal.chatId = chat.id;
+    renameModal.title = chat.title;
+    renameModal.loading = false;
+    nextTick(() => {
+        renameInputRef.value?.focus();
+        renameInputRef.value?.select();
+    });
+};
+
+const closeRenameModal = () => {
+    renameModal.open = false;
+    renameModal.chatId = null;
+    renameModal.title = '';
+    renameModal.loading = false;
+};
+
+const submitRename = async () => {
+    const chatId = renameModal.chatId;
+    const newTitle = (renameModal.title || '').trim();
+    if (!chatId) return;
+    if (!newTitle) {
+        toast.error('عنوان نمی‌تواند خالی باشد.');
+        return;
+    }
+    renameModal.loading = true;
+    try {
+        await renameChat(chatId, newTitle);
+        closeRenameModal();
+        toast.success('عنوان چت به‌روزرسانی شد.');
+    } catch (e) {
+        console.error('rename failed', e);
+        toast.error('خطا در تغییر عنوان.');
+    } finally {
+        renameModal.loading = false;
+    }
+};
+
 const handleScroll = () => {
     const el = messagesContainer.value;
     if (!el) return;
     const distanceFromBottom = el.scrollHeight - (el.scrollTop + el.clientHeight);
     showScrollButton.value = distanceFromBottom > SCROLL_OFFSET_THRESHOLD;
 };
+
+let previousBodyOverflow = '';
+watch(referralPanelOpen, (open) => {
+    if (typeof document === 'undefined') return;
+    if (open) {
+        previousBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', handleReferralEsc);
+    } else {
+        document.body.style.overflow = previousBodyOverflow || '';
+        document.removeEventListener('keydown', handleReferralEsc);
+    }
+});
+
+watch(() => renameModal.open, (open) => {
+    if (typeof document === 'undefined') return;
+    if (open) {
+        document.addEventListener('keydown', handleRenameEsc);
+    } else {
+        document.removeEventListener('keydown', handleRenameEsc);
+    }
+});
 
 async function ensureMediaLoaded(msg) {
     if (!msg?.id) return;
@@ -474,6 +845,14 @@ onUnmounted(() => {
     if (messagesContainer.value) {
         messagesContainer.value.removeEventListener('scroll', handleScroll);
     }
+    if (typeof document !== 'undefined') {
+        document.removeEventListener('keydown', handleReferralEsc);
+        document.removeEventListener('keydown', handleRenameEsc);
+        document.removeEventListener('click', handleMenuClickOutside);
+        document.body.style.overflow = '';
+    }
+    highlightTimers.forEach(timeout => clearTimeout(timeout));
+    highlightTimers.clear();
 });
 // const scrollToBottom = () => {
 //     if (messagesContainer.value) {
@@ -494,9 +873,12 @@ const scrollToBottom = () => {
 const activeChat = computed(() => {
     return chats.value.find(chat => chat.id === activeChatId.value) || null;
 });
-watch(activeChatId, () => {
+watch(activeChatId, (newId) => {
     if (isMobile.value) {
         closeSidebar();
+    }
+    if (newId && referralPanelOpen.value) {
+        loadReferrals(newId, {force: false});
     }
 });
 
@@ -618,6 +1000,7 @@ const startNewChat = async () => {
 
 // فعال‌سازی چت
 const setActiveChat = async (id) => {
+    closeChatMenu();
     activeChatId.value = id;
     await loadMessages(id);
     await nextTick();
@@ -703,33 +1086,20 @@ const sendMessage = async () => {
     }
 };
 
-// ویرایش عنوان
-const editTitle = (chat) => {
-    const newTitle = prompt('عنوان جدید را وارد کنید:', chat.title);
-    if (newTitle && newTitle.trim() && newTitle !== chat.title) {
-        updateChatTitle(chat.id, newTitle.trim());
-    }
-};
-
-const editCurrentTitle = () => {
-    const chat = chats.value.find(c => c.id === activeChatId.value);
-    if (chat) editTitle(chat);
-};
-
-const updateChatTitle = async (chatId, title) => {
+const renameChat = async (chatId, title) => {
     try {
         const res = await apiFetch(`/conversations/${chatId}/title`, {
             method: 'PATCH',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title})
         });
-        if (res.ok) {
-            const updated = await res.json();
-            const chat = chats.value.find(c => c.id === chatId);
-            if (chat) chat.title = updated.title;
-        }
+        if (!res.ok) throw new Error('rename failed');
+        const updated = await res.json();
+        const chat = chats.value.find(c => c.id === chatId);
+        if (chat) chat.title = updated.title;
     } catch (e) {
-        alert('خطا در به‌روزرسانی عنوان');
+        console.error('renameChat', e);
+        throw e;
     }
 };
 const msgInput = ref(null)
@@ -752,18 +1122,33 @@ function onKeydown(e) {
 
 // حذف چت
 const deleteChat = async (chatId) => {
-    if (!confirm('آیا مطمئنید می‌خواهید این چت را حذف کنید؟')) return;
+    closeChatMenu();
+    const chat = chats.value.find(c => c.id === chatId);
+    if (!chat) return;
+    if (!confirm('آیا مطمئنید این گفتگو حذف شود؟')) return;
 
+    deletingChatId.value = chatId;
     try {
         const res = await apiFetch(`/conversations/${chatId}`, {method: 'DELETE'});
-        if (res.ok) {
-            chats.value = chats.value.filter(c => c.id !== chatId);
-            if (activeChatId.value === chatId) {
-                activeChatId.value = chats.value.length ? chats.value[0].id : null;
+        if (!res.ok) throw new Error('delete failed');
+
+        const index = chats.value.findIndex(c => c.id === chatId);
+        chats.value = chats.value.filter(c => c.id !== chatId);
+
+        if (activeChatId.value === chatId) {
+            const next = chats.value[index] || chats.value[index - 1] || chats.value[0];
+            if (next) {
+                await setActiveChat(next.id);
+            } else {
+                activeChatId.value = null;
             }
         }
+        toast.success('گفتگو حذف شد.');
     } catch (e) {
-        alert('خطا در حذف چت');
+        console.error('delete chat failed', e);
+        toast.error('حذف چت ناموفق بود.');
+    } finally {
+        deletingChatId.value = null;
     }
 };
 const copyText = (text) => {
@@ -846,6 +1231,34 @@ const playVoice = async (id) => {
     }
 };
 
+const highlightTimers = new Map();
+const focusMessageById = (messageId) => {
+    if (!messageId || !messagesContainer.value) return;
+    const target = messagesContainer.value.querySelector(`[data-msg-id="${messageId}"]`);
+    if (!target) return;
+    target.scrollIntoView({behavior: 'smooth', block: 'center'});
+    target.classList.add('message-highlight');
+    if (highlightTimers.has(messageId)) {
+        clearTimeout(highlightTimers.get(messageId));
+    }
+    const timer = setTimeout(() => {
+        target.classList.remove('message-highlight');
+        highlightTimers.delete(messageId);
+    }, 2200);
+    highlightTimers.set(messageId, timer);
+};
+
+const scrollToReferredMessage = (messageId) => {
+    if (!messageId) return;
+    const runScroll = () => focusMessageById(messageId);
+    if (isMobile.value && referralPanelOpen.value) {
+        referralPanelOpen.value = false;
+        setTimeout(runScroll, 280);
+    } else {
+        runScroll();
+    }
+};
+
 const onBubbleClick = async (message) => {
     if (!message) return;
 
@@ -866,6 +1279,9 @@ onMounted(() => {
     if (typeof window !== 'undefined') {
         updateLayoutFlags();
         window.addEventListener('resize', updateLayoutFlags);
+    }
+    if (typeof document !== 'undefined') {
+        document.addEventListener('click', handleMenuClickOutside);
     }
 });
 
@@ -958,6 +1374,16 @@ const stopSpeak = () => {
     isSpeaking.value = false;
     currentUtter = null;
 };
+
+function handleMenuClickOutside(event) {
+    const target = event.target;
+    if (!target) return;
+    const inMenu = typeof target.closest === 'function' ? target.closest('.chat-menu') : null;
+    const inButton = typeof target.closest === 'function' ? target.closest('.chat-menu-btn') : null;
+    if (!inMenu && !inButton) {
+        closeChatMenu();
+    }
+}
 </script>
 
 <style scoped>
@@ -972,7 +1398,8 @@ const stopSpeak = () => {
     font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
     background-color: #f9fafb;
     min-height: 100vh;
-    height: 100%;
+    height: 100vh;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 }
@@ -995,6 +1422,7 @@ const stopSpeak = () => {
     display: flex;
     flex: 1;
     overflow: hidden;
+    min-height: 0;
 }
 
 .sidebar {
@@ -1037,6 +1465,7 @@ const stopSpeak = () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
 }
 
 .chat-item:hover {
@@ -1054,25 +1483,77 @@ const stopSpeak = () => {
     border-image: linear-gradient(180deg, #6a11cb, #2575fc) 1;
 }
 
-.delete-btn {
+.chat-item__title {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-inline-end: 8px;
+}
+
+.chat-menu-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(241, 245, 249, 0.8);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.chat-menu-btn:hover {
+    background: rgba(226, 232, 240, 0.9);
+    border-color: rgba(148, 163, 184, 0.8);
+}
+
+.chat-menu-icon {
+    width: 16px;
+    height: 16px;
+    fill: #475569;
+}
+
+.chat-menu {
+    position: absolute;
+    top: 50%;
+    inset-inline-end: 16px;
+    transform: translateY(calc(-50% + 24px));
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.15);
+    display: flex;
+    flex-direction: column;
+    min-width: 140px;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.chat-menu button {
+    text-align: right;
+    padding: 10px 14px;
     background: none;
     border: none;
-    color: #ff4d4f;
-    font-size: 1.2rem;
+    font-size: 0.9rem;
     cursor: pointer;
-    margin-right: 8px;
-    opacity: 0;
-    transition: opacity 0.2s;
+    transition: background 0.15s ease;
 }
 
-.chat-item:hover .delete-btn {
-    opacity: 1;
+.chat-menu button:hover {
+    background: #f8fafc;
 }
 
-@media (hover: none) {
-    .delete-btn {
-        opacity: 1;
-    }
+.chat-menu button.danger {
+    color: #dc2626;
+}
+
+.chat-menu button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .chat-main {
@@ -1081,6 +1562,7 @@ const stopSpeak = () => {
     flex-direction: column;
     background-color: #ffffff;
     position: relative;
+    min-height: 0;
 }
 
 .empty-state {
@@ -1107,6 +1589,8 @@ const stopSpeak = () => {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-height: 0;
+    padding-bottom: 96px;
 }
 
 .message {
@@ -1130,6 +1614,7 @@ const stopSpeak = () => {
     line-height: 1.5;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     animation: fadeInUp 0.3s ease;
+    transition: box-shadow .2s ease, transform .2s ease;
 }
 
 @keyframes fadeInUp {
@@ -1199,6 +1684,10 @@ const stopSpeak = () => {
     border-top: 1px solid #eaeaea;
     gap: 12px;
     flex-direction: column;
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
+    box-shadow: 0 -6px 18px rgba(15, 23, 42, 0.08);
 }
 
 .text-input-area {
@@ -1391,66 +1880,6 @@ const stopSpeak = () => {
 }
 
 
-/* --- فرم ارسال --- */
-.input-form {
-    display: flex;
-    padding: 16px;
-    background: white;
-    border-top: 1px solid #eaeaea;
-    gap: 12px;
-    align-items: flex-end;
-}
-
-.text-input-area {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    width: 100%;
-}
-
-.text-input-area textarea {
-    flex: 1;
-    padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 24px;
-    resize: none;
-    font-size: 1rem;
-    font-family: inherit;
-    outline: none;
-    max-height: 150px;
-    min-height: 40px;
-    transition: border-color 0.2s;
-}
-
-.text-input-area textarea:focus {
-    border-color: #2575fc;
-    box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.2);
-}
-
-.input-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.input-actions button {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 24px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.input-actions .mic-btn {
-    background: #f1f5f9;
-    color: #4b5563;
-}
-
-.input-actions button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
 /* --- حالت ضبط صدا --- */
 .recording-ui {
     display: flex;
@@ -1519,6 +1948,20 @@ const stopSpeak = () => {
     justify-content: space-between;
     align-items: center;
     padding: 0 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .nav-btn {
@@ -1531,6 +1974,31 @@ const stopSpeak = () => {
     font-size: 0.95rem;
     font-weight: 500;
     transition: all 0.2s ease;
+}
+
+.nav-btn.ghost {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #f8fafc;
+    position: relative;
+    padding-inline-start: 32px;
+}
+
+.nav-btn.ghost:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.nav-btn__dot {
+    position: absolute;
+    inset-inline-start: 12px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #f97316;
+    transform: translateY(-50%);
+    box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.25);
 }
 
 .nav-btn:hover {
@@ -1598,6 +2066,357 @@ const stopSpeak = () => {
     height: 18px;
     fill: currentColor;
     display: block;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity .2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+.slide-panel-enter-active,
+.slide-panel-leave-active {
+    transition: transform .3s ease;
+}
+
+.slide-panel-enter-from,
+.slide-panel-leave-to {
+    transform: translateX(110%);
+}
+
+.referral-panel-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 60;
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 90;
+}
+
+.rename-modal {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.rename-input {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rename-input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    outline: none;
+}
+
+.modal-desc {
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.modal-btn {
+    border-radius: 999px;
+    padding: 10px 20px;
+    border: 1px solid transparent;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.modal-btn.primary {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+}
+
+.modal-btn.primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.modal-btn.ghost {
+    background: transparent;
+    border-color: #cbd5f5;
+    color: #475569;
+}
+
+.modal-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.referral-panel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: min(420px, 92vw);
+    background: #fff;
+    box-shadow: -10px 0 35px rgba(15, 23, 42, 0.25);
+    border-top-left-radius: 18px;
+    border-bottom-left-radius: 18px;
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.referral-panel.is-mobile {
+    width: 100%;
+    right: 0;
+    left: 0;
+    border-radius: 0;
+}
+
+.referral-panel.is-mobile.slide-panel-enter-from,
+.referral-panel.is-mobile.slide-panel-leave-to {
+    transform: translateY(100%);
+}
+
+.referral-panel__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.referral-panel__eyebrow {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 2px;
+}
+
+.panel-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.panel-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.panel-icon-btn:hover:not(:disabled) {
+    background: #e2e8f0;
+}
+
+.panel-icon-btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.referral-panel__body {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.referral-panel__placeholder {
+    text-align: center;
+    color: #475569;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 40px 12px;
+}
+
+.referral-panel__placeholder.error {
+    color: #dc2626;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #6366f1;
+    animation: spin .8s linear infinite;
+}
+
+.referral-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.referral-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.06);
+}
+
+.referral-card__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.referral-card__eyebrow {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.referral-status {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.referral-status--pending { background: #fef3c7; color: #92400e; }
+.referral-status--assigned { background: #dbeafe; color: #1d4ed8; }
+.referral-status--responded { background: #dcfce7; color: #15803d; }
+.referral-status--closed { background: #e2e8f0; color: #475569; }
+
+.referral-card__section {
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #f8fafc;
+}
+
+.referral-card__section.response {
+    border-color: #c7d2fe;
+    background: #eef2ff;
+}
+
+.referral-card__section.muted {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.section-body {
+    color: #0f172a;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.section-body.muted {
+    color: #94a3b8;
+}
+
+.section-footer {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.section-link {
+    background: none;
+    border: none;
+    color: #2563eb;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.referral-files {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    max-width: 220px;
+    padding: .35rem .6rem;
+    border-radius: 9999px;
+    font-size: .78rem;
+    line-height: 1;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+
+.file-chip-link {
+    background: #eef2ff;
+    color: #4338ca;
+    border-color: #c7d2fe;
+}
+
+.file-chip .truncate {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.panel-retry {
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 6px 18px;
+    background: #fff;
+    color: #1d4ed8;
+    cursor: pointer;
+}
+
+.message.message-highlight .message-bubble {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    transform: translateY(-2px);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* واریانت‌ها (در صورت نیاز به تفاوت رنگی) */

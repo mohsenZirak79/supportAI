@@ -294,12 +294,12 @@
                 refs.forEach(r => {
                     const card = document.createElement('div')
                     card.className = 'card'
-
+                    const assignBtnHtml = '';
                     // دکمه تخصیص
-                    const assignBtnHtml = (!r.assigned_agent_id && r.can_assign_me) ? `
-            <button class="btn btn-sm btn-outline-primary assign-me-btn" data-ref="${r.id}">
-              تخصیص به من
-            </button>` : ''
+            //         const assignBtnHtml = (!r.assigned_agent_id && r.can_assign_me) ? `
+            // <button class="btn btn-sm btn-outline-primary assign-me-btn" data-ref="${r.id}">
+            //   تخصیص به من
+            // </button>` : ''
 
                     // فایل‌های ارجاع (نمایش)
                     let refFilesHtml = ''
