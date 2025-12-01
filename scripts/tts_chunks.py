@@ -1,24 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Text-to-Speech using Microsoft Edge TTS (FREE) with Persian support
+Split text into chunks for streaming TTS
 Matches the implementation from the reference app.py
 """
 
 import sys
 import json
 import re
-import base64
-import asyncio
-
-try:
-    import edge_tts
-except ImportError:
-    print(json.dumps({
-        "success": False,
-        "error": "کتابخانه edge-tts نصب نشده است. لطفا با دستور 'pip install edge-tts' نصب کنید"
-    }), file=sys.stderr)
-    sys.exit(1)
 
 
 def clean_html_for_tts(html_text):
@@ -188,13 +177,11 @@ def split_text_for_tts(text, max_length=350):
     return processed_chunks
 
 
-async def main():
-    """Main function to handle TTS request - matches reference app.py exactly"""
+def main():
+    """Main function to handle chunks request - matches reference app.py exactly"""
     try:
-        # Read input from stdin (JSON)
-        input_data = json.loads(sys.stdin.read())
-        text = input_data.get('text', '')
-        chunk_index = input_data.get('chunk_index', 0)
+        data = json.loads(sys.stdin.read())
+        text = data.get('text', '')
         
         if not text:
             print(json.dumps({
@@ -203,94 +190,18 @@ async def main():
             }))
             sys.exit(1)
         
-        # Clean the text completely - remove ALL extra symbols
+        # Clean the text first
         text = clean_text_for_tts(text)
         
-        if not text or not text.strip():
-            print(json.dumps({
-                "success": False,
-                "error": "متن پس از پاکسازی خالی است"
-            }))
-            sys.exit(1)
+        # Split into chunks
+        chunks = split_text_for_tts(text, max_length=400)
         
-        # Convert English numbers to Persian numbers for better pronunciation
-        persian_numbers = '۰۱۲۳۴۵۶۷۸۹'
-        english_numbers = '0123456789'
-        trans_table = str.maketrans(english_numbers, persian_numbers)
-        text = text.translate(trans_table)
+        print(json.dumps({
+            "success": True,
+            "chunks": chunks,
+            "total": len(chunks)
+        }))
         
-        # Limit text length for better performance (Edge TTS handles long text well)
-        if len(text) > 5000:
-            text = text[:4997] + '...'
-        
-        # Use Microsoft Edge TTS (FREE, no API key required)
-        try:
-            async def generate_speech():
-                # Best Persian voices from Microsoft Edge TTS
-                # fa-IR-DilaraNeural: Female voice (natural and clear)
-                # fa-IR-FaridNeural: Male voice (natural and clear)
-                voices = [
-                    ("fa-IR-DilaraNeural", "female"),  # Primary: Female Persian voice
-                    ("fa-IR-FaridNeural", "male"),      # Fallback: Male Persian voice
-                ]
-                
-                for voice_name, voice_type in voices:
-                    try:
-                        communicate = edge_tts.Communicate(
-                            text=text,
-                            voice=voice_name,
-                            rate="+0%",      # Normal speed
-                            volume="+0%",    # Normal volume
-                            pitch="+0Hz"     # Normal pitch
-                        )
-                        
-                        audio_data = b""
-                        async for chunk in communicate.stream():
-                            if chunk["type"] == "audio":
-                                audio_data += chunk["data"]
-                        
-                        if audio_data and len(audio_data) > 0:
-                            return audio_data
-                    except Exception as e:
-                        continue
-                
-                return None
-            
-            # Run async function - exactly like reference
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                audio_data = loop.run_until_complete(generate_speech())
-            finally:
-                loop.close()
-            
-            if audio_data and len(audio_data) > 0:
-                audio_base64 = base64.b64encode(audio_data).decode('utf-8')
-                print(json.dumps({
-                    "success": True,
-                    "audio": f"data:audio/mp3;base64,{audio_base64}",
-                    "chunk_index": chunk_index
-                }))
-            else:
-                print(json.dumps({
-                    "success": False,
-                    "error": "تولید صوت ناموفق بود"
-                }))
-                sys.exit(1)
-                
-        except ImportError:
-            print(json.dumps({
-                "success": False,
-                "error": "کتابخانه edge-tts نصب نشده است. لطفا با دستور 'pip install edge-tts' نصب کنید"
-            }))
-            sys.exit(1)
-        except Exception as edge_error:
-            print(json.dumps({
-                "success": False,
-                "error": f"خطا در تولید صوت: {str(edge_error)}"
-            }))
-            sys.exit(1)
-            
     except json.JSONDecodeError:
         print(json.dumps({
             "success": False,
@@ -300,11 +211,11 @@ async def main():
     except Exception as e:
         print(json.dumps({
             "success": False,
-            "error": "خطا در پردازش درخواست"
+            "error": "خطا در پردازش متن"
         }))
         sys.exit(1)
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()
 

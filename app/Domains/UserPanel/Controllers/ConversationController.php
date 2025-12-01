@@ -677,7 +677,7 @@ class ConversationController extends Controller
 
     /**
      * Split text into chunks for streaming TTS
-     * Matches the implementation from the reference app.py
+     * Matches the implementation from the reference app.py exactly
      */
     public function textToSpeechChunks(Request $request)
     {
@@ -695,17 +695,72 @@ class ConversationController extends Controller
                 ], 400);
             }
 
-            // Clean the text first (using PHP implementation)
-            $cleanedText = $this->cleanTextForTTS($text);
+            // Get the path to the Python script
+            $scriptPath = base_path('scripts/tts_chunks.py');
+            
+            if (!file_exists($scriptPath)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'اسکریپت TTS chunks یافت نشد'
+                ], 500);
+            }
 
-            // Split into chunks (max_length=400 as in reference)
-            $chunks = $this->splitTextForTTS($cleanedText, 400);
+            // Prepare input data
+            $inputData = json_encode([
+                'text' => $text,
+            ], JSON_UNESCAPED_UNICODE);
 
-            return response()->json([
-                'success' => true,
-                'chunks' => $chunks,
-                'total' => count($chunks)
+            // Execute Python script - try python3 first, fallback to python
+            $pythonCommand = $this->findPythonCommand();
+            if (!$pythonCommand) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Python یافت نشد. لطفا Python را نصب کنید.'
+                ], 500);
+            }
+
+            $process = new Process([
+                $pythonCommand,
+                $scriptPath,
             ]);
+
+            $process->setInput($inputData);
+            $process->setTimeout(30);
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                $errorOutput = $process->getErrorOutput();
+                Log::error('TTS chunks Python script failed', [
+                    'exit_code' => $process->getExitCode(),
+                    'error' => $errorOutput,
+                ]);
+
+                // Try to parse error output as JSON
+                $errorJson = json_decode($errorOutput, true);
+                if ($errorJson && isset($errorJson['error'])) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => $errorJson['error']
+                    ], 500);
+                }
+
+                return response()->json([
+                    'success' => false,
+                    'error' => 'خطا در پردازش متن'
+                ], 500);
+            }
+
+            $output = $process->getOutput();
+            $result = json_decode($output, true);
+
+            if (!$result) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'خطا در پردازش پاسخ از اسکریپت TTS chunks'
+                ], 500);
+            }
+
+            return response()->json($result);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -714,7 +769,10 @@ class ConversationController extends Controller
                 'errors' => $e->errors()
             ], 422);
         } catch (\Throwable $e) {
-            Log::error('TTS chunks error: ' . $e->getMessage());
+            Log::error('TTS chunks error: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return response()->json([
                 'success' => false,
@@ -836,7 +894,7 @@ class ConversationController extends Controller
     /**
      * Split text into chunks for TTS - PHP implementation matching Python version
      */
-    private function splitTextForTTS(string $text, int $maxLength = 400): array
+    private function splitTextForTTS(string $text, int $maxLength = 350): array
     {
         // Clean text first
         $text = $this->cleanTextForTTS($text);
