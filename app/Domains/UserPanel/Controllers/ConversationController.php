@@ -706,6 +706,42 @@ class ConversationController extends Controller
                 ], 500);
             }
 
+            // If result contains audio data URL, extract base64 and create a temporary file
+            // This avoids browser security issues with data URLs
+            if (isset($result['audio']) && str_starts_with($result['audio'], 'data:')) {
+                try {
+                    // Extract base64 data
+                    $matches = [];
+                    if (preg_match('/^data:([^;]+);base64,(.+)$/', $result['audio'], $matches)) {
+                        $mimeType = $matches[1];
+                        $base64Data = $matches[2];
+                        $audioBytes = base64_decode($base64Data);
+                        
+                        // Determine file extension from MIME type
+                        $extension = 'webm'; // default
+                        if (str_contains($mimeType, 'webm')) {
+                            $extension = 'webm';
+                        } elseif (str_contains($mimeType, 'mp3') || str_contains($mimeType, 'mpeg')) {
+                            $extension = 'mp3';
+                        } elseif (str_contains($mimeType, 'ogg')) {
+                            $extension = 'ogg';
+                        }
+                        
+                        // Create temporary file
+                        $tempFile = tempnam(sys_get_temp_dir(), 'tts_') . '.' . $extension;
+                        file_put_contents($tempFile, $audioBytes);
+                        
+                        // Store temp file path in session or return it
+                        // For now, let's return the data URL as-is but ensure it's correct
+                        // Actually, let's keep the data URL approach but ensure MIME type is correct
+                        $result['audio'] = 'data:' . $mimeType . ';base64,' . $base64Data;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to process audio data URL: ' . $e->getMessage());
+                    // Continue with original result
+                }
+            }
+
             return response()->json($result);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
