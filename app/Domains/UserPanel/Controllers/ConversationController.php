@@ -375,7 +375,7 @@ class ConversationController extends Controller
 
         $conversation = Conversation::create([
             'user_id' => $user->id,
-            'title' => $request->title ?: 'چت جدید',
+            'title' => trim($request->title) ?: 'چت جدید',
             'status' => 'ai',
         ]);
 
@@ -411,6 +411,55 @@ class ConversationController extends Controller
         return response()->json(['data' => $messages]);
     }
 
+    public function referrals(Request $request, Conversation $conversation)
+    {
+        $user = $request->user();
+        abort_unless($user && $conversation->user_id === $user->id, 403);
+
+        $referrals = $conversation->referrals()
+            ->with(['triggerMessage' => function ($query) {
+                $query->select('id', 'conversation_id', 'sender_type', 'content', 'created_at');
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function (Referral $referral) {
+                $responseIsPublic = $referral->response_visibility === 'public' && $referral->agent_response;
+
+                $files = $responseIsPublic
+                    ? $referral->getMedia('referral_files')->map(fn($media) => [
+                        'id'   => $media->id,
+                        'name' => $media->file_name,
+                        'mime' => $media->mime_type,
+                        'size' => $media->size,
+                        'url'  => $media->getUrl(),
+                    ])->values()->all()
+                    : [];
+
+                return [
+                    'id'                 => $referral->id,
+                    'assigned_role'      => $referral->assigned_role,
+                    'status'             => $referral->status,
+                    'description'        => $referral->description,
+                    'created_at'         => optional($referral->created_at)?->toIso8601String(),
+                    'trigger_message_id' => $referral->trigger_message_id,
+                    'trigger_message'    => $referral->triggerMessage ? [
+                        'id'          => $referral->triggerMessage->id,
+                        'sender_type' => $referral->triggerMessage->sender_type,
+                        'content'     => $referral->triggerMessage->content,
+                        'created_at'  => optional($referral->triggerMessage->created_at)?->toIso8601String(),
+                    ] : null,
+                    'response'           => $responseIsPublic ? [
+                        'text'        => $referral->agent_response,
+                        'visibility'  => $referral->response_visibility,
+                        'created_at'  => optional($referral->updated_at ?? $referral->created_at)?->toIso8601String(),
+                        'files'       => $files,
+                    ] : null,
+                ];
+            })->values();
+
+        return response()->json(['data' => $referrals]);
+    }
+
     // تغییر عنوان چت
     public function updateTitle(Request $request, Conversation $conversation)
     {
@@ -424,13 +473,16 @@ class ConversationController extends Controller
     }
 
     // حذف چت (soft delete)
-    public function destroy(Conversation $conversation)
+    public function destroy(Request $request, Conversation $conversation)
     {
         $user = $request->user();
         abort_unless($user && $conversation->user_id === $user->id, 403);
 
         $conversation->delete(); // soft delete
-        return response()->json(['message' => 'چت با موفقیت حذف شد.']);
+        return response()->json([
+            'message' => 'چت با موفقیت حذف شد.',
+            'conversation_id' => $conversation->id,
+        ]);
     }
 
     public function userReferrals(Request $request)
