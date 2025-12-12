@@ -114,6 +114,7 @@ class ConversationController extends Controller
             'media_ids' => 'nullable|array',
             'media_ids.*' => 'integer',        // id جدول media در Spatie عددی است
             'media_kind' => 'nullable|in:file,voice',
+            'lang' => 'nullable|string|in:fa,en,ar', // Language code
         ]);
 
         $isFirstMessage = $conversation->messages()->count() === 0;
@@ -203,12 +204,14 @@ class ConversationController extends Controller
                         $filePath = $tmpWav ?: $srcPath;
                         $fileName = $tmpWav ? 'audio.wav' : basename($srcPath);
 
+                        $lang = $validated['lang'] ?? 'fa'; // Default to Persian
                         $resp1 = Http::asMultipart()
                             ->timeout(60)
                             ->attach('file', fopen($filePath, 'r'), $fileName)
                             ->post('https://ai.mokhtal.xyz/api/voice-to-answer', [
                                 'user_type'     => 'new',
                                 'first_message' => $isFirstMessage ? 'true' : 'false',
+                                'lang'          => $lang,
                             ]);
 
                         if ($resp1->successful()) {
@@ -224,10 +227,12 @@ class ConversationController extends Controller
                             $b64 = base64_encode(file_get_contents($sendPath));
                             $dataUrl = "data:{$mimeForJson};base64,{$b64}";
 
+                            $lang = $validated['lang'] ?? 'fa'; // Default to Persian
                             $resp2 = Http::timeout(60)->post('https://ai.mokhtal.xyz/api/voice-to-answer', [
                                 'audio_data'    => $dataUrl,
                                 'user_type'     => 'new',
                                 'first_message' => $isFirstMessage,
+                                'lang'          => $lang,
                             ]);
 
                             if ($resp2->successful()) {
@@ -253,10 +258,12 @@ class ConversationController extends Controller
                 }
             } else {
                 // متن
+                $lang = $validated['lang'] ?? 'fa'; // Default to Persian
                 $resp = Http::timeout(45)->post('https://ai.mokhtal.xyz/api/ask', [
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
                     'first_message' => $isFirstMessage,
+                    'lang' => $lang,
                 ]);
 
                 if ($resp->successful()) {
@@ -576,6 +583,7 @@ class ConversationController extends Controller
             $validated = $request->validate([
                 'text' => 'required|string',
                 'chunk_index' => 'nullable|integer|min:0',
+                'lang' => 'nullable|string|in:fa,en,ar', // Language code
             ]);
 
             $text = $validated['text'];
@@ -598,10 +606,14 @@ class ConversationController extends Controller
                 ], 500);
             }
 
+            // Get language parameter (default to Persian)
+            $lang = $validated['lang'] ?? 'fa';
+            
             // Prepare input data
             $inputData = json_encode([
                 'text' => $text,
                 'chunk_index' => $chunkIndex,
+                'lang' => $lang,
             ], JSON_UNESCAPED_UNICODE);
 
             // Execute Python script - try python3 first, fallback to python

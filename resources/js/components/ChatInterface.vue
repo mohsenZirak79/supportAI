@@ -33,6 +33,12 @@
                     <h1>{{ activeChat?.title || 'چت با هوش مصنوعی' }}</h1>
                 </div>
                 <div class="header-actions">
+                    <!-- Language Selector -->
+                    <select v-model="selectedLanguage" class="lang-selector" @change="onLanguageChange">
+                        <option value="fa">فارسی</option>
+                        <option value="en">English</option>
+                        <option value="ar">العربية</option>
+                    </select>
                     <button
                         class="nav-btn ghost"
                         type="button"
@@ -108,7 +114,7 @@
 
                             <!-- بات: متن + دکمه‌های پخش -->
                             <template v-if="message.sender === 'bot' && message.text">
-                                <AiAnswer :text="message.text" lang="fa-IR"/>
+                                <AiAnswer :text="message.text" :lang="selectedLanguage"/>
                             </template>
 
                             <!-- کاربر: اگر متن دارد همان را، وگرنه اگر voice است یک برچسب نشان بده -->
@@ -464,6 +470,7 @@ const isMobile = ref(false);
 const isSidebarOpen = ref(true);
 const referralPanelOpen = ref(false);
 const referralStore = reactive({});
+const selectedLanguage = ref('fa'); // Default to Persian
 
 const currentReferrals = computed(() => {
     const chatId = activeChatId.value;
@@ -748,7 +755,12 @@ const uploadVoice = async (blob) => {
         const messageRes = await fetch(`/api/v1/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ content: '', media_ids: [file_id], media_kind: 'voice' })
+            body: JSON.stringify({ 
+                content: '', 
+                media_ids: [file_id], 
+                media_kind: 'voice',
+                lang: selectedLanguage.value
+            })
         });
         if (!messageRes.ok) {
             const t = await messageRes.text().catch(() => '');
@@ -1042,7 +1054,10 @@ const sendMessage = async () => {
         const res = await apiFetch(`/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({content: userMsg.text})
+            body: JSON.stringify({
+                content: userMsg.text,
+                lang: selectedLanguage.value
+            })
         });
 
         if (res.ok) {
@@ -1280,9 +1295,25 @@ const onBubbleClick = async (message) => {
     }
 };
 
+const onLanguageChange = () => {
+    // Save language preference to localStorage
+    localStorage.setItem('ai_language', selectedLanguage.value);
+};
 
 // --- Lifecycle ---
 onMounted(() => {
+    // Load language preference
+    const savedLang = localStorage.getItem('ai_language');
+    if (savedLang && ['fa', 'en', 'ar'].includes(savedLang)) {
+        selectedLanguage.value = savedLang;
+    }
+    
+    // Load voices for browser TTS (if used)
+    if (typeof speechSynthesis !== 'undefined') {
+        loadVoices();
+        speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    
     loadChats();
     fetchDepartments();
     if (typeof window !== 'undefined') {
@@ -1293,6 +1324,7 @@ onMounted(() => {
         document.addEventListener('click', handleMenuClickOutside);
     }
 });
+
 
 watch(() => messagesContainer.value, (el, prev) => {
     if (prev) {
@@ -1316,12 +1348,7 @@ let voices = [];
 const loadVoices = () => {
     voices = synth.getVoices();
 };
-onMounted(() => {
-    loadVoices();
-    if (typeof speechSynthesis !== 'undefined') {
-        speechSynthesis.onvoiceschanged = loadVoices; // کروم صداها رو async لود می‌کنه
-    }
-});
+// loadVoices is called in the main onMounted hook above
 
 // انتخاب بهترین صدای فارسی موجود
 const pickFaVoice = () => {
@@ -2031,6 +2058,28 @@ function handleMenuClickOutside(event) {
 .nav-btn:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
+}
+
+.lang-selector {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+}
+
+.lang-selector:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.lang-selector option {
+    background: #0e7490;
+    color: white;
 }
 
 

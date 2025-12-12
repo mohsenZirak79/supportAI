@@ -28,91 +28,15 @@ def clean_html_for_tts(html_text):
     return text.strip()
 
 
-def clean_text_for_tts(text):
-    """Clean text completely - remove ALL extra symbols, keep only Persian text and basic punctuation"""
-    # If text contains HTML, clean it first
-    if '<' in text and '>' in text:
-        text = clean_html_for_tts(text)
-    
-    # حذف تمام تگ‌های HTML/XML
-    text = re.sub(r'<[^>]+>', '', text)
-    
-    # حذف markdown formatting
-    text = re.sub(r'#{1,6}\s*', '', text)  # حذف headers
-    text = re.sub(r'\*{1,3}([^\*]+)\*{1,3}', r'\1', text)  # حذف bold/italic
-    text = re.sub(r'_{1,3}([^_]+)_{1,3}', r'\1', text)  # حذف underline
-    text = re.sub(r'`{1,3}[^`]*`{1,3}', '', text)  # حذف code blocks
-    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)  # حذف links
-    
-    # حذف تمام bullet points و شماره‌ها
-    text = re.sub(r'^[\s]*[-\*\+•▪▫◦‣⁃]\s+', '', text, flags=re.MULTILINE)
-    text = re.sub(r'^[\s]*\d+[\.\)]\s+', '', text, flags=re.MULTILINE)
-    text = re.sub(r'^[\s]*[a-zA-Z][\.\)]\s+', '', text, flags=re.MULTILINE)
-    
-    # حذف emoji و کاراکترهای خاص
-    text = re.sub(r'[\U00010000-\U0010ffff]', '', text)  # حذف emoji
-    text = re.sub(r'[\u2600-\u26FF\u2700-\u27BF]', '', text)  # حذف symbols
-    
-    # حذف کاراکترهای نامرئی و کنترلی
-    text = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', text)  # control characters
-    text = re.sub(r'[\u200B-\u200D\uFEFF]', '', text)  # zero-width characters
-    text = re.sub(r'[\u2000-\u200F]', ' ', text)  # various spaces
-    
-    # حذف نیم‌فاصله (ZWNJ)
-    text = re.sub(r'\u200c', '', text)
-    
-    # نرمالیزه کردن نویسه‌های عربی به فارسی
-    arabic_to_persian = {
-        'ك': 'ک',
-        'ي': 'ی', 
-        'ى': 'ی',
-        'ة': 'ه',
-        'ؤ': 'و',
-        'إ': 'ا',
-        'أ': 'ا',
-        'ء': '',
-        'ئ': 'ی'
-    }
-    for arabic, persian in arabic_to_persian.items():
-        text = text.replace(arabic, persian)
-    
-    # حذف تمام کاراکترهای غیر ضروری - فقط نگه داشتن فارسی، اعداد، و علائم نگارشی اصلی
-    # First, replace English punctuation with Persian equivalents
-    text = text.replace(',', '،')  # English comma to Persian comma
-    text = text.replace('?', '؟')  # English question mark to Persian
-    text = text.replace('!', '.')  # Exclamation to period
-    text = text.replace(';', '،')  # Semicolon to Persian comma
-    text = text.replace(':', '،')  # Colon to Persian comma
-    
-    # Remove ALL other symbols except Persian letters, numbers, spaces, and basic punctuation
-    # Keep: Persian letters (\u0600-\u06FF), Persian numbers (\u06F0-\u06F9), space, period (.), Persian comma (،), Persian question mark (؟)
-    allowed_chars_pattern = r'[^\u0600-\u06FF\u06F0-\u06F9\s\.،؟]'
-    text = re.sub(allowed_chars_pattern, '', text)
-    
-    # Normalize multiple spaces to single space
-    text = re.sub(r'\s+', ' ', text)
-    
-    # Clean up punctuation spacing - ensure single space after punctuation
-    text = re.sub(r'([\.،؟])\s*', r'\1 ', text)  # Single space after punctuation
-    text = re.sub(r'\s+([\.،؟])', r'\1', text)  # Remove space before punctuation
-    
-    # Remove multiple consecutive punctuation marks
-    text = re.sub(r'([\.،؟]){2,}', r'\1', text)
-    
-    # Normalize line breaks to spaces
-    text = re.sub(r'\n+', ' ', text)
-    
-    # Final cleanup - remove extra spaces
-    text = re.sub(r'\s+', ' ', text)
-    text = text.strip()
-    
-    return text
+def clean_text_for_tts(text, lang_code='fa'):
+    """Clean text completely - backward compatible wrapper for clean_text_for_tts_by_lang"""
+    return clean_text_for_tts_by_lang(text, lang_code)
 
 
-def split_text_for_tts(text, max_length=350):
+def split_text_for_tts(text, max_length=350, lang_code='fa'):
     """Split text into smaller chunks for faster TTS processing with natural breaks"""
     # Clean text first to add natural pauses, then split
-    text = clean_text_for_tts(text)
+    text = clean_text_for_tts_by_lang(text, lang_code)
     
     if len(text) <= max_length:
         return [text]
@@ -188,6 +112,141 @@ def split_text_for_tts(text, max_length=350):
     return processed_chunks
 
 
+def get_language_config(lang_code):
+    """Get language configuration by code. Returns Persian if not found."""
+    lang_code = (lang_code or 'fa').lower().strip()
+    
+    SUPPORTED_LANGUAGES = {
+        "fa": {
+            "name": "فارسی",
+            "name_en": "Persian",
+            "tts_voice": "fa-IR-DilaraNeural",
+            "tts_voice_fallback": "fa-IR-FaridNeural"
+        },
+        "en": {
+            "name": "English",
+            "name_en": "English", 
+            "tts_voice": "en-US-JennyNeural",
+            "tts_voice_fallback": "en-US-GuyNeural"
+        },
+        "ar": {
+            "name": "العربية",
+            "name_en": "Arabic",
+            "tts_voice": "ar-SA-ZariyahNeural",
+            "tts_voice_fallback": "ar-SA-HamedNeural"
+        }
+    }
+    
+    return SUPPORTED_LANGUAGES.get(lang_code, SUPPORTED_LANGUAGES["fa"])
+
+
+def clean_text_for_tts_by_lang(text, lang_code='fa'):
+    """Clean text for TTS based on language"""
+    lang_code = (lang_code or 'fa').lower().strip()
+    
+    # If text contains HTML, clean it first
+    if '<' in text and '>' in text:
+        text = clean_html_for_tts(text)
+    
+    # Remove HTML/XML tags
+    text = re.sub(r'<[^>]+>', '', text)
+    
+    # Remove markdown formatting
+    text = re.sub(r'#{1,6}\s*', '', text)
+    text = re.sub(r'\*{1,3}([^\*]+)\*{1,3}', r'\1', text)
+    text = re.sub(r'_{1,3}([^_]+)_{1,3}', r'\1', text)
+    text = re.sub(r'`{1,3}[^`]*`{1,3}', '', text)
+    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+    
+    # Remove bullet points and numbers
+    text = re.sub(r'^[\s]*[-\*\+•▪▫◦‣⁃]\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^[\s]*\d+[\.\)]\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^[\s]*[a-zA-Z][\.\)]\s+', '', text, flags=re.MULTILINE)
+    
+    # Remove emoji and special characters
+    text = re.sub(r'[\U00010000-\U0010ffff]', '', text)
+    text = re.sub(r'[\u2600-\u26FF\u2700-\u27BF]', '', text)
+    
+    # Remove control characters
+    text = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', text)
+    text = re.sub(r'[\u200B-\u200D\uFEFF]', '', text)
+    text = re.sub(r'[\u2000-\u200F]', ' ', text)
+    
+    # Language-specific cleaning
+    if lang_code == 'fa':
+        # Persian-specific cleaning
+        text = re.sub(r'\u200c', '', text)  # ZWNJ
+        
+        # Normalize Arabic to Persian
+        arabic_to_persian = {
+            'ك': 'ک', 'ي': 'ی', 'ى': 'ی', 'ة': 'ه',
+            'ؤ': 'و', 'إ': 'ا', 'أ': 'ا', 'ء': '', 'ئ': 'ی'
+        }
+        for arabic, persian in arabic_to_persian.items():
+            text = text.replace(arabic, persian)
+        
+        # Replace English punctuation with Persian equivalents
+        text = text.replace(',', '،')
+        text = text.replace('?', '؟')
+        text = text.replace('!', '.')
+        text = text.replace(';', '،')
+        text = text.replace(':', '،')
+        
+        # Keep only Persian characters, numbers, spaces, and basic punctuation
+        text = re.sub(r'[^\u0600-\u06FF\u06F0-\u06F9\s\.،؟]', '', text)
+        
+        # Convert English numbers to Persian numbers
+        persian_numbers = '۰۱۲۳۴۵۶۷۸۹'
+        english_numbers = '0123456789'
+        trans_table = str.maketrans(english_numbers, persian_numbers)
+        text = text.translate(trans_table)
+    elif lang_code == 'ar':
+        # Arabic-specific cleaning
+        text = re.sub(r'\u200c', '', text)  # ZWNJ
+        
+        # Replace English punctuation (keep Arabic punctuation)
+        text = text.replace('?', '؟')
+        text = text.replace(',', '،')
+        
+        # Convert English numbers to Arabic-Indic numbers
+        arabic_numbers = '٠١٢٣٤٥٦٧٨٩'
+        english_numbers = '0123456789'
+        trans_table = str.maketrans(english_numbers, arabic_numbers)
+        text = text.translate(trans_table)
+    # For English, keep as-is (just basic cleanup)
+    
+    # Normalize multiple spaces to single space
+    text = re.sub(r'\s+', ' ', text)
+    
+    # Clean up punctuation spacing
+    if lang_code == 'fa':
+        text = re.sub(r'([\.،؟])\s*', r'\1 ', text)
+        text = re.sub(r'\s+([\.،؟])', r'\1', text)
+    elif lang_code == 'ar':
+        text = re.sub(r'([\.،؟])\s*', r'\1 ', text)
+        text = re.sub(r'\s+([\.،؟])', r'\1', text)
+    else:  # English
+        text = re.sub(r'([\.!?])\s*', r'\1 ', text)
+        text = re.sub(r'\s+([\.!?])', r'\1', text)
+    
+    # Remove multiple consecutive punctuation marks
+    if lang_code == 'fa':
+        text = re.sub(r'([\.،؟]){2,}', r'\1', text)
+    elif lang_code == 'ar':
+        text = re.sub(r'([\.،؟]){2,}', r'\1', text)
+    else:
+        text = re.sub(r'([\.!?]){2,}', r'\1', text)
+    
+    # Normalize line breaks to spaces
+    text = re.sub(r'\n+', ' ', text)
+    
+    # Final cleanup
+    text = re.sub(r'\s+', ' ', text)
+    text = text.strip()
+    
+    return text
+
+
 def main():
     """Main function to handle TTS request - matches reference app.py exactly"""
     try:
@@ -195,6 +254,7 @@ def main():
         input_data = json.loads(sys.stdin.read())
         text = input_data.get('text', '')
         chunk_index = input_data.get('chunk_index', 0)
+        lang_code = input_data.get('lang', 'fa')  # Default to Persian
         
         if not text:
             print(json.dumps({
@@ -203,8 +263,11 @@ def main():
             }))
             sys.exit(1)
         
-        # Clean the text completely - remove ALL extra symbols
-        text = clean_text_for_tts(text)
+        # Get language configuration
+        lang_config = get_language_config(lang_code)
+        
+        # Clean the text based on language
+        text = clean_text_for_tts_by_lang(text, lang_code)
         
         if not text or not text.strip():
             print(json.dumps({
@@ -213,12 +276,6 @@ def main():
             }))
             sys.exit(1)
         
-        # Convert English numbers to Persian numbers for better pronunciation
-        persian_numbers = '۰۱۲۳۴۵۶۷۸۹'
-        english_numbers = '0123456789'
-        trans_table = str.maketrans(english_numbers, persian_numbers)
-        text = text.translate(trans_table)
-        
         # Limit text length for better performance (Edge TTS handles long text well)
         if len(text) > 5000:
             text = text[:4997] + '...'
@@ -226,12 +283,10 @@ def main():
         # Use Microsoft Edge TTS (FREE, no API key required)
         try:
             async def generate_speech():
-                # Best Persian voices from Microsoft Edge TTS
-                # fa-IR-DilaraNeural: Female voice (natural and clear)
-                # fa-IR-FaridNeural: Male voice (natural and clear)
+                # Use language-specific voices
                 voices = [
-                    ("fa-IR-DilaraNeural", "female"),  # Primary: Female Persian voice
-                    ("fa-IR-FaridNeural", "male"),      # Fallback: Male Persian voice
+                    (lang_config["tts_voice"], "primary"),
+                    (lang_config["tts_voice_fallback"], "fallback"),
                 ]
                 
                 for voice_name, voice_type in voices:
@@ -270,7 +325,8 @@ def main():
                 print(json.dumps({
                     "success": True,
                     "audio": f"data:audio/webm;base64,{audio_base64}",
-                    "chunk_index": chunk_index
+                    "chunk_index": chunk_index,
+                    "lang": lang_code
                 }))
             else:
                 print(json.dumps({

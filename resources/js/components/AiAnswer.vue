@@ -27,7 +27,8 @@ import { apiFetch } from '../lib/http';
 const props = defineProps({
     text:  { type: String, default: '' },
     rate:  { type: Number, default: 0.95 }, // کمی آهسته‌تر برای فارسی
-    pitch: { type: Number, default: 1 }
+    pitch: { type: Number, default: 1 },
+    lang:  { type: String, default: 'fa' } // Language code: fa, en, ar
 });
 
 const textTrim = computed(() => (props.text || '').trim());
@@ -120,7 +121,7 @@ async function play() {
         loading.value = true;
         error.value = '';
 
-        // Call backend TTS API
+        // Call backend TTS API with language parameter
         const response = await apiFetch('/text-to-speech', {
             method: 'POST',
             headers: {
@@ -128,7 +129,8 @@ async function play() {
             },
             body: JSON.stringify({
                 text: textTrim.value,
-                chunk_index: 0
+                chunk_index: 0,
+                lang: props.lang || 'fa'
             })
         });
 
