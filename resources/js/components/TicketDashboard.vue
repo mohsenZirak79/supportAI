@@ -565,12 +565,10 @@
 <script setup>
 import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
 import axios from 'axios';
-import { useI18n } from 'vue-i18n';
 import { useLanguage } from '../i18n';
 
-// --- i18n ---
-const { t } = useI18n();
-const { locale, setLocale, direction, initLocale } = useLanguage();
+// --- i18n - CSP-safe, no vue-i18n ---
+const { locale, setLocale, direction, initLocale, t } = useLanguage();
 
 // --- State ---
 import {useToast} from 'vue-toast-notification'

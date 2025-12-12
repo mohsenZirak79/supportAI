@@ -4,15 +4,11 @@
             v-model="currentLocale" 
             class="lang-switcher__select"
             @change="handleChange"
-            :aria-label="$t('language.select')"
+            aria-label="Select Language"
         >
-            <option 
-                v-for="option in localeOptions" 
-                :key="option.code" 
-                :value="option.code"
-            >
-                {{ option.name }}
-            </option>
+            <option value="fa">فارسی</option>
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
         </select>
         <svg class="lang-switcher__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 5h12M9 3v2m1.048 3.5A4.5 4.5 0 0112 5.5M9 14l-4 4m0 0l4 4m-4-4h18"/>
@@ -21,9 +17,8 @@
 </template>
 
 <script setup>
-import { computed, watch, onMounted } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useLanguage, SUPPORTED_LOCALES, RTL_LOCALES } from '../i18n';
+import { computed, onMounted } from 'vue';
+import { useLanguage } from '../i18n';
 
 const props = defineProps({
     light: {
@@ -34,15 +29,13 @@ const props = defineProps({
 
 const emit = defineEmits(['change']);
 
-const { locale: i18nLocale } = useI18n();
-const { locale, setLocale, localeOptions, initLocale } = useLanguage();
+const { locale, setLocale, initLocale } = useLanguage();
 
-// Sync with i18n locale
+// Two-way binding for locale
 const currentLocale = computed({
     get: () => locale.value,
     set: (value) => {
         setLocale(value);
-        i18nLocale.value = value;
     }
 });
 
@@ -138,4 +131,3 @@ onMounted(() => {
     color: #1f2937;
 }
 </style>
-

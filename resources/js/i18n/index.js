@@ -1,10 +1,10 @@
 /**
- * i18n Setup - Internationalization with vue-i18n
+ * Simple i18n Setup - CSP-Safe Internationalization
+ * Does NOT use vue-i18n to avoid CSP 'unsafe-eval' issues
  * Supports: fa (Persian/RTL), ar (Arabic/RTL), en (English/LTR)
  */
 
-import { createI18n } from 'vue-i18n';
-import { ref, watch, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 
 // Import translation files
 import fa from './fa.json';
@@ -20,23 +20,8 @@ export const RTL_LOCALES = ['fa', 'ar'];
 export const DEFAULT_LOCALE = 'fa';
 export const STORAGE_KEY = 'app_language';
 
-// ============================================
-// CREATE i18n INSTANCE
-// ============================================
-
-export const i18n = createI18n({
-    legacy: true, // Use legacy mode to avoid CSP issues with new Function()
-    locale: getStoredLocale(),
-    fallbackLocale: 'fa',
-    messages: {
-        fa,
-        en,
-        ar,
-    },
-    // Suppress warnings for missing translations in dev
-    silentTranslationWarn: true,
-    silentFallbackWarn: true,
-});
+// All messages
+const messages = { fa, en, ar };
 
 // ============================================
 // HELPER FUNCTIONS
@@ -87,8 +72,10 @@ export function applyLocaleToDocument(locale) {
     html.classList.add(dir);
     
     // Update body classes as well for broader CSS targeting
-    document.body.classList.remove('rtl', 'ltr');
-    document.body.classList.add(dir);
+    if (document.body) {
+        document.body.classList.remove('rtl', 'ltr');
+        document.body.classList.add(dir);
+    }
     
     // Set CSS custom property for direction-aware styling
     html.style.setProperty('--dir', dir);
@@ -103,8 +90,58 @@ export function saveLocale(locale) {
     localStorage.setItem(STORAGE_KEY, locale);
 }
 
+/**
+ * Get nested object value by dot notation path
+ * e.g., getNestedValue(obj, 'chat.title') returns obj.chat.title
+ */
+function getNestedValue(obj, path) {
+    if (!obj || !path) return undefined;
+    
+    const keys = path.split('.');
+    let result = obj;
+    
+    for (const key of keys) {
+        if (result && typeof result === 'object' && key in result) {
+            result = result[key];
+        } else {
+            return undefined;
+        }
+    }
+    
+    return result;
+}
+
+/**
+ * Simple translation function - NO runtime compilation
+ * @param {string} key - Translation key (e.g., 'chat.title')
+ * @param {string} locale - Locale code (optional, uses current locale if not provided)
+ * @returns {string} - Translated string or key if not found
+ */
+export function translate(key, locale) {
+    const currentLang = locale || currentLocale.value;
+    const msg = messages[currentLang];
+    
+    if (!msg) return key;
+    
+    const value = getNestedValue(msg, key);
+    
+    if (value !== undefined && typeof value === 'string') {
+        return value;
+    }
+    
+    // Fallback to Persian
+    if (currentLang !== 'fa') {
+        const fallbackValue = getNestedValue(messages.fa, key);
+        if (fallbackValue !== undefined && typeof fallbackValue === 'string') {
+            return fallbackValue;
+        }
+    }
+    
+    return key;
+}
+
 // ============================================
-// REACTIVE LANGUAGE STATE (COMPOSABLE)
+// REACTIVE LANGUAGE STATE
 // ============================================
 
 // Global reactive state
@@ -123,11 +160,6 @@ export function useLanguage() {
     
     const isRtl = computed(() => isRtlLocale(currentLocale.value));
     const direction = computed(() => getLocaleDirection(currentLocale.value));
-    const localeOptions = computed(() => SUPPORTED_LOCALES.map(code => ({
-        code,
-        name: i18n.global.t(`language.${code}`),
-        isRtl: isRtlLocale(code)
-    })));
     
     /**
      * Set the current locale
@@ -140,9 +172,6 @@ export function useLanguage() {
         
         // Update reactive state
         currentLocale.value = newLocale;
-        
-        // Update vue-i18n (legacy mode uses direct assignment)
-        i18n.global.locale = newLocale;
         
         // Persist to localStorage
         saveLocale(newLocale);
@@ -173,20 +202,24 @@ export function useLanguage() {
         applyLocaleToDocument(currentLocale.value);
     }
     
+    /**
+     * Translation function bound to current locale
+     */
+    function t(key) {
+        return translate(key, currentLocale.value);
+    }
+    
     return {
         // State
         locale,
         isRtl,
         direction,
-        localeOptions,
         
         // Methods
         setLocale,
         toggleDirection,
         initLocale,
-        
-        // Helpers
-        t: i18n.global.t,
+        t,
     };
 }
 
@@ -219,7 +252,6 @@ export const AppLanguage = {
     set locale(value) { 
         if (SUPPORTED_LOCALES.includes(value)) {
             currentLocale.value = value;
-            i18n.global.locale = value; // Legacy mode uses direct assignment
             saveLocale(value);
             applyLocaleToDocument(value);
         }
@@ -227,7 +259,7 @@ export const AppLanguage = {
     get isRtl() { return isRtlLocale(currentLocale.value); },
     get direction() { return getLocaleDirection(currentLocale.value); },
     setLocale(locale) { this.locale = locale; },
-    t(key) { return i18n.global.t(key); },
+    t(key) { return translate(key); },
     SUPPORTED_LOCALES,
     RTL_LOCALES,
 };
@@ -237,5 +269,38 @@ if (typeof window !== 'undefined') {
     window.AppLanguage = AppLanguage;
 }
 
-export default i18n;
+// ============================================
+// VUE PLUGIN (Simple, CSP-Safe)
+// ============================================
 
+/**
+ * Vue plugin that adds $t() method globally
+ * This is CSP-safe because it doesn't use new Function()
+ */
+export const i18nPlugin = {
+    install(app) {
+        // Add global $t method
+        app.config.globalProperties.$t = function(key) {
+            return translate(key, currentLocale.value);
+        };
+        
+        // Add global $locale property
+        app.config.globalProperties.$locale = currentLocale;
+        
+        // Provide for composition API
+        app.provide('i18n', {
+            t: translate,
+            locale: currentLocale,
+            setLocale: (newLocale) => {
+                if (SUPPORTED_LOCALES.includes(newLocale)) {
+                    currentLocale.value = newLocale;
+                    saveLocale(newLocale);
+                    applyLocaleToDocument(newLocale);
+                }
+            }
+        });
+    }
+};
+
+// Default export is the plugin
+export default i18nPlugin;

@@ -4,7 +4,7 @@ import { createApp } from 'vue';
 import ChatInterface from './components/ChatInterface.vue';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 import VueToast from 'vue-toast-notification';
-import i18n from './i18n';
+import { i18nPlugin } from './i18n'; // CSP-safe i18n plugin
 // Reverb setup
 // import Echo from 'laravel-echo';
 // import Pusher from 'pusher-js';
@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const app = createApp(ChatInterface);
 
-    // فعال کردن i18n
-    app.use(i18n);
+    // فعال کردن i18n (CSP-safe)
+    app.use(i18nPlugin);
 
     // فعال کردن Toast
     app.use(VueToast, {

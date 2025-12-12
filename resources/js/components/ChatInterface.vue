@@ -393,12 +393,10 @@ import HandoffModal from './HandoffModal.vue';
 import AiAnswer from './AiAnswer.vue'
 import {useToast} from 'vue-toast-notification'
 import {apiFetch} from '../lib/http';
-import { useI18n } from 'vue-i18n';
 import { useLanguage } from '../i18n';
 
-// i18n setup
-const { t } = useI18n();
-const { locale, setLocale, direction, isRtl, initLocale } = useLanguage();
+// i18n setup - CSP-safe, no vue-i18n
+const { locale, setLocale, direction, isRtl, initLocale, t } = useLanguage();
 
 const toast = useToast();
 const logoutUrl = window?.AppConfig?.logoutUrl || '/logout';
