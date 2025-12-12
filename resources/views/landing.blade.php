@@ -407,6 +407,70 @@
         }
 
         /* ============================================
+           LANGUAGE PILLS - Modern Pill Buttons
+           ============================================ */
+        .lang-pills {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .lang-pill {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .lang-pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .lang-pill.active {
+            background: white;
+            color: var(--color-primary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .lang-pill__text {
+            pointer-events: none;
+        }
+
+        /* Scrolled state - dark pills */
+        .navbar.scrolled .lang-pills {
+            background: rgba(14, 116, 144, 0.1);
+            border-color: rgba(14, 116, 144, 0.15);
+        }
+
+        .navbar.scrolled .lang-pill {
+            color: rgba(14, 116, 144, 0.7);
+        }
+
+        .navbar.scrolled .lang-pill:hover {
+            background: rgba(14, 116, 144, 0.1);
+            color: var(--color-primary);
+        }
+
+        .navbar.scrolled .lang-pill.active {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        /* ============================================
            BUTTONS - Premium Micro-interactions
            ============================================ */
         .btn {
@@ -693,8 +757,8 @@
         }
 
         .hero h1 {
-            font-size: clamp(var(--font-size-4xl), 8vw, var(--font-size-7xl));
-            font-weight: 800;
+            font-size: clamp(var(--font-size-2xl), 5vw, var(--font-size-4xl));
+            font-weight: 700;
             color: white;
             text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
             margin-bottom: var(--space-xl);
@@ -707,8 +771,8 @@
         }
 
         .hero p {
-            font-size: clamp(var(--font-size-lg), 3vw, var(--font-size-2xl));
-            color: rgba(255, 255, 255, 0.95);
+            font-size: clamp(var(--font-size-base), 2.5vw, var(--font-size-xl));
+            color: rgba(255, 255, 255, 0.9);
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             margin-bottom: var(--space-2xl);
             line-height: 1.8;
@@ -1274,16 +1338,17 @@
                 <span>پنل پشتیبانی مناطق آزاد تجاری</span>
             </a>
             <div class="navbar-actions">
-                <!-- Language Switcher -->
-                <div class="lang-switcher lang-switcher--light">
-                    <select id="langSelect" class="lang-switcher__select" aria-label="انتخاب زبان">
-                        <option value="fa">فارسی</option>
-                        <option value="en">English</option>
-                        <option value="ar">العربية</option>
-                    </select>
-                    <svg class="lang-switcher__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2l3 6h6l-5 4 2 7-6-4-6 4 2-7-5-4h6l3-6z"/>
-                    </svg>
+                <!-- Beautiful Language Switcher -->
+                <div class="lang-pills" role="group" aria-label="انتخاب زبان">
+                    <button class="lang-pill" data-lang="fa" title="فارسی">
+                        <span class="lang-pill__text">فا</span>
+                    </button>
+                    <button class="lang-pill" data-lang="en" title="English">
+                        <span class="lang-pill__text">EN</span>
+                    </button>
+                    <button class="lang-pill" data-lang="ar" title="العربية">
+                        <span class="lang-pill__text">ع</span>
+                    </button>
                 </div>
                 @auth
                     <a href="{{ route('admin.dashboard') }}" class="btn btn-primary" data-i18n="landing.goToDashboard">
@@ -1894,19 +1959,32 @@
                 }));
             }
             
-            // Initialize language selector
-            const langSelect = document.getElementById('langSelect');
-            if (langSelect) {
+            // Initialize language pills
+            const langPills = document.querySelectorAll('.lang-pill');
+            if (langPills.length) {
                 // Set initial value
                 const stored = localStorage.getItem(STORAGE_KEY) || 'fa';
-                langSelect.value = stored;
+                
+                // Update active state
+                langPills.forEach(pill => {
+                    pill.classList.toggle('active', pill.dataset.lang === stored);
+                });
                 
                 // Apply initial translations
                 applyTranslations(stored);
                 
-                // Handle change
-                langSelect.addEventListener('change', function() {
-                    setLanguage(this.value);
+                // Handle clicks
+                langPills.forEach(pill => {
+                    pill.addEventListener('click', function() {
+                        const lang = this.dataset.lang;
+                        
+                        // Update active state
+                        langPills.forEach(p => p.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // Set language
+                        setLanguage(lang);
+                    });
                 });
             }
             

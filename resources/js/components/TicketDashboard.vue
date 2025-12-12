@@ -1,5 +1,5 @@
 <template>
-    <div class="ticket-app" dir="rtl">
+    <div class="ticket-app" :dir="direction">
         <!-- Toast Container -->
         <!--        <div class="toast-container">
                     <div
@@ -38,14 +38,20 @@
                             <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
                         </svg>
                     </div>
-                    <h1>تیکت‌های پشتیبانی</h1>
+                    <h1>{{ $t('ticket.title') }}</h1>
                 </div>
                 <div class="header-actions">
+                    <!-- Language Selector -->
+                    <select :value="locale" class="lang-selector" @change="onLanguageChange">
+                        <option value="fa">فارسی</option>
+                        <option value="en">English</option>
+                        <option value="ar">العربية</option>
+                    </select>
                     <button @click="goToChat" class="nav-btn ghost" type="button">
-                        چت
+                        {{ $t('nav.chat') }}
                     </button>
                     <button @click="showNewTicketForm = true" class="nav-btn" type="button">
-                        تیکت جدید
+                        {{ $t('ticket.newTicket') }}
                     </button>
                     <button
                         class="nav-btn danger"
@@ -53,7 +59,7 @@
                         @click="logout"
                         :disabled="loggingOut"
                     >
-                        {{ loggingOut ? 'در حال خروج…' : 'خروج' }}
+                        {{ loggingOut ? $t('auth.loggingOut') : $t('nav.logout') }}
                     </button>
                 </div>
             </div>
@@ -62,7 +68,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
-                <!-- کل تیکت‌ها -->
+                <!-- Total Tickets -->
                 <div class="stat glossy p-4">
                     <div class="stat-row">
                         <div class="stat-icon bg-sky-100">
@@ -71,13 +77,13 @@
                             </svg>
                         </div>
                         <div class="stat-body">
-                            <div class="stat-label">کل تیکت‌ها</div>
+                            <div class="stat-label">{{ $t('ticket.myTickets') }}</div>
                             <div class="stat-value">{{ tickets.length }}</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- در انتظار پاسخ -->
+                <!-- Pending -->
                 <div class="stat glossy p-4">
                     <div class="stat-row">
                         <div class="stat-icon bg-amber-100">
@@ -86,13 +92,13 @@
                             </svg>
                         </div>
                         <div class="stat-body">
-                            <div class="stat-label">در انتظار پاسخ</div>
+                            <div class="stat-label">{{ $t('ticket.statuses.pending') }}</div>
                             <div class="stat-value">{{ pendingTickets }}</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- پاسخ داده شده -->
+                <!-- Answered -->
                 <div class="stat glossy p-4">
                     <div class="stat-row">
                         <div class="stat-icon bg-emerald-100">
@@ -559,6 +565,12 @@
 <script setup>
 import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
 import axios from 'axios';
+import { useI18n } from 'vue-i18n';
+import { useLanguage } from '../i18n';
+
+// --- i18n ---
+const { t } = useI18n();
+const { locale, setLocale, direction, initLocale } = useLanguage();
 
 // --- State ---
 import {useToast} from 'vue-toast-notification'
@@ -1008,8 +1020,17 @@ const goToChat = () => {
     window.location.href = '/chat';
 };
 
+// --- Language ---
+const onLanguageChange = (event) => {
+    const newLocale = event.target.value;
+    setLocale(newLocale);
+};
+
 // --- Lifecycle ---
 onMounted(() => {
+    // Initialize i18n
+    initLocale();
+    
     fetchDepartments();
     fetchTickets();
 });

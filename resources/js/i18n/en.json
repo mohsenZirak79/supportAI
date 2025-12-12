@@ -19,7 +19,8 @@
     "search": "Search",
     "filter": "Filter",
     "noData": "No data found",
-    "optional": "Optional"
+    "optional": "Optional",
+    "file": "File"
   },
   "nav": {
     "home": "Home",

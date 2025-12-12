@@ -7,8 +7,8 @@
         @submit="handleHandoffSubmit"
     />
 
-    <div class="chat-app" dir="rtl">
-        <!-- نوار بالا -->
+    <div class="chat-app" :dir="direction">
+        <!-- Top Navigation Bar -->
         <header class="chat-header">
             <div class="header-content">
                 <div class="header-left">
@@ -17,7 +17,7 @@
                         class="mobile-sidebar-toggle"
                         type="button"
                         @click="toggleSidebar"
-                        aria-label="باز کردن لیست گفتگوها"
+                        :aria-label="$t('chat.openSidebar')"
                     >
                         ☰
                     </button>
@@ -30,11 +30,11 @@
                             <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
                         </svg>
                     </div>
-                    <h1>{{ activeChat?.title || 'چت با هوش مصنوعی' }}</h1>
+                    <h1>{{ activeChat?.title || $t('chat.title') }}</h1>
                 </div>
                 <div class="header-actions">
                     <!-- Language Selector -->
-                    <select v-model="selectedLanguage" class="lang-selector" @change="onLanguageChange">
+                    <select :value="locale" class="lang-selector" @change="onLanguageChange">
                         <option value="fa">فارسی</option>
                         <option value="en">English</option>
                         <option value="ar">العربية</option>
@@ -46,16 +46,16 @@
                         @click="toggleReferralPanel"
                     >
                         <span class="nav-btn__dot" v-if="hasPublicReferralResponses"></span>
-                        ارجاع‌ها
+                        {{ $t('nav.referrals') }}
                     </button>
-                    <button @click="goToTickets" class="nav-btn" type="button">تیکت‌ها</button>
+                    <button @click="goToTickets" class="nav-btn" type="button">{{ $t('nav.tickets') }}</button>
                     <button
                         class="nav-btn danger"
                         type="button"
                         @click="logout"
                         :disabled="loggingOut"
                     >
-                        {{ loggingOut ? 'در حال خروج…' : 'خروج' }}
+                        {{ loggingOut ? $t('auth.loggingOut') : $t('nav.logout') }}
                     </button>
                 </div>
             </div>
@@ -65,7 +65,7 @@
             <!-- سایدبار چت‌ها -->
             <aside class="sidebar" :class="{ 'is-mobile': isMobile, 'is-open': isSidebarOpen }">
                 <div class="new-chat-btn" @click="startNewChat">
-                    + چت جدید
+                    {{ $t('chat.newChat') }}
                 </div>
                 <div class="chat-list">
                     <div
@@ -79,7 +79,7 @@
                         <button
                             class="chat-menu-btn"
                             type="button"
-                            aria-label="تنظیمات چت"
+                            :aria-label="$t('chat.chatSettings')"
                             @click.stop="toggleChatMenu(chat.id)"
                         >
                             <svg viewBox="0 0 24 24" aria-hidden="true" class="chat-menu-icon">
@@ -89,14 +89,14 @@
                             </svg>
                         </button>
                         <div v-if="chatMenuOpenId === chat.id" class="chat-menu">
-                            <button type="button" @click.stop="openRenameModal(chat)">تغییر عنوان</button>
+                            <button type="button" @click.stop="openRenameModal(chat)">{{ $t('chat.renameChat') }}</button>
                             <button
                                 type="button"
                                 class="danger"
                                 :disabled="deletingChatId === chat.id"
                                 @click.stop="deleteChat(chat.id)"
                             >
-                                حذف چت
+                                {{ $t('chat.deleteChat') }}
                             </button>
                         </div>
                     </div>
@@ -122,13 +122,13 @@
 
                             <!-- بات: متن + دکمه‌های پخش -->
                             <template v-if="message.sender === 'bot' && message.text">
-                                <AiAnswer :text="message.text" :lang="selectedLanguage"/>
+                                <AiAnswer :text="message.text" :lang="locale"/>
                             </template>
 
                             <!-- کاربر: اگر متن دارد همان را، وگرنه اگر voice است یک برچسب نشان بده -->
                             <template v-else>
                                 <span v-if="message.text && message.text.trim()">{{ message.text }}</span>
-                                <span v-else-if="message.voiceUrl">🎤 پیام صوتی</span>
+                                <span v-else-if="message.voiceUrl">{{ $t('chat.voiceMessage') }}</span>
                                 <span v-else>‌</span>
                             </template>
 
@@ -144,10 +144,10 @@
                                     <button
                                         class="msg-action copy"
                                         @click="copyText(message.text)"
-                                        aria-label="کپی متن"
-                                        title="کپی متن"
+                                        :aria-label="$t('chat.copyText')"
+                                        :title="$t('chat.copyText')"
                                     >
-                                        <!-- آیکن کپی -->
+                                        <!-- Copy Icon -->
                                         <svg viewBox="0 0 24 24" class="icon">
                                             <path
                                                 d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
@@ -157,8 +157,8 @@
                                     <button
                                         class="msg-action handoff"
                                         @click="showHandoffModal(message)"
-                                        aria-label="ارجاع به پشتیبانی"
-                                        title="ارجاع به پشتیبانی"
+                                        :aria-label="$t('chat.handoff')"
+                                        :title="$t('chat.handoff')"
                                     >
                                         <!-- آیکن ارجاع/ارسال -->
                                         <svg viewBox="0 0 24 24" class="icon">
@@ -182,7 +182,7 @@
                     v-if="showScrollButton"
                     class="scroll-bottom-btn"
                     type="button"
-                    aria-label="رفتن به آخرین پیام"
+                    :aria-label="$t('chat.scrollToBottom')"
                     @click="scrollToBottom"
                 >
                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -211,14 +211,14 @@
                         ref="msgInput"
                         v-model="inputMessage"
                         class="chat-input"
-                        placeholder="پیام خود را بنویسید…"
+                        :placeholder="$t('chat.inputPlaceholder')"
                         rows="1"
                         @input="autoGrow"
                         @keydown="onKeydown"
                     />
                         <div class="input-actions">
                             <button type="button" @click="startRecording" class="mic-btn" :disabled="loading">🎤</button>
-                            <button type="submit" class="btn btn-primary" :disabled="loading">ارسال</button>
+                            <button type="submit" class="btn btn-primary" :disabled="loading">{{ $t('chat.send') }}</button>
                         </div>
                     </div>
                 </form>
@@ -238,8 +238,8 @@
 
             <main v-else class="chat-main empty-state">
                 <div class="empty-content">
-                    <h2>چت جدیدی شروع کنید</h2>
-                    <p>برای شروع گفت‌وگو، روی «چت جدید» کلیک کنید.</p>
+                    <h2>{{ $t('chat.startNewChat') }}</h2>
+                    <p>{{ $t('chat.startNewChatDesc') }}</p>
                 </div>
             </main>
         </div>
@@ -256,12 +256,12 @@
                 v-if="referralPanelOpen"
                 class="referral-panel"
                 :class="{ 'is-mobile': isMobile }"
-                aria-label="پاسخ‌های ارجاع شده"
+                :aria-label="$t('referral.title')"
             >
                 <div class="referral-panel__header">
                     <div>
-                        <p class="referral-panel__eyebrow">ارجاعات فعال</p>
-                        <h3>{{ activeChat?.title || 'چت جاری' }}</h3>
+                        <p class="referral-panel__eyebrow">{{ $t('referral.title') }}</p>
+                        <h3>{{ activeChat?.title || $t('referral.currentChat') }}</h3>
                     </div>
                     <div class="panel-actions">
                         <button
@@ -269,11 +269,11 @@
                             type="button"
                             :disabled="referralsLoading"
                             @click="refreshCurrentReferrals"
-                            aria-label="به‌روزرسانی ارجاعات"
+                            :aria-label="$t('referral.refresh')"
                         >
                             ↻
                         </button>
-                        <button class="panel-icon-btn" type="button" @click="closeReferralPanel" aria-label="بستن پنل">
+                        <button class="panel-icon-btn" type="button" @click="closeReferralPanel" :aria-label="$t('referral.closePanel')">
                             ✕
                         </button>
                     </div>
@@ -281,22 +281,22 @@
                 <div class="referral-panel__body">
                     <div v-if="referralsLoading" class="referral-panel__placeholder">
                         <div class="spinner"></div>
-                        <p>در حال بارگذاری ارجاعات…</p>
+                        <p>{{ $t('referral.loading') }}</p>
                     </div>
                     <div v-else-if="referralsError" class="referral-panel__placeholder error">
                         <p>{{ referralsError }}</p>
-                        <button type="button" class="panel-retry" @click="refreshCurrentReferrals">تلاش مجدد</button>
+                        <button type="button" class="panel-retry" @click="refreshCurrentReferrals">{{ $t('common.retry') }}</button>
                     </div>
                     <div v-else-if="!currentReferrals.length" class="referral-panel__placeholder">
-                        <p>هنوز ارجاعی برای نمایش وجود ندارد.</p>
-                        <small class="text-muted">می‌توانید پیام موردنظر را به پشتیبان ارجاع دهید.</small>
+                        <p>{{ $t('referral.noReferrals') }}</p>
+                        <small class="text-muted">{{ $t('referral.noReferralsHint') }}</small>
                     </div>
                     <div v-else class="referral-card-list">
                         <article v-for="referral in currentReferrals" :key="referral.id" class="referral-card">
                             <div class="referral-card__header">
                                 <div>
-                                    <p class="referral-card__eyebrow">ارجاع به {{ referral.assigned_role || 'پشتیبان' }}</p>
-                                    <h4>{{ activeChat?.title || 'چت جاری' }}</h4>
+                                    <p class="referral-card__eyebrow">{{ $t('referral.referTo') }} {{ referral.assigned_role || $t('referral.support') }}</p>
+                                    <h4>{{ activeChat?.title || $t('referral.currentChat') }}</h4>
                                 </div>
                                 <span class="referral-status" :class="'referral-status--' + referral.status">
                                     {{ referralStatusLabel(referral.status) }}
@@ -304,12 +304,12 @@
                             </div>
 
                             <div class="referral-card__section">
-                                <div class="section-title">پیام ارجاع‌شده</div>
+                                <div class="section-title">{{ $t('referral.referredMessage') }}</div>
                                 <p class="section-body" v-if="referral.trigger_message?.content">
                                     {{ referral.trigger_message.content }}
                                 </p>
                                 <p class="section-body muted" v-else>
-                                    این پیام شامل ویس یا فایل است.
+                                    {{ $t('referral.messageVoiceOrFile') }}
                                 </p>
                                 <div class="section-footer">
                                     <span>{{ formatDate(referral.trigger_message?.created_at) }}</span>
@@ -318,18 +318,18 @@
                                         class="section-link"
                                         @click="scrollToReferredMessage(referral.trigger_message_id)"
                                     >
-                                        مشاهده در گفتگو
+                                        {{ $t('referral.viewInChat') }}
                                     </button>
                                 </div>
                             </div>
 
                             <div v-if="referral.description" class="referral-card__section">
-                                <div class="section-title">توضیح شما</div>
+                                <div class="section-title">{{ $t('referral.yourNote') }}</div>
                                 <p class="section-body">{{ referral.description }}</p>
                             </div>
 
                             <div v-if="referral.response" class="referral-card__section response">
-                                <div class="section-title">پاسخ پشتیبان</div>
+                                <div class="section-title">{{ $t('referral.supportResponse') }}</div>
                                 <p class="section-body">{{ referral.response.text }}</p>
                                 <div class="section-footer">
                                     <span>{{ formatDate(referral.response.created_at) }}</span>
@@ -344,13 +344,13 @@
                                         class="file-chip file-chip-link"
                                     >
                                         <span>{{ getFileEmoji(file.mime) }}</span>
-                                        <span class="truncate">{{ file.name || 'فایل' }}</span>
+                                        <span class="truncate">{{ file.name || $t('common.file') }}</span>
                                     </a>
                                 </div>
                             </div>
                             <div v-else class="referral-card__section muted">
-                                <div class="section-title">پاسخ پشتیبان</div>
-                                <p class="section-body">پاسخی برای نمایش ثبت نشده است.</p>
+                                <div class="section-title">{{ $t('referral.supportResponse') }}</div>
+                                <p class="section-body">{{ $t('referral.noResponse') }}</p>
                             </div>
                         </article>
                     </div>
@@ -361,23 +361,23 @@
         <transition name="fade">
             <div v-if="renameModal.open" class="modal-backdrop" @click.self="closeRenameModal">
                 <form class="rename-modal" @submit.prevent="submitRename">
-                    <h3>تغییر عنوان گفتگو</h3>
-                    <p class="modal-desc">برای مدیریت بهتر گفتگوها، عنوانی انتخاب کنید که محتوا را توصیف کند.</p>
+                    <h3>{{ $t('chat.renameChatTitle') }}</h3>
+                    <p class="modal-desc">{{ $t('chat.renameChatDesc') }}</p>
                     <input
                         type="text"
                         ref="renameInputRef"
                         v-model="renameModal.title"
                         class="rename-input"
                         maxlength="100"
-                        placeholder="عنوان جدید"
+                        :placeholder="$t('chat.newTitlePlaceholder')"
                         :disabled="renameModal.loading"
                     />
                     <div class="modal-actions">
                         <button type="button" class="modal-btn ghost" @click="closeRenameModal" :disabled="renameModal.loading">
-                            انصراف
+                            {{ $t('common.cancel') }}
                         </button>
                         <button type="submit" class="modal-btn primary" :disabled="renameModal.loading">
-                            {{ renameModal.loading ? 'در حال ذخیره…' : 'ذخیره عنوان' }}
+                            {{ renameModal.loading ? $t('chat.savingTitle') : $t('chat.saveTitle') }}
                         </button>
                     </div>
                 </form>
@@ -393,6 +393,12 @@ import HandoffModal from './HandoffModal.vue';
 import AiAnswer from './AiAnswer.vue'
 import {useToast} from 'vue-toast-notification'
 import {apiFetch} from '../lib/http';
+import { useI18n } from 'vue-i18n';
+import { useLanguage } from '../i18n';
+
+// i18n setup
+const { t } = useI18n();
+const { locale, setLocale, direction, isRtl, initLocale } = useLanguage();
 
 const toast = useToast();
 const logoutUrl = window?.AppConfig?.logoutUrl || '/logout';
@@ -420,7 +426,7 @@ const logout = async () => {
         window.location.href = '/login';
     } catch (error) {
         console.error('logout failed', error);
-        toast.error('خروج با خطا مواجه شد. لطفاً دوباره تلاش کنید.');
+        toast.error(t('auth.logoutError'));
     } finally {
         loggingOut.value = false;
     }
@@ -470,18 +476,10 @@ const formatDate = (isoString) => {
     });
 };
 const referralStatusLabel = (status) => {
-    switch (status) {
-        case 'pending':
-            return 'در انتظار';
-        case 'assigned':
-            return 'در حال بررسی';
-        case 'responded':
-            return 'پاسخ داده شد';
-        case 'closed':
-            return 'بسته شده';
-        default:
-            return status || '-';
-    }
+    const key = `referral.status.${status}`;
+    const translated = t(key);
+    // If translation exists, return it; otherwise return the status itself
+    return translated !== key ? translated : (status || '-');
 };
 const getFileEmoji = (mimeOrType = '') => {
     const type = String(mimeOrType || '').toLowerCase();
@@ -508,7 +506,7 @@ const isMobile = ref(false);
 const isSidebarOpen = ref(true);
 const referralPanelOpen = ref(false);
 const referralStore = reactive({});
-const selectedLanguage = ref('fa'); // Default to Persian
+// Language is managed by useLanguage() composable
 
 const currentReferrals = computed(() => {
     const chatId = activeChatId.value;
@@ -649,17 +647,17 @@ const submitRename = async () => {
     const newTitle = (renameModal.title || '').trim();
     if (!chatId) return;
     if (!newTitle) {
-        toast.error('عنوان نمی‌تواند خالی باشد.');
+        toast.error(t('chat.titleEmpty'));
         return;
     }
     renameModal.loading = true;
     try {
         await renameChat(chatId, newTitle);
         closeRenameModal();
-        toast.success('عنوان چت به‌روزرسانی شد.');
+        toast.success(t('chat.titleUpdated'));
     } catch (e) {
         console.error('rename failed', e);
-        toast.error('خطا در تغییر عنوان.');
+        toast.error(t('chat.titleError'));
     } finally {
         renameModal.loading = false;
     }
@@ -797,7 +795,7 @@ const uploadVoice = async (blob) => {
                 content: '', 
                 media_ids: [file_id], 
                 media_kind: 'voice',
-                lang: selectedLanguage.value
+                lang: locale.value
             })
         });
         if (!messageRes.ok) {
@@ -869,7 +867,7 @@ const uploadVoice = async (blob) => {
         scrollToBottom();
     } catch (error) {
         console.error('Upload voice error:', error);
-        toast.error('خطا در ارسال/دریافت ویس');
+        toast.error(t('chat.uploadVoiceError'));
     }
 };
 
@@ -1094,7 +1092,7 @@ const sendMessage = async () => {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 content: userMsg.text,
-                lang: selectedLanguage.value
+                lang: locale.value
             })
         });
 
@@ -1205,10 +1203,10 @@ const deleteChat = async (chatId) => {
                 activeChatId.value = null;
             }
         }
-        toast.success('گفتگو حذف شد.');
+        toast.success(t('chat.chatDeleted'));
     } catch (e) {
         console.error('delete chat failed', e);
-        toast.error('حذف چت ناموفق بود.');
+        toast.error(t('chat.deleteError'));
     } finally {
         deletingChatId.value = null;
     }
@@ -1228,7 +1226,7 @@ const showHandoffModal = (message) => {
 const handleHandoffSubmit = async (data) => {
     try {
         if (!selectedMessageForHandoff.value?.id) {
-            toast.error('پیام انتخاب‌شده نامعتبر است.');
+            toast.error(t('chat.handoffError'));
             return
         }
 
@@ -1249,11 +1247,11 @@ const handleHandoffSubmit = async (data) => {
             toast.error(msg);
             return
         }
-        toast.success('ارجاع با موفقیت ثبت شد.');
+        toast.success(t('chat.handoffSuccess'));
         isHandoffModalOpen.value = false
         selectedMessageForHandoff.value = null
     } catch (e) {
-        toast.error('خطا در ارجاع: ' + (e?.message || 'نامشخص'), 'error');
+        toast.error(t('chat.handoffError') + ': ' + (e?.message || ''));
     }
 }
 const audioRefs = ref({});
@@ -1333,18 +1331,16 @@ const onBubbleClick = async (message) => {
     }
 };
 
-const onLanguageChange = () => {
-    // Save language preference to localStorage
-    localStorage.setItem('ai_language', selectedLanguage.value);
+const onLanguageChange = (event) => {
+    // Update language using the i18n system
+    const newLocale = event.target.value;
+    setLocale(newLocale);
 };
 
 // --- Lifecycle ---
 onMounted(() => {
-    // Load language preference
-    const savedLang = localStorage.getItem('ai_language');
-    if (savedLang && ['fa', 'en', 'ar'].includes(savedLang)) {
-        selectedLanguage.value = savedLang;
-    }
+    // Initialize i18n and apply direction to document
+    initLocale();
     
     // Load voices for browser TTS (if used)
     if (typeof speechSynthesis !== 'undefined') {
