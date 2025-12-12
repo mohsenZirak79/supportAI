@@ -333,8 +333,12 @@ class ConversationController extends Controller
                         \Log::info('Conversation title updated', ['new_title' => $suggestedTitle]);
                     }
                 } else {
-                    \Log::warning('AI API failed', ['status' => $resp->status(), 'body' => $resp->body()]);
-                    $aiReplyText = 'خطا در سرویس ask (' . $resp->status() . ')';
+                    $errorBody = $resp->body();
+                    \Log::warning('AI API failed', ['status' => $resp->status(), 'body' => $errorBody]);
+                    // Show actual error for debugging
+                    $errorJson = json_decode($errorBody, true);
+                    $actualError = $errorJson['error'] ?? 'Unknown error';
+                    $aiReplyText = "خطا در سرویس ask ({$resp->status()}): {$actualError}";
                 }
             }
         } catch (\Throwable $e) {
