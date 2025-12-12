@@ -3,20 +3,43 @@
         <!-- Formatted text -->
         <div class="answer-text" v-html="html"></div>
 
-        <!-- TTS -->
-        <div v-if="canTTS" class="tts-actions">
-            <button type="button" class="btn" @click="play" :disabled="speaking || loading || !textTrim">
-                <span v-if="loading">⏳ {{ t('common.loading') }}</span>
-                <span v-else>▶️ {{ t('tts.play') }}</span>
-            </button>
-            <button type="button" class="btn" @click="stop" :disabled="!speaking && !loading">
-                ⏹️ {{ t('tts.stop') }}
+        <!-- TTS - Beautiful minimal icons -->
+        <div v-if="canTTS && textTrim" class="tts-container">
+            <button 
+                type="button" 
+                class="tts-btn" 
+                :class="{ 
+                    'is-playing': speaking, 
+                    'is-loading': loading 
+                }"
+                @click="togglePlayback"
+                :disabled="loading && !speaking"
+                :title="speaking ? t('tts.stop') : t('tts.play')"
+            >
+                <!-- Loading spinner -->
+                <svg v-if="loading && !speaking" class="tts-icon spin" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
+                </svg>
+                
+                <!-- Stop icon (when playing) -->
+                <svg v-else-if="speaking" class="tts-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="6" width="12" height="12" rx="1"/>
+                </svg>
+                
+                <!-- Play icon (default) -->
+                <svg v-else class="tts-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5.14v14l11-7-11-7z"/>
+                </svg>
+                
+                <!-- Sound waves animation when playing -->
+                <div v-if="speaking" class="sound-waves">
+                    <span class="wave wave-1"></span>
+                    <span class="wave wave-2"></span>
+                    <span class="wave wave-3"></span>
+                </div>
             </button>
         </div>
         <small v-if="error" class="error-text">{{ error }}</small>
-        <small v-else-if="!canTTS" class="muted">
-            {{ t('tts.notSupported') }}
-        </small>
     </div>
 </template>
 
@@ -113,6 +136,14 @@ const canTTS = typeof window !== 'undefined' && 'Audio' in window;
 let currentAudio = null;
 const loading = ref(false);
 const error = ref('');
+
+function togglePlayback() {
+    if (speaking.value || loading.value) {
+        stop();
+    } else {
+        play();
+    }
+}
 
 async function play() {
     if (!canTTS || !textTrim.value) return;
@@ -422,21 +453,118 @@ onBeforeUnmount(() => stop());
     line-height: 1.8;
 }
 
-/* دکمه‌های TTS */
-.tts-actions {
+/* TTS Button - Beautiful minimal design */
+.tts-container {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
 }
-.btn {
-    padding: 6px 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    background: #f8fafc;
-    cursor: pointer;
-    font-size: 14px;
-}
-.btn:disabled { opacity: .6; cursor: not-allowed; }
 
-.muted { color: #94a3b8; font-size: 13px; }
-.error-text { color: #ef4444; font-size: 13px; display: block; margin-top: 4px; }
+.tts-btn {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.tts-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tts-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.tts-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.tts-btn.is-playing {
+    background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%);
+    box-shadow: 0 4px 14px rgba(14, 116, 144, 0.3);
+}
+
+.tts-btn.is-playing:hover {
+    background: linear-gradient(135deg, #0c6580 0%, #0891b2 100%);
+}
+
+.tts-btn.is-loading {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.tts-icon {
+    width: 16px;
+    height: 16px;
+    color: #475569;
+    transition: color 0.2s ease;
+}
+
+.tts-btn.is-playing .tts-icon {
+    color: white;
+}
+
+.tts-icon.spin {
+    animation: spin 1s linear infinite;
+    color: #0e7490;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Sound waves animation */
+.sound-waves {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    inset-inline-end: -22px;
+}
+
+.wave {
+    display: block;
+    width: 3px;
+    background: #0e7490;
+    border-radius: 2px;
+    animation: wave 0.5s ease-in-out infinite;
+}
+
+.wave-1 {
+    height: 8px;
+    animation-delay: 0s;
+}
+
+.wave-2 {
+    height: 14px;
+    animation-delay: 0.15s;
+}
+
+.wave-3 {
+    height: 8px;
+    animation-delay: 0.3s;
+}
+
+@keyframes wave {
+    0%, 100% { transform: scaleY(0.5); opacity: 0.5; }
+    50% { transform: scaleY(1); opacity: 1; }
+}
+
+.error-text { 
+    color: #ef4444; 
+    font-size: 12px; 
+    display: block; 
+    margin-top: 4px; 
+}
 </style>

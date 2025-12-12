@@ -245,7 +245,8 @@
     "avatarTooLarge": "يجب ألا يتجاوز حجم الصورة 2 ميغابايت",
     "avatarSuccess": "تم تحديث صورة الملف الشخصي بنجاح",
     "avatarError": "فشل في تحميل الصورة",
-    "avatarDeleted": "تم حذف صورة الملف الشخصي"
+    "avatarDeleted": "تم حذف صورة الملف الشخصي",
+    "avatarDeleteError": "فشل في حذف الصورة"
   },
   "language": {
     "select": "اختر اللغة",

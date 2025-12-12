@@ -245,7 +245,8 @@
     "avatarTooLarge": "حجم تصویر نباید بیشتر از ۲ مگابایت باشد",
     "avatarSuccess": "تصویر پروفایل با موفقیت بروزرسانی شد",
     "avatarError": "خطا در آپلود تصویر",
-    "avatarDeleted": "تصویر پروفایل حذف شد"
+    "avatarDeleted": "تصویر پروفایل حذف شد",
+    "avatarDeleteError": "خطا در حذف تصویر"
   },
   "language": {
     "select": "انتخاب زبان",

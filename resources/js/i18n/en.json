@@ -245,7 +245,8 @@
     "avatarTooLarge": "Image size must not exceed 2MB",
     "avatarSuccess": "Profile picture updated successfully",
     "avatarError": "Failed to upload image",
-    "avatarDeleted": "Profile picture deleted"
+    "avatarDeleted": "Profile picture deleted",
+    "avatarDeleteError": "Failed to delete image"
   },
   "language": {
     "select": "Select Language",
