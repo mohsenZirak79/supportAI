@@ -337,10 +337,20 @@ class ConversationController extends Controller
 
                     // اگر عنوان پیشنهاد داد (هم title و هم suggested_title را چک کن)
                     $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
-                    if (!empty($suggestedTitle)
-                        && (!$conversation->title || $conversation->title === 'چت جدید')) {
-                        $conversation->update(['title' => $suggestedTitle]);
-                        \Log::info('Conversation title updated', ['new_title' => $suggestedTitle]);
+                    $debugFirstMsg = $json['_debug_first_message'] ?? 'not_set';
+                    \Log::info('Title debug', [
+                        'suggested_title' => $suggestedTitle,
+                        'debug_first_message_from_python' => $debugFirstMsg,
+                        'is_first_message_from_laravel' => $isFirstMessage,
+                    ]);
+                    
+                    if (!empty($suggestedTitle)) {
+                        $currentTitle = trim($conversation->title ?? '');
+                        if (empty($currentTitle) || $currentTitle === 'چت جدید') {
+                            $conversation->update(['title' => $suggestedTitle]);
+                            $conversation->refresh();
+                            \Log::info('Conversation title updated', ['new_title' => $suggestedTitle]);
+                        }
                     }
                 } else {
                     $errorBody = $resp->body();
