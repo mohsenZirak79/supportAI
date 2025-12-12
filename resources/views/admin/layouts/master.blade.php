@@ -17,7 +17,7 @@
     <meta name="theme-color" content="#0e7490">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="پشتیبانی کیش">
+    <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
     
     @vite(['resources/css/admin.css', 'resources/js/admin.js', 'resources/js/register.js'])
     @stack('styles')

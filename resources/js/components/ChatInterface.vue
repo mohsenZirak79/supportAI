@@ -49,6 +49,14 @@
                         ارجاع‌ها
                     </button>
                     <button @click="goToTickets" class="nav-btn" type="button">تیکت‌ها</button>
+                    <button
+                        class="nav-btn danger"
+                        type="button"
+                        @click="logout"
+                        :disabled="loggingOut"
+                    >
+                        {{ loggingOut ? 'در حال خروج…' : 'خروج' }}
+                    </button>
                 </div>
             </div>
         </header>
@@ -387,6 +395,36 @@ import {useToast} from 'vue-toast-notification'
 import {apiFetch} from '../lib/http';
 
 const toast = useToast();
+const logoutUrl = window?.AppConfig?.logoutUrl || '/logout';
+const csrfToken = window?.AppConfig?.csrfToken
+    || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+    || '';
+const loggingOut = ref(false);
+const logout = async () => {
+    if (loggingOut.value) {
+        return;
+    }
+    loggingOut.value = true;
+    try {
+        const response = await fetch(logoutUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+            },
+            credentials: 'same-origin',
+        });
+        if (!response.ok) {
+            throw new Error('Logout failed');
+        }
+        window.location.href = '/login';
+    } catch (error) {
+        console.error('logout failed', error);
+        toast.error('خروج با خطا مواجه شد. لطفاً دوباره تلاش کنید.');
+    } finally {
+        loggingOut.value = false;
+    }
+};
 const isHandoffModalOpen = ref(false);
 const selectedMessageForHandoff = ref(null);
 // --- State ---
@@ -2058,6 +2096,16 @@ function handleMenuClickOutside(event) {
 .nav-btn:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
+}
+
+.nav-btn.danger {
+    background: rgba(248, 113, 113, 0.2);
+    border-color: rgba(248, 113, 113, 0.55);
+    color: #fee2e2;
+}
+
+.nav-btn.danger:hover {
+    background: rgba(248, 113, 113, 0.35);
 }
 
 .lang-selector {

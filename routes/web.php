@@ -108,3 +108,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile');
 Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
+});

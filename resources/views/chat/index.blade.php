@@ -26,7 +26,7 @@ font-src 'self' data: http: https:;
     <meta name="theme-color" content="#0e7490">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="پشتیبانی کیش">
+    <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
     
     @vite(['resources/css/app.css', 'resources/js/chat.js'])
     {{-- فونت فارسی --}}
