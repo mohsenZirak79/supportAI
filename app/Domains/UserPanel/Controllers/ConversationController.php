@@ -117,7 +117,13 @@ class ConversationController extends Controller
             'lang' => 'nullable|string|in:fa,en,ar', // Language code
         ]);
 
-        $isFirstMessage = $conversation->messages()->count() === 0;
+        $messageCount = $conversation->messages()->count();
+        $isFirstMessage = $messageCount === 0;
+        \Log::info('First message check', [
+            'conversation_id' => $conversation->id,
+            'message_count' => $messageCount,
+            'is_first_message' => $isFirstMessage
+        ]);
 
         // نوع پیام کاربر
         $type = 'text';
