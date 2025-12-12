@@ -296,10 +296,12 @@ class ConversationController extends Controller
                 }
                 
                 // Log the request being sent
+                $messagesCountNow = $conversation->messages()->count();
                 \Log::info('Sending to AI API', [
                     'question' => substr($validated['content'] ?? '', 0, 50),
                     'first_message' => $isFirstMessage,
-                    'messages_count_before' => $conversation->messages()->count(),
+                    'first_message_type' => gettype($isFirstMessage),
+                    'messages_count_now' => $messagesCountNow,
                     'user_name' => $userName,
                     'lang' => $lang,
                 ]);
@@ -319,10 +321,12 @@ class ConversationController extends Controller
 
                     // Log for debugging
                     \Log::info('AI Response received', [
-                        'first_message' => $isFirstMessage,
+                        'first_message_sent' => $isFirstMessage,
+                        'first_message_received_by_python' => $json['_debug_first_message'] ?? 'N/A',
                         'has_title' => isset($json['title']),
                         'title' => $json['title'] ?? null,
                         'current_conversation_title' => $conversation->title,
+                        'full_response_keys' => array_keys($json),
                     ]);
 
                     // اگر عنوان پیشنهاد داد (هم title و هم suggested_title را چک کن)
