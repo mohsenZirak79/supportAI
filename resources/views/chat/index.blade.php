@@ -28,15 +28,32 @@ font-src 'self' data: http: https:;
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
     
-    @vite(['resources/css/app.css', 'resources/js/chat.js'])
-    {{-- فونت فارسی --}}
+    @vite(['resources/css/app.css', 'resources/css/user.css', 'resources/js/chat.js'])
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         body {
             margin: 0;
-            font-family: 'Vazirmatn', sans-serif;
+        }
+        /* RTL font family */
+        html[dir="rtl"] body {
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+        }
+        /* LTR font family */
+        html[dir="ltr"] body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
     </style>
+    <script>
+        // Initialize direction from localStorage before page renders
+        (function() {
+            const RTL_LOCALES = ['fa', 'ar'];
+            const stored = localStorage.getItem('app_language') || 'fa';
+            const dir = RTL_LOCALES.includes(stored) ? 'rtl' : 'ltr';
+            document.documentElement.lang = stored;
+            document.documentElement.dir = dir;
+            document.documentElement.classList.add(dir);
+        })();
+    </script>
 </head>
 <body>
 <div id="app"></div>

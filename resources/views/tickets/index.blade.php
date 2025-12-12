@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{{--    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">--}}
-{{--    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>--}}
-{{--    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>--}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Favicon -->
@@ -23,7 +21,28 @@
     <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
     
     <title>تیکت‌ها</title>
-    @vite(['resources/css/app.css', 'resources/js/tickets.js'])
+    @vite(['resources/css/app.css', 'resources/css/user.css', 'resources/js/tickets.js'])
+    <style>
+        /* RTL font family */
+        html[dir="rtl"] body {
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+        }
+        /* LTR font family */
+        html[dir="ltr"] body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+    </style>
+    <script>
+        // Initialize direction from localStorage before page renders
+        (function() {
+            const RTL_LOCALES = ['fa', 'ar'];
+            const stored = localStorage.getItem('app_language') || 'fa';
+            const dir = RTL_LOCALES.includes(stored) ? 'rtl' : 'ltr';
+            document.documentElement.lang = stored;
+            document.documentElement.dir = dir;
+            document.documentElement.classList.add(dir);
+        })();
+    </script>
 </head>
 <body>
 <div id="app"></div>

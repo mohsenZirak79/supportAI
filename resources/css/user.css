@@ -1,0 +1,452 @@
+/**
+ * User Panel - RTL/LTR Direction Support Styles
+ * These styles enable seamless switching between RTL (fa, ar) and LTR (en) layouts
+ */
+
+/* ============================================
+   DIRECTION CSS CUSTOM PROPERTIES
+   ============================================ */
+:root {
+    /* Direction factor for calculations */
+    --dir-factor: 1; /* 1 for RTL, -1 for LTR */
+    
+    /* Logical properties fallback values */
+    --text-align-start: right;
+    --text-align-end: left;
+    --float-start: right;
+    --float-end: left;
+    --margin-inline-start: margin-right;
+    --margin-inline-end: margin-left;
+    --padding-inline-start: padding-right;
+    --padding-inline-end: padding-left;
+    --border-inline-start: border-right;
+    --border-inline-end: border-left;
+    --inset-inline-start: right;
+    --inset-inline-end: left;
+}
+
+/* LTR Mode */
+html[dir="ltr"],
+html.ltr {
+    --dir-factor: -1;
+    --text-align-start: left;
+    --text-align-end: right;
+    --float-start: left;
+    --float-end: right;
+    --margin-inline-start: margin-left;
+    --margin-inline-end: margin-right;
+    --padding-inline-start: padding-left;
+    --padding-inline-end: padding-right;
+    --border-inline-start: border-left;
+    --border-inline-end: border-right;
+    --inset-inline-start: left;
+    --inset-inline-end: right;
+}
+
+/* ============================================
+   BASE RTL/LTR ADJUSTMENTS
+   ============================================ */
+
+/* Font family adjustments */
+html[dir="ltr"] body,
+html.ltr body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+html[dir="rtl"] body,
+html.rtl body {
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* ============================================
+   FLEXBOX DIRECTION UTILITIES
+   ============================================ */
+
+/* Auto-reverse row direction based on document direction */
+[dir="ltr"] .flex-row-reverse-rtl {
+    flex-direction: row;
+}
+
+[dir="rtl"] .flex-row-reverse-rtl {
+    flex-direction: row-reverse;
+}
+
+/* Force specific direction regardless of document */
+.dir-ltr {
+    direction: ltr;
+}
+
+.dir-rtl {
+    direction: rtl;
+}
+
+/* ============================================
+   TEXT ALIGNMENT UTILITIES
+   ============================================ */
+
+.text-start {
+    text-align: var(--text-align-start);
+}
+
+.text-end {
+    text-align: var(--text-align-end);
+}
+
+/* RTL-aware text alignment */
+[dir="ltr"] .text-start { text-align: left; }
+[dir="ltr"] .text-end { text-align: right; }
+[dir="rtl"] .text-start { text-align: right; }
+[dir="rtl"] .text-end { text-align: left; }
+
+/* ============================================
+   SPACING UTILITIES (MARGIN/PADDING)
+   ============================================ */
+
+/* Margin inline start */
+[dir="ltr"] .ms-1 { margin-left: 0.25rem; }
+[dir="ltr"] .ms-2 { margin-left: 0.5rem; }
+[dir="ltr"] .ms-3 { margin-left: 0.75rem; }
+[dir="ltr"] .ms-4 { margin-left: 1rem; }
+[dir="ltr"] .ms-5 { margin-left: 1.25rem; }
+[dir="ltr"] .ms-auto { margin-left: auto; }
+
+[dir="rtl"] .ms-1 { margin-right: 0.25rem; }
+[dir="rtl"] .ms-2 { margin-right: 0.5rem; }
+[dir="rtl"] .ms-3 { margin-right: 0.75rem; }
+[dir="rtl"] .ms-4 { margin-right: 1rem; }
+[dir="rtl"] .ms-5 { margin-right: 1.25rem; }
+[dir="rtl"] .ms-auto { margin-right: auto; }
+
+/* Margin inline end */
+[dir="ltr"] .me-1 { margin-right: 0.25rem; }
+[dir="ltr"] .me-2 { margin-right: 0.5rem; }
+[dir="ltr"] .me-3 { margin-right: 0.75rem; }
+[dir="ltr"] .me-4 { margin-right: 1rem; }
+[dir="ltr"] .me-5 { margin-right: 1.25rem; }
+[dir="ltr"] .me-auto { margin-right: auto; }
+
+[dir="rtl"] .me-1 { margin-left: 0.25rem; }
+[dir="rtl"] .me-2 { margin-left: 0.5rem; }
+[dir="rtl"] .me-3 { margin-left: 0.75rem; }
+[dir="rtl"] .me-4 { margin-left: 1rem; }
+[dir="rtl"] .me-5 { margin-left: 1.25rem; }
+[dir="rtl"] .me-auto { margin-left: auto; }
+
+/* Padding inline start */
+[dir="ltr"] .ps-1 { padding-left: 0.25rem; }
+[dir="ltr"] .ps-2 { padding-left: 0.5rem; }
+[dir="ltr"] .ps-3 { padding-left: 0.75rem; }
+[dir="ltr"] .ps-4 { padding-left: 1rem; }
+[dir="ltr"] .ps-5 { padding-left: 1.25rem; }
+
+[dir="rtl"] .ps-1 { padding-right: 0.25rem; }
+[dir="rtl"] .ps-2 { padding-right: 0.5rem; }
+[dir="rtl"] .ps-3 { padding-right: 0.75rem; }
+[dir="rtl"] .ps-4 { padding-right: 1rem; }
+[dir="rtl"] .ps-5 { padding-right: 1.25rem; }
+
+/* Padding inline end */
+[dir="ltr"] .pe-1 { padding-right: 0.25rem; }
+[dir="ltr"] .pe-2 { padding-right: 0.5rem; }
+[dir="ltr"] .pe-3 { padding-right: 0.75rem; }
+[dir="ltr"] .pe-4 { padding-right: 1rem; }
+[dir="ltr"] .pe-5 { padding-right: 1.25rem; }
+
+[dir="rtl"] .pe-1 { padding-left: 0.25rem; }
+[dir="rtl"] .pe-2 { padding-left: 0.5rem; }
+[dir="rtl"] .pe-3 { padding-left: 0.75rem; }
+[dir="rtl"] .pe-4 { padding-left: 1rem; }
+[dir="rtl"] .pe-5 { padding-left: 1.25rem; }
+
+/* ============================================
+   POSITIONING UTILITIES
+   ============================================ */
+
+[dir="ltr"] .start-0 { left: 0; }
+[dir="ltr"] .start-auto { left: auto; }
+[dir="ltr"] .end-0 { right: 0; }
+[dir="ltr"] .end-auto { right: auto; }
+
+[dir="rtl"] .start-0 { right: 0; }
+[dir="rtl"] .start-auto { right: auto; }
+[dir="rtl"] .end-0 { left: 0; }
+[dir="rtl"] .end-auto { left: auto; }
+
+/* ============================================
+   BORDER UTILITIES
+   ============================================ */
+
+[dir="ltr"] .border-start { border-left-width: 1px; border-left-style: solid; }
+[dir="ltr"] .border-end { border-right-width: 1px; border-right-style: solid; }
+
+[dir="rtl"] .border-start { border-right-width: 1px; border-right-style: solid; }
+[dir="rtl"] .border-end { border-left-width: 1px; border-left-style: solid; }
+
+/* ============================================
+   ICON/SVG FLIP FOR DIRECTIONAL ICONS
+   ============================================ */
+
+/* Icons that should flip in RTL (arrows, chevrons, etc.) */
+.icon-flip-rtl {
+    transform: scaleX(1);
+    transition: transform 0.2s ease;
+}
+
+[dir="rtl"] .icon-flip-rtl {
+    transform: scaleX(-1);
+}
+
+/* ============================================
+   LANGUAGE SWITCHER COMPONENT STYLES
+   ============================================ */
+
+.lang-switcher {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.lang-switcher__select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+[dir="ltr"] .lang-switcher__select {
+    padding: 0.5rem 0.75rem 0.5rem 2rem;
+}
+
+.lang-switcher__select:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.lang-switcher__select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.lang-switcher__select option {
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 0.5rem;
+}
+
+.lang-switcher__icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+}
+
+[dir="rtl"] .lang-switcher__icon {
+    left: 0.75rem;
+}
+
+[dir="ltr"] .lang-switcher__icon {
+    right: 0.75rem;
+}
+
+/* Light theme variant */
+.lang-switcher--light .lang-switcher__select {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1f2937;
+}
+
+.lang-switcher--light .lang-switcher__select:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+.lang-switcher--light .lang-switcher__select option {
+    background: #ffffff;
+    color: #1f2937;
+}
+
+/* ============================================
+   CHAT/TICKET APP SPECIFIC RTL ADJUSTMENTS
+   ============================================ */
+
+/* Sidebar positioning */
+[dir="ltr"] .sidebar {
+    border-left: none;
+    border-right: 1px solid #eaeaea;
+}
+
+[dir="rtl"] .sidebar {
+    border-right: none;
+    border-left: 1px solid #eaeaea;
+}
+
+/* Chat menu positioning */
+[dir="ltr"] .chat-menu {
+    right: 16px;
+    left: auto;
+}
+
+[dir="rtl"] .chat-menu {
+    left: 16px;
+    right: auto;
+}
+
+/* Message bubble alignment */
+[dir="ltr"] .message.user-message {
+    justify-content: flex-end;
+}
+
+[dir="ltr"] .message.bot-message {
+    justify-content: flex-start;
+}
+
+[dir="rtl"] .message.user-message {
+    justify-content: flex-start;
+}
+
+[dir="rtl"] .message.bot-message {
+    justify-content: flex-end;
+}
+
+/* Message bubble corners */
+[dir="ltr"] .user-message .message-bubble {
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 18px;
+}
+
+[dir="ltr"] .bot-message .message-bubble {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 18px;
+}
+
+/* Active chat item indicator */
+[dir="ltr"] .chat-item.active {
+    border-left: 3px solid transparent;
+    border-right: none;
+    border-image: linear-gradient(180deg, #0e7490, #0891b2) 1;
+}
+
+[dir="rtl"] .chat-item.active {
+    border-right: 3px solid transparent;
+    border-left: none;
+    border-image: linear-gradient(180deg, #0e7490, #0891b2) 1;
+}
+
+/* Scroll button positioning */
+[dir="ltr"] .scroll-bottom-btn {
+    right: 24px;
+    left: auto;
+}
+
+[dir="rtl"] .scroll-bottom-btn {
+    left: 24px;
+    right: auto;
+}
+
+/* Referral panel positioning */
+[dir="ltr"] .referral-panel {
+    right: auto;
+    left: 0;
+    border-top-right-radius: 18px;
+    border-bottom-right-radius: 18px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+[dir="rtl"] .referral-panel {
+    left: auto;
+    right: 0;
+    border-top-left-radius: 18px;
+    border-bottom-left-radius: 18px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Referral panel slide animation */
+[dir="ltr"] .slide-panel-enter-from,
+[dir="ltr"] .slide-panel-leave-to {
+    transform: translateX(-110%);
+}
+
+[dir="rtl"] .slide-panel-enter-from,
+[dir="rtl"] .slide-panel-leave-to {
+    transform: translateX(110%);
+}
+
+/* Mobile sidebar drawer */
+@media (max-width: 768px) {
+    [dir="ltr"] .sidebar.is-mobile {
+        right: auto;
+        left: 0;
+        transform: translateX(-110%);
+    }
+    
+    [dir="ltr"] .sidebar.is-mobile.is-open {
+        transform: translateX(0);
+    }
+    
+    [dir="rtl"] .sidebar.is-mobile {
+        left: auto;
+        right: 0;
+        transform: translateX(110%);
+    }
+    
+    [dir="rtl"] .sidebar.is-mobile.is-open {
+        transform: translateX(0);
+    }
+}
+
+/* ============================================
+   FORM ELEMENTS RTL ADJUSTMENTS
+   ============================================ */
+
+[dir="ltr"] input,
+[dir="ltr"] textarea,
+[dir="ltr"] select {
+    text-align: left;
+}
+
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+    text-align: right;
+}
+
+/* Placeholder text direction */
+[dir="ltr"] input::placeholder,
+[dir="ltr"] textarea::placeholder {
+    text-align: left;
+}
+
+[dir="rtl"] input::placeholder,
+[dir="rtl"] textarea::placeholder {
+    text-align: right;
+}
+
+/* ============================================
+   TRANSITION FOR SMOOTH DIRECTION CHANGE
+   ============================================ */
+
+.dir-transition,
+.dir-transition * {
+    transition: 
+        margin 0.3s ease,
+        padding 0.3s ease,
+        border-radius 0.3s ease,
+        left 0.3s ease,
+        right 0.3s ease,
+        transform 0.3s ease !important;
+}
+

@@ -25,7 +25,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/css/auth.css',
-                'resources/css/user.css',
+                'resources/css/user.css',    // ← i18n RTL/LTR styles
                 'resources/css/admin.css',   // ← اضافه
                 'resources/js/app.js',
                 'resources/js/chat.js',

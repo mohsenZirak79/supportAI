@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
@@ -18,19 +19,26 @@
     <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
     
     <title>ثبت‌نام کاربر</title>
-    <title>@yield('title')</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
 
-    @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/css/user.css', 'resources/js/app.js'])
+    <style>
+        /* RTL font family */
+        html[dir="rtl"] body { font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif; }
+        /* LTR font family */
+        html[dir="ltr"] body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    </style>
     <script>
-        var win = navigator.platform.indexOf('Win') > -1;
-        if (win && document.querySelector('#sidenav-scrollbar')) {
-            var options = {
-                damping: '0.5'
-            }
-            Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-        }
+        // Initialize direction from localStorage before page renders
+        (function() {
+            const RTL_LOCALES = ['fa', 'ar'];
+            const stored = localStorage.getItem('app_language') || 'fa';
+            const dir = RTL_LOCALES.includes(stored) ? 'rtl' : 'ltr';
+            document.documentElement.lang = stored;
+            document.documentElement.dir = dir;
+            document.documentElement.classList.add(dir);
+        })();
     </script>
 </head>
 

@@ -3,7 +3,8 @@ import './bootstrap'; // اگر داری از bootstrap.js استفاده می�
 import { createApp } from 'vue';
 import ChatInterface from './components/ChatInterface.vue';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
-import VueToast from 'vue-toast-notification'
+import VueToast from 'vue-toast-notification';
+import i18n from './i18n';
 // Reverb setup
 // import Echo from 'laravel-echo';
 // import Pusher from 'pusher-js';
@@ -36,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!el) return;
 
     const app = createApp(ChatInterface);
+
+    // فعال کردن i18n
+    app.use(i18n);
 
     // فعال کردن Toast
     app.use(VueToast, {

@@ -20,7 +20,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
     
-    @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/css/user.css', 'resources/js/app.js'])
+    <script>
+        // Initialize direction from localStorage before page renders (prevent flash)
+        (function() {
+            const RTL_LOCALES = ['fa', 'ar'];
+            const stored = localStorage.getItem('app_language') || 'fa';
+            const dir = RTL_LOCALES.includes(stored) ? 'rtl' : 'ltr';
+            document.documentElement.lang = stored;
+            document.documentElement.dir = dir;
+            document.documentElement.classList.add(dir);
+        })();
+    </script>
     <style>
         /* ============================================
            CSS CUSTOM PROPERTIES (Motion System)
@@ -68,7 +79,9 @@
             --space-5xl: 8rem;
             
             /* Typography */
-            --font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-family-rtl: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+            --font-family-ltr: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --font-family: var(--font-family-rtl);
             --font-size-xs: 0.75rem;
             --font-size-sm: 0.875rem;
             --font-size-base: 1rem;
@@ -141,6 +154,15 @@
             line-height: 1.6;
             overflow-x: hidden;
             background: var(--color-surface);
+        }
+
+        /* LTR font-family override */
+        html[dir="ltr"] body {
+            font-family: var(--font-family-ltr);
+        }
+
+        html[dir="rtl"] body {
+            font-family: var(--font-family-rtl);
         }
 
         /* ============================================
@@ -320,6 +342,68 @@
             display: flex;
             align-items: center;
             gap: var(--space-sm);
+        }
+
+        /* Language Switcher */
+        .lang-switcher {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .lang-switcher__select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem 2rem 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1f2937;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 100px;
+            font-family: inherit;
+        }
+
+        [dir="ltr"] .lang-switcher__select {
+            padding: 0.5rem 0.75rem 0.5rem 2rem;
+        }
+
+        .lang-switcher__select:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .lang-switcher__select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(14, 116, 144, 0.2);
+        }
+
+        .lang-switcher__select option {
+            background: #ffffff;
+            color: #1f2937;
+        }
+
+        .lang-switcher__icon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
+            opacity: 0.5;
+            color: #1f2937;
+        }
+
+        [dir="rtl"] .lang-switcher__icon {
+            left: 0.75rem;
+        }
+
+        [dir="ltr"] .lang-switcher__icon {
+            right: 0.75rem;
         }
 
         /* ============================================
@@ -620,33 +704,6 @@
             transform: translateY(30px);
             animation: heroFadeUp var(--duration-slower) var(--ease-expo) forwards;
             animation-delay: 600ms;
-        }
-
-        .hero-highlight {
-            position: relative;
-            display: inline-block;
-        }
-
-        .hero-highlight::after {
-            content: '';
-            position: absolute;
-            bottom: 0.1em;
-            left: 0;
-            right: 0;
-            height: 0.15em;
-            background: linear-gradient(90deg, var(--color-accent), rgba(255,255,255,0.5));
-            border-radius: 4px;
-            transform: scaleX(0);
-            transform-origin: right;
-            animation: underlineReveal var(--duration-slower) var(--ease-smooth) forwards;
-            animation-delay: 1200ms;
-        }
-
-        @keyframes underlineReveal {
-            to {
-                transform: scaleX(1);
-                transform-origin: left;
-            }
         }
 
         .hero p {
@@ -1217,16 +1274,27 @@
                 <span>پنل پشتیبانی مناطق آزاد تجاری</span>
             </a>
             <div class="navbar-actions">
+                <!-- Language Switcher -->
+                <div class="lang-switcher lang-switcher--light">
+                    <select id="langSelect" class="lang-switcher__select" aria-label="انتخاب زبان">
+                        <option value="fa">فارسی</option>
+                        <option value="en">English</option>
+                        <option value="ar">العربية</option>
+                    </select>
+                    <svg class="lang-switcher__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3 6h6l-5 4 2 7-6-4-6 4 2-7-5-4h6l3-6z"/>
+                    </svg>
+                </div>
                 @auth
-                    <a href="{{ route('admin.dashboard') }}" class="btn btn-primary">
+                    <a href="{{ route('admin.dashboard') }}" class="btn btn-primary" data-i18n="landing.goToDashboard">
                         <span>ورود به داشبورد</span>
                         <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-outline">ورود</a>
-                    <a href="{{ route('register') }}" class="btn btn-primary">ثبت‌نام</a>
+                    <a href="{{ route('login') }}" class="btn btn-outline" data-i18n="nav.login">ورود</a>
+                    <a href="{{ route('register') }}" class="btn btn-primary" data-i18n="nav.register">ثبت‌نام</a>
                 @endauth
             </div>
         </nav>
@@ -1263,30 +1331,26 @@
         <div class="hero-content">
             <div class="hero-badge">
                 <span class="hero-badge-dot" aria-hidden="true"></span>
-                <span>پلتفرم پیشرفته پشتیبانی</span>
+                <span data-i18n="landing.advancedPlatform">پلتفرم پیشرفته پشتیبانی</span>
             </div>
-            <h1>
-                سیستم مدیریت 
-                <span class="hero-highlight">پشتیبانی</span>
-                مناطق آزاد تجاری
-            </h1>
-            <p>پلتفرم جامع و هوشمند برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط مؤثر با کاربران</p>
+            <h1 data-i18n="landing.heroTitle">سیستم مدیریت پشتیبانی مناطق آزاد تجاری</h1>
+            <p data-i18n="landing.heroSubtitle">پلتفرم جامع و هوشمند برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط مؤثر با کاربران</p>
             <div class="hero-cta">
                 @auth
-                    <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-lg">
+                    <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-lg" data-i18n="landing.goToDashboard">
                         <span>ورود به داشبورد</span>
                         <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
                     </a>
                 @else
-                    <a href="{{ route('register') }}" class="btn btn-primary btn-lg">
+                    <a href="{{ route('register') }}" class="btn btn-primary btn-lg" data-i18n="landing.getStarted">
                         <span>شروع کنید</span>
                         <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
                     </a>
-                    <a href="{{ route('login') }}" class="btn btn-hero-secondary btn-lg">
+                    <a href="{{ route('login') }}" class="btn btn-hero-secondary btn-lg" data-i18n="landing.loginToAccount">
                         ورود به حساب کاربری
                     </a>
                 @endauth
@@ -1679,6 +1743,174 @@
             if (prefersReducedMotion) {
                 console.log('⚡ Reduced motion mode active');
             }
+            
+            // ============================================
+            // I18N LANGUAGE SWITCHER
+            // ============================================
+            const RTL_LOCALES = ['fa', 'ar'];
+            const STORAGE_KEY = 'app_language';
+            
+            // Translation data for landing page
+            const translations = {
+                fa: {
+                    'nav.login': 'ورود',
+                    'nav.register': 'ثبت‌نام',
+                    'landing.goToDashboard': 'ورود به داشبورد',
+                    'landing.heroTitle': 'سیستم مدیریت پشتیبانی مناطق آزاد تجاری',
+                    'landing.heroSubtitle': 'پلتفرم جامع و هوشمند برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط مؤثر با کاربران',
+                    'landing.advancedPlatform': 'پلتفرم پیشرفته پشتیبانی',
+                    'landing.getStarted': 'شروع کنید',
+                    'landing.loginToAccount': 'ورود به حساب کاربری',
+                    'landing.scrollDown': 'اسکرول کنید',
+                    'landing.featuresTitle': 'ویژگی‌های پلتفرم',
+                    'landing.featuresSubtitle': 'ابزارهای قدرتمند برای مدیریت بهتر پشتیبانی',
+                    'landing.topFeatures': 'ویژگی‌های برتر',
+                    'landing.smartChat': 'گفت‌وگوی هوشمند',
+                    'landing.smartChatDesc': 'سیستم چت پیشرفته با پشتیبانی از هوش مصنوعی برای پاسخگویی سریع و دقیق به کاربران',
+                    'landing.ticketManagement': 'مدیریت تیکت‌ها',
+                    'landing.ticketManagementDesc': 'سیستم کامل مدیریت تیکت‌های پشتیبانی با امکان پیگیری، اولویت‌بندی و پاسخگویی',
+                    'landing.supportTeam': 'تیم پشتیبانی',
+                    'landing.supportTeamDesc': 'مدیریت تیم‌های پشتیبانی با سیستم نقش‌ها و دسترسی‌های پیشرفته',
+                    'landing.reporting': 'گزارش‌گیری',
+                    'landing.reportingDesc': 'داشبورد تحلیلی برای بررسی عملکرد و آمار تیکت‌ها و گفت‌وگوها',
+                    'landing.security': 'امنیت بالا',
+                    'landing.securityDesc': 'سیستم امنیتی پیشرفته با احراز هویت چندمرحله‌ای و مدیریت دسترسی‌ها',
+                    'landing.performance': 'عملکرد سریع',
+                    'landing.performanceDesc': 'پلتفرم بهینه‌شده با سرعت بالا و تجربه کاربری روان و حرفه‌ای',
+                    'landing.activeUsers': 'کاربر فعال',
+                    'landing.ticketsAnswered': 'تیکت پاسخ داده شده',
+                    'landing.satisfaction': 'رضایت کاربران',
+                    'landing.support247': 'پشتیبانی آنلاین',
+                    'landing.footerDesc': 'راه‌حل جامع و پیشرفته برای مدیریت ارتباط با کاربران و ارائه خدمات پشتیبانی حرفه‌ای با استفاده از تکنولوژی‌های روز دنیا',
+                    'landing.copyright': 'پنل پشتیبانی مناطق آزاد تجاری. تمام حقوق محفوظ است.',
+                    'landing.brandName': 'پنل پشتیبانی مناطق آزاد تجاری'
+                },
+                en: {
+                    'nav.login': 'Login',
+                    'nav.register': 'Register',
+                    'landing.goToDashboard': 'Go to Dashboard',
+                    'landing.heroTitle': 'Free Trade Zone Support Management System',
+                    'landing.heroSubtitle': 'A comprehensive and intelligent platform for managing tickets, conversations, and effective user communication',
+                    'landing.advancedPlatform': 'Advanced Support Platform',
+                    'landing.getStarted': 'Get Started',
+                    'landing.loginToAccount': 'Login to Account',
+                    'landing.scrollDown': 'Scroll down',
+                    'landing.featuresTitle': 'Platform Features',
+                    'landing.featuresSubtitle': 'Powerful tools for better support management',
+                    'landing.topFeatures': 'Top Features',
+                    'landing.smartChat': 'Smart Chat',
+                    'landing.smartChatDesc': 'Advanced chat system with AI support for quick and accurate responses to users',
+                    'landing.ticketManagement': 'Ticket Management',
+                    'landing.ticketManagementDesc': 'Complete ticket management system with tracking, prioritization, and response capabilities',
+                    'landing.supportTeam': 'Support Team',
+                    'landing.supportTeamDesc': 'Manage support teams with advanced roles and permissions system',
+                    'landing.reporting': 'Reporting',
+                    'landing.reportingDesc': 'Analytical dashboard for reviewing performance and statistics of tickets and conversations',
+                    'landing.security': 'High Security',
+                    'landing.securityDesc': 'Advanced security system with multi-factor authentication and access management',
+                    'landing.performance': 'Fast Performance',
+                    'landing.performanceDesc': 'Optimized platform with high speed and smooth, professional user experience',
+                    'landing.activeUsers': 'Active Users',
+                    'landing.ticketsAnswered': 'Tickets Answered',
+                    'landing.satisfaction': 'User Satisfaction',
+                    'landing.support247': '24/7 Support',
+                    'landing.footerDesc': 'Comprehensive and advanced solution for user communication management and professional support services using cutting-edge technologies',
+                    'landing.copyright': 'Free Trade Zone Support Panel. All rights reserved.',
+                    'landing.brandName': 'Free Trade Zone Support Panel'
+                },
+                ar: {
+                    'nav.login': 'تسجيل الدخول',
+                    'nav.register': 'إنشاء حساب',
+                    'landing.goToDashboard': 'الذهاب للوحة التحكم',
+                    'landing.heroTitle': 'نظام إدارة دعم المنطقة التجارية الحرة',
+                    'landing.heroSubtitle': 'منصة شاملة وذكية لإدارة التذاكر والمحادثات والتواصل الفعال مع المستخدمين',
+                    'landing.advancedPlatform': 'منصة دعم متقدمة',
+                    'landing.getStarted': 'ابدأ الآن',
+                    'landing.loginToAccount': 'تسجيل الدخول',
+                    'landing.scrollDown': 'مرر للأسفل',
+                    'landing.featuresTitle': 'ميزات المنصة',
+                    'landing.featuresSubtitle': 'أدوات قوية لإدارة دعم أفضل',
+                    'landing.topFeatures': 'أفضل الميزات',
+                    'landing.smartChat': 'المحادثة الذكية',
+                    'landing.smartChatDesc': 'نظام محادثة متقدم بدعم الذكاء الاصطناعي للرد السريع والدقيق على المستخدمين',
+                    'landing.ticketManagement': 'إدارة التذاكر',
+                    'landing.ticketManagementDesc': 'نظام إدارة تذاكر كامل مع التتبع وتحديد الأولويات والرد',
+                    'landing.supportTeam': 'فريق الدعم',
+                    'landing.supportTeamDesc': 'إدارة فرق الدعم بنظام أدوار وصلاحيات متقدم',
+                    'landing.reporting': 'التقارير',
+                    'landing.reportingDesc': 'لوحة تحليلية لمراجعة الأداء وإحصائيات التذاكر والمحادثات',
+                    'landing.security': 'أمان عالي',
+                    'landing.securityDesc': 'نظام أمان متقدم مع مصادقة متعددة العوامل وإدارة الوصول',
+                    'landing.performance': 'أداء سريع',
+                    'landing.performanceDesc': 'منصة محسنة بسرعة عالية وتجربة مستخدم سلسة واحترافية',
+                    'landing.activeUsers': 'مستخدم نشط',
+                    'landing.ticketsAnswered': 'تذكرة تم الرد عليها',
+                    'landing.satisfaction': 'رضا المستخدمين',
+                    'landing.support247': 'دعم على مدار الساعة',
+                    'landing.footerDesc': 'حل شامل ومتقدم لإدارة التواصل مع المستخدمين وتقديم خدمات الدعم الاحترافية باستخدام أحدث التقنيات',
+                    'landing.copyright': 'لوحة دعم المنطقة التجارية الحرة. جميع الحقوق محفوظة.',
+                    'landing.brandName': 'لوحة دعم المنطقة التجارية الحرة'
+                }
+            };
+            
+            function t(key, locale) {
+                return translations[locale]?.[key] || translations['fa'][key] || key;
+            }
+            
+            function applyTranslations(locale) {
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.dataset.i18n;
+                    const text = t(key, locale);
+                    // For elements with child spans, update the span
+                    const span = el.querySelector('span');
+                    if (span) {
+                        span.textContent = text;
+                    } else {
+                        el.textContent = text;
+                    }
+                });
+            }
+            
+            function setLanguage(locale) {
+                if (!['fa', 'en', 'ar'].includes(locale)) return;
+                
+                const dir = RTL_LOCALES.includes(locale) ? 'rtl' : 'ltr';
+                
+                // Update document
+                document.documentElement.lang = locale;
+                document.documentElement.dir = dir;
+                document.documentElement.classList.remove('rtl', 'ltr');
+                document.documentElement.classList.add(dir);
+                
+                // Persist
+                localStorage.setItem(STORAGE_KEY, locale);
+                
+                // Apply translations
+                applyTranslations(locale);
+                
+                // Emit event for other components
+                window.dispatchEvent(new CustomEvent('localechange', { 
+                    detail: { locale, direction: dir } 
+                }));
+            }
+            
+            // Initialize language selector
+            const langSelect = document.getElementById('langSelect');
+            if (langSelect) {
+                // Set initial value
+                const stored = localStorage.getItem(STORAGE_KEY) || 'fa';
+                langSelect.value = stored;
+                
+                // Apply initial translations
+                applyTranslations(stored);
+                
+                // Handle change
+                langSelect.addEventListener('change', function() {
+                    setLanguage(this.value);
+                });
+            }
+            
+            console.log('🌐 i18n language system initialized');
             
         })();
     </script>
