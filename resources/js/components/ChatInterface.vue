@@ -49,6 +49,7 @@
                         {{ $t('nav.referrals') }}
                     </button>
                     <button @click="goToTickets" class="nav-btn" type="button">{{ $t('nav.tickets') }}</button>
+                    <button @click="goToProfile" class="nav-btn ghost" type="button">{{ $t('nav.profile') }}</button>
                     <button
                         class="nav-btn danger"
                         type="button"
@@ -1217,6 +1218,9 @@ const copyText = (text) => {
 const goToTickets = () => {
     window.location.href = '/ticket';
 };
+const goToProfile = () => {
+    window.location.href = '/user/profile';
+};
 const showHandoffModal = (message) => {
     selectedMessageForHandoff.value = message;
     isHandoffModalOpen.value = true;
@@ -1689,7 +1693,19 @@ function handleMenuClickOutside(event) {
 }
 
 .message.bot-message {
+    justify-content: flex-start;
+}
+
+[dir="rtl"] .message.bot-message {
     justify-content: flex-end;
+}
+
+.message.user-message {
+    justify-content: flex-end;
+}
+
+[dir="rtl"] .message.user-message {
+    justify-content: flex-start;
 }
 
 .message-bubble {
@@ -1698,6 +1714,7 @@ function handleMenuClickOutside(event) {
     max-width: 80%;
     word-break: break-word;
     line-height: 1.5;
+    text-align: start;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     animation: fadeInUp 0.3s ease;
     transition: box-shadow .2s ease, transform .2s ease;
@@ -1716,17 +1733,25 @@ function handleMenuClickOutside(event) {
 
 
 .user-message .message-bubble {
-    /*background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);*/
     background-color: #f1f5f9;
     color: #333;
-    /*color: white;*/
     border-bottom-right-radius: 4px;
+}
+
+[dir="rtl"] .user-message .message-bubble {
+    border-bottom-right-radius: 18px;
+    border-bottom-left-radius: 4px;
 }
 
 .bot-message .message-bubble {
     background-color: #f1f5f9;
     color: #333;
     border-bottom-left-radius: 4px;
+}
+
+[dir="rtl"] .bot-message .message-bubble {
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 4px;
 }
 
 .loading {
@@ -2026,7 +2051,7 @@ function handleMenuClickOutside(event) {
 
 .bot-message .message-bubble::before {
     content: "🤖";
-    margin-left: 6px;
+    margin-inline-end: 6px;
 }
 
 .header-content {

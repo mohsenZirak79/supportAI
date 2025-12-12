@@ -50,6 +50,9 @@
                     <button @click="goToChat" class="nav-btn ghost" type="button">
                         {{ $t('nav.chat') }}
                     </button>
+                    <button @click="goToProfile" class="nav-btn ghost" type="button">
+                        {{ $t('nav.profile') }}
+                    </button>
                     <button @click="showNewTicketForm = true" class="nav-btn" type="button">
                         {{ $t('ticket.newTicket') }}
                     </button>
@@ -65,7 +68,7 @@
             </div>
         </header>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
                 <!-- Total Tickets -->
@@ -1018,6 +1021,10 @@ const goToChat = () => {
     window.location.href = '/chat';
 };
 
+const goToProfile = () => {
+    window.location.href = '/user/profile';
+};
+
 // --- Language ---
 const onLanguageChange = (event) => {
     const newLocale = event.target.value;
@@ -1474,5 +1481,61 @@ onMounted(() => {
 .stat-body { display:flex; align-items:baseline; gap:8px; flex-wrap:nowrap; }
 .stat-label { font-size:.95rem; color:#475569; font-weight:600; white-space:nowrap; }
 .stat-value { font-size:1.5rem; font-weight:800; color:#0f172a; line-height:1; white-space:nowrap; }
+
+/* ============================================
+   DIRECTION-AWARE STYLES (LTR/RTL)
+   ============================================ */
+
+/* General text alignment based on direction */
+[dir="ltr"] .ticket-app {
+    text-align: left;
+}
+
+[dir="rtl"] .ticket-app {
+    text-align: right;
+}
+
+/* Fix flex direction for LTR */
+[dir="ltr"] .stat-row {
+    flex-direction: row;
+}
+
+[dir="ltr"] .header-content {
+    flex-direction: row;
+}
+
+[dir="ltr"] .header-left {
+    flex-direction: row;
+}
+
+[dir="ltr"] .header-actions {
+    flex-direction: row;
+}
+
+/* Thread message alignment */
+[dir="ltr"] .thread-msg.support-msg {
+    justify-content: flex-start;
+}
+
+[dir="ltr"] .thread-msg.user-msg {
+    justify-content: flex-end;
+}
+
+[dir="rtl"] .thread-msg.support-msg {
+    justify-content: flex-end;
+}
+
+[dir="rtl"] .thread-msg.user-msg {
+    justify-content: flex-start;
+}
+
+/* Message bubble text alignment */
+[dir="ltr"] .thread-bubble {
+    text-align: left;
+}
+
+[dir="rtl"] .thread-bubble {
+    text-align: right;
+}
 
 </style>

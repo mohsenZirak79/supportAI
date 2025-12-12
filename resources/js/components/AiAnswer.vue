@@ -1,21 +1,21 @@
 <template>
-    <div class="ai-answer" dir="rtl">
-        <!-- متن قالب‌بندی‌شده -->
+    <div class="ai-answer" :dir="direction">
+        <!-- Formatted text -->
         <div class="answer-text" v-html="html"></div>
 
         <!-- TTS -->
         <div v-if="canTTS" class="tts-actions">
             <button type="button" class="btn" @click="play" :disabled="speaking || loading || !textTrim">
-                <span v-if="loading">⏳ در حال تولید...</span>
-                <span v-else>▶️ پخش</span>
+                <span v-if="loading">⏳ {{ t('common.loading') }}</span>
+                <span v-else>▶️ {{ t('tts.play') }}</span>
             </button>
             <button type="button" class="btn" @click="stop" :disabled="!speaking && !loading">
-                ⏹️ توقف
+                ⏹️ {{ t('tts.stop') }}
             </button>
         </div>
         <small v-if="error" class="error-text">{{ error }}</small>
         <small v-else-if="!canTTS" class="muted">
-            مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
+            {{ t('tts.notSupported') }}
         </small>
     </div>
 </template>
@@ -23,6 +23,9 @@
 <script setup>
 import { ref, computed, onBeforeUnmount, defineProps } from 'vue';
 import { apiFetch } from '../lib/http';
+import { useLanguage } from '../i18n';
+
+const { direction, t } = useLanguage();
 
 const props = defineProps({
     text:  { type: String, default: '' },
@@ -406,7 +409,12 @@ onBeforeUnmount(() => stop());
     margin: 6px 0;
 }
 .answer-text ul, .answer-text ol {
-    margin: 6px 18px 6px 0; /* راست‌به‌چپ */
+    margin: 6px 0 6px 18px;
+    padding: 0 0 0 16px;
+}
+
+[dir="rtl"] .answer-text ul, [dir="rtl"] .answer-text ol {
+    margin: 6px 18px 6px 0;
     padding: 0 16px 0 0;
 }
 .answer-text li {

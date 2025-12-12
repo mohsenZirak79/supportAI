@@ -30,6 +30,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/chat.js',
                 'resources/js/tickets.js',
+                'resources/js/profile.js',   // ← User profile page
                 'resources/js/admin.js',     // ← اضافه
                 'resources/js/register.js',
             ],
@@ -65,6 +66,7 @@ export default defineConfig({
                     if (id.includes('auth')) return 'auth';
                     if (id.includes('chat')) return 'chat';
                     if (id.includes('ticket')) return 'ticket';
+                    if (id.includes('profile')) return 'profile';
                     return 'app'; // بقیه تو app می‌رن
                 },
             },
