@@ -73,6 +73,8 @@
     "inputPlaceholder": "Type your message…",
     "send": "Send",
     "voiceMessage": "🎤 Voice message",
+    "sendingVoice": "Sending...",
+    "transcript": "Transcript",
     "copyText": "Copy text",
     "textCopied": "Text copied",
     "handoff": "Refer to support",

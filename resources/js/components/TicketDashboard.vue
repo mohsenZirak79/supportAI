@@ -25,46 +25,32 @@
                     </div>
                 </div>-->
 
-        <!-- Header -->
-        <header class="ticket-header">
-            <div class="header-content">
-                <div class="header-left">
-                    <div class="ticket-logo">
-                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(255,255,255,0.3)"/>
-                            <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(255,255,255,0.2)"/>
-                            <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(255,255,255,0.4)"/>
-                            <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
-                            <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
+        <!-- Unified Header -->
+        <header class="app-header">
+            <div class="header-inner">
+                <div class="header-brand">
+                    <div class="brand-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
-                    <h1>{{ $t('ticket.title') }}</h1>
+                    <span class="brand-text">{{ $t('ticket.title') }}</span>
                 </div>
-                <div class="header-actions">
-                    <!-- Language Selector -->
-                    <select :value="locale" class="lang-selector" @change="onLanguageChange">
+                <nav class="header-nav">
+                    <select :value="locale" class="lang-select" @change="onLanguageChange">
                         <option value="fa">فارسی</option>
-                        <option value="en">English</option>
-                        <option value="ar">العربية</option>
+                        <option value="en">EN</option>
+                        <option value="ar">ع</option>
                     </select>
-                    <button @click="goToChat" class="nav-btn ghost" type="button">
-                        {{ $t('nav.chat') }}
+                    <button @click="goToChat" class="nav-link">{{ $t('nav.chat') }}</button>
+                    <button @click="goToProfile" class="nav-link">{{ $t('nav.profile') }}</button>
+                    <button @click="showNewTicketForm = true" class="nav-link primary">
+                        + {{ $t('ticket.newTicket') }}
                     </button>
-                    <button @click="goToProfile" class="nav-btn ghost" type="button">
-                        {{ $t('nav.profile') }}
+                    <button @click="logout" class="nav-link danger" :disabled="loggingOut">
+                        {{ loggingOut ? '...' : $t('nav.logout') }}
                     </button>
-                    <button @click="showNewTicketForm = true" class="nav-btn" type="button">
-                        {{ $t('ticket.newTicket') }}
-                    </button>
-                    <button
-                        class="nav-btn danger"
-                        type="button"
-                        @click="logout"
-                        :disabled="loggingOut"
-                    >
-                        {{ loggingOut ? $t('auth.loggingOut') : $t('nav.logout') }}
-                    </button>
-                </div>
+                </nav>
             </div>
         </header>
 
@@ -1043,10 +1029,8 @@ onMounted(() => {
 
 <style scoped>
 .ticket-app {
-    font-family: 'Vazirmatn', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    background: radial-gradient(1200px 800px at 100% -200px, rgba(59, 130, 246, 0.06), transparent 60%),
-    radial-gradient(1000px 600px at -200px 100%, rgba(99, 102, 241, 0.06), transparent 60%),
-    #f7fafc;
+    font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
+    background: #f8fafc;
     min-height: 100vh;
 }
 @keyframes shimmer-move { 100% { transform: translateX(100%); } }
@@ -1267,99 +1251,105 @@ onMounted(() => {
     color: #64748b;
 }
 
-/* ---------- Header ---------- */
-.ticket-header {
-    background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+/* ---------- Unified Header ---------- */
+.app-header {
+    background: #0e7490;
     color: white;
-    padding: 16px 24px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 0 24px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-.ticket-header h1 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: white;
-    margin: 0;
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 100%;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: space-between;
 }
 
-.ticket-logo {
-    width: 36px;
-    height: 36px;
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-icon {
+    width: 28px;
+    height: 28px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
 }
 
-.ticket-logo svg {
-    width: 100%;
-    height: 100%;
+.brand-icon svg {
+    width: 18px;
+    height: 18px;
 }
 
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.nav-btn {
-    padding: 0.625rem 1.25rem;
-    border-radius: 8px;
+.brand-text {
     font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    display: inline-flex;
+    font-size: 1rem;
+}
+
+.header-nav {
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.2);
+    gap: 6px;
+}
+
+.lang-select {
+    background: rgba(255,255,255,0.15);
+    border: none;
     color: white;
-    border-color: rgba(255, 255, 255, 0.3);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
 }
 
-.nav-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+.lang-select option {
+    background: #0e7490;
+    color: white;
 }
 
-.nav-btn.ghost {
+.nav-link {
     background: transparent;
-    border-color: rgba(255, 255, 255, 0.4);
+    border: none;
+    color: rgba(255,255,255,0.85);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.nav-btn.ghost:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.6);
+.nav-link:hover {
+    background: rgba(255,255,255,0.15);
+    color: white;
 }
 
-.nav-btn.danger {
-    background: rgba(248, 113, 113, 0.2);
-    border-color: rgba(248, 113, 113, 0.55);
-    color: #fee2e2;
+.nav-link.primary {
+    background: rgba(255,255,255,0.2);
+    color: white;
 }
 
-.nav-btn.danger:hover {
-    background: rgba(248, 113, 113, 0.35);
+.nav-link.primary:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.nav-link.danger {
+    color: #fecaca;
+}
+
+.nav-link.danger:hover {
+    background: rgba(239,68,68,0.2);
 }
 
 /* Language Selector */
