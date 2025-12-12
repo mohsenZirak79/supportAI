@@ -107,13 +107,13 @@
                             </svg>
                         </div>
                         <div class="stat-body">
-                            <div class="stat-label">پاسخ داده شده</div>
+                            <div class="stat-label">{{ $t('ticket.statuses.answered') }}</div>
                             <div class="stat-value">{{ answeredTickets }}</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- بسته شده -->
+                <!-- Closed -->
                 <div class="stat glossy p-4">
                     <div class="stat-row">
                         <div class="stat-icon bg-rose-100">
@@ -122,7 +122,7 @@
                             </svg>
                         </div>
                         <div class="stat-body">
-                            <div class="stat-label">بسته شده</div>
+                            <div class="stat-label">{{ $t('ticket.statuses.closed') }}</div>
                             <div class="stat-value">{{ closedTickets }}</div>
                         </div>
                     </div>
@@ -134,31 +134,31 @@
             <div class="glossy p-6 mb-4">
                 <div class="flex flex-wrap gap-4 items-center">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">فیلتر بر اساس وضعیت</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('ticket.filterByStatus') }}</label>
                         <select v-model="statusFilter"
                                 class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">همه</option>
-                            <option value="pending">در انتظار پاسخ</option>
-                            <option value="answered">پاسخ داده شده</option>
-                            <option value="closed">بسته شده</option>
+                            <option value="">{{ $t('common.all') }}</option>
+                            <option value="pending">{{ $t('ticket.statuses.pending') }}</option>
+                            <option value="answered">{{ $t('ticket.statuses.answered') }}</option>
+                            <option value="closed">{{ $t('ticket.statuses.closed') }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">فیلتر بر اساس بخش</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('ticket.filterByDepartment') }}</label>
                         <select v-model="departmentFilter"
                                 class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">همه بخش‌ها</option>
+                            <option value="">{{ $t('ticket.allDepartments') }}</option>
                             <option v-for="dept in departments" :key="dept.id" :value="dept.id">
                                 {{ dept.name }}
                             </option>
                         </select>
                     </div>
                     <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">جستجو</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('common.search') }}</label>
                         <input
                             type="text"
                             v-model="searchQuery"
-                            placeholder="جستجو در عنوان یا متن تیکت..."
+                            :placeholder="$t('ticket.searchPlaceholder')"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
                     </div>
@@ -169,7 +169,7 @@
             <div class="space-y-6">
                 <div v-if="loading" class="py-16 flex flex-col items-center">
                     <div class="w-14 h-14 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin"></div>
-                    <p class="mt-4 text-gray-500">در حال بارگذاری…</p>
+                    <p class="mt-4 text-gray-500">{{ $t('common.loading') }}</p>
 
                     <div class="mt-8 w-full max-w-4xl space-y-4">
                         <div class="h-24 rounded-xl bg-white shadow-sm relative overflow-hidden">
@@ -187,8 +187,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">هیچ تیکتی یافت نشد</h3>
-                    <p class="text-gray-500">تیکت جدیدی ایجاد کنید یا فیلترها را تغییر دهید</p>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ $t('ticket.noTickets') }}</h3>
+                    <p class="text-gray-500">{{ $t('ticket.createFirst') }}</p>
                 </div>
 
                 <div
@@ -238,7 +238,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                     </svg>
-                    <span>نمایش گفتگو</span>
+                    <span>{{ $t('ticket.viewConversation') }}</span>
                   </span>
                                 </button>
                             </div>
@@ -251,7 +251,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                             </svg>
-                            {{ ticket.attachments_count }} فایل پیوست
+                            {{ ticket.attachments_count }} {{ $t('ticket.attachFile') }}
                         </div>
                     </div>
                 </div>
@@ -283,7 +283,7 @@
                             </svg>
                         </button>
                         <h2 class="text-lg md:text-xl font-extrabold text-gray-900 text-center">
-                            گفتگوی تیکت: {{ selectedThread.title }}
+                            {{ $t('ticket.conversation') }}: {{ selectedThread.title }}
                         </h2>
                     </div>
 
@@ -301,7 +301,7 @@
                                     class="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
                                     :class="isSupport(msg.sender_type) ? 'bg-emerald-500 order-1' : 'bg-blue-500 order-2'"
                                 >
-                                    {{ isSupport(msg.sender_type) ? 'پشتیبان' : 'شما' }}
+                                    {{ isSupport(msg.sender_type) ? $t('ticket.support') : $t('ticket.you') }}
                                 </div>
 
                                 <!-- حباب پیام -->
@@ -322,7 +322,7 @@
                                         <template v-for="att in (msg.showAllAtt ? msg.attachments : msg.attachments.slice(0,6))" :key="att.id">
                                             <a :href="att.url" target="_blank" class="file-chip file-chip-link" :title="att.name">
                                                 <span class="mr-1">{{ getFileEmoji(att.mime) }}</span>
-                                                <span class="truncate max-w-[140px] inline-block align-middle">{{ att.name || 'فایل' }}</span>
+                                                <span class="truncate max-w-[140px] inline-block align-middle">{{ att.name || $t('common.file') }}</span>
                                             </a>
                                         </template>
                                         <button
@@ -330,7 +330,7 @@
                                             class="file-chip file-chip-muted"
                                             @click="msg.showAllAtt = !msg.showAllAtt"
                                         >
-                                            {{ msg.showAllAtt ? 'کمتر' : `+${msg.attachments.length - 6} بیشتر` }}
+                                            {{ msg.showAllAtt ? $t('common.less') : `+${msg.attachments.length - 6} ${$t('common.more')}` }}
                                         </button>
                                     </div>
                                 </div>
@@ -350,12 +350,12 @@
                     <div v-if="canReplyToThread" class="border-t bg-white p-4 md:p-6">
                         <form @submit.prevent="submitThreadReply" class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">پاسخ شما</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('ticket.reply') }}</label>
                                 <textarea
                                     v-model="threadReplyMessage"
                                     rows="3"
                                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="پاسخ خود را بنویسید..."
+                                    :placeholder="$t('ticket.replyPlaceholder')"
                                     @keydown.ctrl.enter.prevent="submitThreadReply"
                                     required
                                 ></textarea>
@@ -364,7 +364,7 @@
 
                             <!-- Dropzone -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">📎 فایل‌های پیوست</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">📎 {{ $t('ticket.attachFile') }}</label>
                                 <div
                                     class="file-drop-zone dropzone-fancy w-full p-4 rounded-lg text-center cursor-pointer border-2 border-dashed border-gray-300"
                                     :class="{'dragging': isDragOverReply}"
@@ -373,8 +373,8 @@
                                     @drop.prevent="handleFileDropReply"
                                     @click="$refs.replyFileInput.click()"
                                 >
-                                    <p class="text-gray-600">فایل‌ها را اینجا بکشید یا کلیک کنید</p>
-                                    <p class="text-xs text-gray-400 mt-1">حداکثر 10 فایل، هر کدام تا 5 مگابایت</p>
+                                    <p class="text-gray-600">{{ $t('ticket.dragFiles') }}</p>
+                                    <p class="text-xs text-gray-400 mt-1">{{ $t('ticket.maxFiles') }}</p>
                                 </div>
                                 <input
                                     type="file"
@@ -397,14 +397,14 @@
                                 </template>
                                 <span v-if="replyFilesMoreCount > 0" class="file-chip file-chip-muted cursor-pointer"
                                       @click="showAllReplyFiles = !showAllReplyFiles">
-              +{{ replyFilesMoreCount }} فایل دیگر
+              +{{ replyFilesMoreCount }} {{ $t('ticket.moreFiles') }}
             </span>
                             </div>
 
                             <div class="flex justify-end gap-3">
                                 <button type="button" class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
                                         @click="threadReplyMessage=''; replyFiles=[];">
-                                    پاک‌سازی
+                                    {{ $t('common.clear') }}
                                 </button>
                                 <button
                                     type="submit"
@@ -412,7 +412,7 @@
                                     class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
                      text-white px-5 py-2 rounded-lg font-medium disabled:opacity-50"
                                 >
-                                    {{ isSubmittingReply ? 'در حال ارسال...' : 'ارسال پاسخ' }}
+                                    {{ isSubmittingReply ? $t('common.sending') : $t('ticket.sendReply') }}
                                 </button>
                             </div>
                         </form>
@@ -434,7 +434,7 @@
                 >
                     <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
                         <div class="flex justify-between items-center">
-                            <h2 class="text-xl font-bold text-gray-900">ثبت تیکت جدید</h2>
+                            <h2 class="text-xl font-bold text-gray-900">{{ $t('ticket.newTicket') }}</h2>
                             <button
                                 @click="closeNewTicketForm"
                                 class="absolute top-4 left-4 text-red-500 hover:text-red-700 transition-transform transform hover:scale-110 close-btn"
@@ -451,41 +451,41 @@
                     <div class="max-h-[75vh] overflow-y-auto">
                         <form @submit.prevent="submitNewTicket" class="p-6 space-y-6">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">🏢 بخش پشتیبانی</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">🏢 {{ $t('ticket.department') }}</label>
                                 <select
                                     v-model="newTicket.department"
                                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
                                     required
                                 >
-                                    <option value="">انتخاب بخش...</option>
+                                    <option value="">{{ $t('ticket.selectDepartment') }}</option>
                                     <option v-for="dept in departments" :key="dept.id" :value="dept.id">
                                         {{ dept.name }}
                                     </option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">📝 عنوان تیکت</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">📝 {{ $t('ticket.subject') }}</label>
                                 <input
                                     type="text"
                                     v-model="newTicket.title"
                                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-                                    placeholder="عنوان مشکل یا درخواست خود را وارد کنید..."
+                                    :placeholder="$t('ticket.subjectPlaceholder')"
                                     required
                                 >
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">💬 توضیحات</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">💬 {{ $t('ticket.description') }}</label>
                                 <textarea
                                     v-model="newTicket.message"
                                     rows="6"
                                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors resize-none"
-                                    placeholder="توضیحات کاملی از مشکل یا درخواست خود ارائه دهید..."
+                                    :placeholder="$t('ticket.descriptionPlaceholder')"
                                     required
                                 ></textarea>
                             </div>
                             <!-- File Upload -->
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">📎 فایل‌های پیوست</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">📎 {{ $t('ticket.attachFile') }}</label>
                                 <div
                                     class="file-drop-zone dropzone-fancy w-full p-8 rounded-lg text-center cursor-pointer border-2 border-dashed border-gray-300"
                                     :class="{'dragging': isDragOver}"
@@ -499,7 +499,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                               d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"/>
                                     </svg>
-                                    <p class="text-lg font-medium text-gray-600">فایل‌ها را اینجا بکشید یا کلیک کنید</p>
+                                    <p class="text-lg font-medium text-gray-600">{{ $t('ticket.dragFiles') }}</p>
                                     <p class="text-sm text-gray-500 mt-1">حداکثر 10 فایل، هر کدام تا 5 مگابایت</p>
                                 </div>
                                 <input
@@ -1353,6 +1353,52 @@ onMounted(() => {
 
 .nav-btn.danger:hover {
     background: rgba(248, 113, 113, 0.35);
+}
+
+/* Language Selector */
+.lang-selector {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 32px 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-inline-start: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    min-width: 100px;
+}
+
+[dir="ltr"] .lang-selector {
+    padding: 8px 32px 8px 14px;
+    background-position: right 10px center;
+}
+
+[dir="rtl"] .lang-selector {
+    padding: 8px 14px 8px 32px;
+    background-position: left 10px center;
+}
+
+.lang-selector:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.lang-selector:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.lang-selector option {
+    background: #0e7490;
+    color: white;
+    padding: 8px;
 }
 
 .close-btn {

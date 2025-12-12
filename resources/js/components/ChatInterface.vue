@@ -2103,25 +2103,48 @@ function handleMenuClickOutside(event) {
 }
 
 .lang-selector {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
     color: white;
-    padding: 6px 12px;
+    padding: 8px 32px 8px 14px;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.2s ease;
-    margin-left: 8px;
+    margin-inline-start: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    min-width: 100px;
+}
+
+[dir="ltr"] .lang-selector {
+    padding: 8px 32px 8px 14px;
+    background-position: right 10px center;
+}
+
+[dir="rtl"] .lang-selector {
+    padding: 8px 14px 8px 32px;
+    background-position: left 10px center;
 }
 
 .lang-selector:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.lang-selector:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
 .lang-selector option {
     background: #0e7490;
     color: white;
+    padding: 8px;
 }
 
 
