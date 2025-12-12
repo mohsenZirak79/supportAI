@@ -295,6 +295,15 @@ class ConversationController extends Controller
                     }
                 }
                 
+                // Log the request being sent
+                \Log::info('Sending to AI API', [
+                    'question' => substr($validated['content'] ?? '', 0, 50),
+                    'first_message' => $isFirstMessage,
+                    'messages_count_before' => $conversation->messages()->count(),
+                    'user_name' => $userName,
+                    'lang' => $lang,
+                ]);
+                
                 $resp = Http::timeout(45)->post('https://ai.mokhtal.xyz/api/ask', [
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
@@ -308,13 +317,23 @@ class ConversationController extends Controller
                     $aiReplyText = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                     $aiVoiceDataUrl = $json['audio_data'] ?? $json['voice_base64'] ?? null;
 
+                    // Log for debugging
+                    \Log::info('AI Response received', [
+                        'first_message' => $isFirstMessage,
+                        'has_title' => isset($json['title']),
+                        'title' => $json['title'] ?? null,
+                        'current_conversation_title' => $conversation->title,
+                    ]);
+
                     // اگر عنوان پیشنهاد داد (هم title و هم suggested_title را چک کن)
                     $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
                     if (!empty($suggestedTitle)
                         && (!$conversation->title || $conversation->title === 'چت جدید')) {
                         $conversation->update(['title' => $suggestedTitle]);
+                        \Log::info('Conversation title updated', ['new_title' => $suggestedTitle]);
                     }
                 } else {
+                    \Log::warning('AI API failed', ['status' => $resp->status(), 'body' => $resp->body()]);
                     $aiReplyText = 'خطا در سرویس ask (' . $resp->status() . ')';
                 }
             }

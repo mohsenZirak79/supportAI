@@ -1,6 +1,6 @@
 <template>
     <div class="app-container" :dir="direction">
-        <!-- Unified Header -->
+        <!-- Unified Header - Same as Chat & Tickets -->
         <header class="app-header">
             <div class="header-inner">
                 <div class="header-brand">
@@ -41,7 +41,7 @@
                     <div class="profile-sidebar">
                         <div class="avatar-card">
                             <div class="avatar-wrapper">
-                                <div class="avatar-container" @click="triggerAvatarUpload">
+                                <div class="avatar-container">
                                     <img 
                                         v-if="user.avatar" 
                                         :src="user.avatar" 
@@ -51,30 +51,7 @@
                                     <div v-else class="avatar-placeholder">
                                         <span>{{ initials }}</span>
                                     </div>
-                                    <div class="avatar-overlay">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                                            <circle cx="12" cy="13" r="4"/>
-                                        </svg>
-                                    </div>
                                 </div>
-                                <input 
-                                    ref="avatarInput"
-                                    type="file" 
-                                    accept="image/*" 
-                                    @change="handleAvatarUpload"
-                                    style="display: none;"
-                                />
-                                <button 
-                                    v-if="user.avatar" 
-                                    @click.stop="deleteAvatar"
-                                    class="delete-avatar-btn"
-                                    :title="t('profile.deleteAvatar')"
-                                >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                    </svg>
-                                </button>
                             </div>
                             <h2 class="user-name">{{ fullName }}</h2>
                             <p class="user-email">{{ user.email }}</p>
@@ -208,107 +185,6 @@
                                 </div>
                             </form>
                         </div>
-
-                        <!-- Change Password -->
-                        <div class="form-card">
-                            <div class="card-header">
-                                <div class="header-icon security">
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                                    </svg>
-                                </div>
-                                <h3>{{ t('profile.changePassword') }}</h3>
-                            </div>
-                            <form @submit.prevent="updatePassword" class="profile-form">
-                                <div class="form-grid">
-                                    <div class="form-group full-width">
-                                        <label>{{ t('profile.currentPassword') }}</label>
-                                        <div class="password-input">
-                                            <input 
-                                                v-model="passwordForm.current_password" 
-                                                :type="showCurrentPassword ? 'text' : 'password'"
-                                                required
-                                                :placeholder="t('profile.currentPasswordPlaceholder')"
-                                            />
-                                            <button 
-                                                type="button" 
-                                                class="toggle-password"
-                                                @click="showCurrentPassword = !showCurrentPassword"
-                                            >
-                                                <svg v-if="showCurrentPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                                                    <line x1="1" y1="1" x2="23" y2="23"/>
-                                                </svg>
-                                                <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                    <circle cx="12" cy="12" r="3"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>{{ t('profile.newPassword') }}</label>
-                                        <div class="password-input">
-                                            <input 
-                                                v-model="passwordForm.password" 
-                                                :type="showNewPassword ? 'text' : 'password'"
-                                                required
-                                                minlength="6"
-                                                :placeholder="t('profile.newPasswordPlaceholder')"
-                                            />
-                                            <button 
-                                                type="button" 
-                                                class="toggle-password"
-                                                @click="showNewPassword = !showNewPassword"
-                                            >
-                                                <svg v-if="showNewPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                                                    <line x1="1" y1="1" x2="23" y2="23"/>
-                                                </svg>
-                                                <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                    <circle cx="12" cy="12" r="3"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>{{ t('profile.confirmPassword') }}</label>
-                                        <div class="password-input">
-                                            <input 
-                                                v-model="passwordForm.password_confirmation" 
-                                                :type="showConfirmPassword ? 'text' : 'password'"
-                                                required
-                                                minlength="6"
-                                                :placeholder="t('profile.confirmPasswordPlaceholder')"
-                                            />
-                                            <button 
-                                                type="button" 
-                                                class="toggle-password"
-                                                @click="showConfirmPassword = !showConfirmPassword"
-                                            >
-                                                <svg v-if="showConfirmPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                                                    <line x1="1" y1="1" x2="23" y2="23"/>
-                                                </svg>
-                                                <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                    <circle cx="12" cy="12" r="3"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p v-if="passwordMismatch" class="error-text">{{ t('profile.passwordMismatch') }}</p>
-                                <div class="form-actions">
-                                    <button type="submit" class="btn-secondary" :disabled="savingPassword || passwordMismatch">
-                                        <span v-if="savingPassword" class="btn-spinner"></span>
-                                        {{ savingPassword ? t('common.saving') : t('profile.updatePassword') }}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -329,13 +205,6 @@ const { locale, direction, setLocale, t } = useLanguage();
 const loading = ref(true);
 const loggingOut = ref(false);
 const savingProfile = ref(false);
-const savingPassword = ref(false);
-const avatarInput = ref(null);
-
-// Password visibility toggles
-const showCurrentPassword = ref(false);
-const showNewPassword = ref(false);
-const showConfirmPassword = ref(false);
 
 // User data
 const user = reactive({
@@ -364,12 +233,6 @@ const form = reactive({
     address: '',
 });
 
-const passwordForm = reactive({
-    current_password: '',
-    password: '',
-    password_confirmation: '',
-});
-
 // Computed
 const fullName = computed(() => {
     return `${user.name || ''} ${user.family || ''}`.trim() || t('profile.guest');
@@ -379,11 +242,6 @@ const initials = computed(() => {
     const first = user.name?.charAt(0) || '';
     const last = user.family?.charAt(0) || '';
     return (first + last).toUpperCase() || '?';
-});
-
-const passwordMismatch = computed(() => {
-    return passwordForm.password && passwordForm.password_confirmation && 
-           passwordForm.password !== passwordForm.password_confirmation;
 });
 
 // Methods
@@ -429,77 +287,6 @@ const updateProfile = async () => {
     }
 };
 
-const updatePassword = async () => {
-    if (passwordMismatch.value) return;
-    
-    try {
-        savingPassword.value = true;
-        const response = await axios.put('/api/v1/user/profile/password', passwordForm);
-        if (response.data.success) {
-            toast.success(t('profile.passwordSuccess'));
-            // Clear password form
-            passwordForm.current_password = '';
-            passwordForm.password = '';
-            passwordForm.password_confirmation = '';
-        }
-    } catch (error) {
-        console.error('Failed to update password:', error);
-        const message = error.response?.data?.message || t('profile.passwordError');
-        toast.error(message);
-    } finally {
-        savingPassword.value = false;
-    }
-};
-
-const triggerAvatarUpload = () => {
-    avatarInput.value?.click();
-};
-
-const handleAvatarUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Validate file size (2MB)
-    if (file.size > 2 * 1024 * 1024) {
-        toast.error(t('profile.avatarTooLarge'));
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('avatar', file);
-
-    try {
-        const response = await axios.post('/api/v1/user/profile/avatar', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        if (response.data.success) {
-            user.avatar = response.data.avatar;
-            toast.success(t('profile.avatarSuccess'));
-        }
-    } catch (error) {
-        console.error('Failed to upload avatar:', error);
-        toast.error(t('profile.avatarError'));
-    }
-    
-    // Reset input
-    event.target.value = '';
-};
-
-const deleteAvatar = async () => {
-    if (!confirm(t('profile.confirmDeleteAvatar'))) return;
-    
-    try {
-        const response = await axios.delete('/api/v1/user/profile/avatar');
-        if (response.data.success) {
-            user.avatar = null;
-            toast.success(t('profile.avatarDeleted'));
-        }
-    } catch (error) {
-        console.error('Failed to delete avatar:', error);
-        toast.error(t('profile.avatarDeleteError'));
-    }
-};
-
 const onLanguageChange = (event) => {
     setLocale(event.target.value);
 };
@@ -541,7 +328,7 @@ onMounted(() => {
     font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
 }
 
-/* Header - Consistent with other pages */
+/* Header - EXACTLY the same as Chat & Tickets */
 .app-header {
     background: #0e7490;
     color: white;
@@ -687,7 +474,7 @@ onMounted(() => {
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
-/* Avatar Section */
+/* Avatar Section - Read Only */
 .avatar-card {
     text-align: center;
 }
@@ -703,14 +490,8 @@ onMounted(() => {
     height: 100px;
     border-radius: 50%;
     overflow: hidden;
-    cursor: pointer;
     position: relative;
     border: 3px solid #e2e8f0;
-    transition: all 0.3s ease;
-}
-
-.avatar-container:hover {
-    border-color: #0e7490;
 }
 
 .avatar-image {
@@ -729,44 +510,6 @@ onMounted(() => {
     font-size: 2rem;
     font-weight: 700;
     color: white;
-}
-
-.avatar-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    color: white;
-}
-
-.avatar-container:hover .avatar-overlay {
-    opacity: 1;
-}
-
-.delete-avatar-btn {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: #ef4444;
-    border: 2px solid white;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.delete-avatar-btn:hover {
-    background: #dc2626;
-    transform: scale(1.1);
 }
 
 .user-name {
@@ -879,11 +622,6 @@ onMounted(() => {
     color: #0284c7;
 }
 
-.header-icon.security {
-    background: #f3e8ff;
-    color: #9333ea;
-}
-
 .card-header h3 {
     font-size: 1rem;
     font-weight: 600;
@@ -954,36 +692,6 @@ onMounted(() => {
     min-height: 80px;
 }
 
-/* Password Input */
-.password-input {
-    position: relative;
-}
-
-.password-input input {
-    width: 100%;
-    padding-inline-end: 44px;
-}
-
-.toggle-password {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    inset-inline-end: 12px;
-    background: none;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s ease;
-}
-
-.toggle-password:hover {
-    color: #64748b;
-}
-
 /* Form Actions */
 .form-actions {
     display: flex;
@@ -995,8 +703,7 @@ onMounted(() => {
     justify-content: flex-start;
 }
 
-.btn-primary,
-.btn-secondary {
+.btn-primary {
     padding: 10px 24px;
     border-radius: 8px;
     font-weight: 600;
@@ -1008,9 +715,6 @@ onMounted(() => {
     justify-content: center;
     gap: 8px;
     border: none;
-}
-
-.btn-primary {
     background: #0e7490;
     color: white;
 }
@@ -1019,17 +723,7 @@ onMounted(() => {
     background: #0c6580;
 }
 
-.btn-secondary {
-    background: #7c3aed;
-    color: white;
-}
-
-.btn-secondary:hover:not(:disabled) {
-    background: #6d28d9;
-}
-
-.btn-primary:disabled,
-.btn-secondary:disabled {
+.btn-primary:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -1041,13 +735,6 @@ onMounted(() => {
     border-top-color: white;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
-}
-
-/* Error Text */
-.error-text {
-    color: #ef4444;
-    font-size: 0.85rem;
-    margin: 0;
 }
 
 /* Responsive */
