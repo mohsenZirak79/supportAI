@@ -205,6 +205,16 @@ class ConversationController extends Controller
                         $fileName = $tmpWav ? 'audio.wav' : basename($srcPath);
 
                         $lang = $validated['lang'] ?? 'fa'; // Default to Persian
+                        
+                        // Get user's name for personalized response
+                        $userName = null;
+                        if ($user) {
+                            $userName = trim(($user->name ?? '') . ' ' . ($user->family ?? ''));
+                            if (empty($userName)) {
+                                $userName = $user->phone ?? null;
+                            }
+                        }
+                        
                         $resp1 = Http::asMultipart()
                             ->timeout(60)
                             ->attach('file', fopen($filePath, 'r'), $fileName)
@@ -212,12 +222,20 @@ class ConversationController extends Controller
                                 'user_type'     => 'new',
                                 'first_message' => $isFirstMessage ? 'true' : 'false',
                                 'lang'          => $lang,
+                                'user_name'     => $userName,
                             ]);
 
                         if ($resp1->successful()) {
                             $json = $resp1->json();
                             $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                             $aiVoiceDataUrl= $json['audio_data'] ?? $json['voice_base64'] ?? null;
+                            
+                            // Handle suggested title for voice messages too
+                            $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
+                            if (!empty($suggestedTitle)
+                                && (!$conversation->title || $conversation->title === 'چت جدید')) {
+                                $conversation->update(['title' => $suggestedTitle]);
+                            }
                         } else {
                             $logHttpError('multipart', $resp1);
 
@@ -233,12 +251,20 @@ class ConversationController extends Controller
                                 'user_type'     => 'new',
                                 'first_message' => $isFirstMessage,
                                 'lang'          => $lang,
+                                'user_name'     => $userName,
                             ]);
 
                             if ($resp2->successful()) {
                                 $json = $resp2->json();
                                 $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                                 $aiVoiceDataUrl= $json['audio_data'] ?? $json['voice_base64'] ?? null;
+                                
+                                // Handle suggested title for voice messages too
+                                $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
+                                if (!empty($suggestedTitle)
+                                    && (!$conversation->title || $conversation->title === 'چت جدید')) {
+                                    $conversation->update(['title' => $suggestedTitle]);
+                                }
                             } else {
                                 $logHttpError('json_base64', $resp2);
                                 $aiReplyText = 'خطا در سرویس voice-to-answer ('
@@ -259,11 +285,22 @@ class ConversationController extends Controller
             } else {
                 // متن
                 $lang = $validated['lang'] ?? 'fa'; // Default to Persian
+                
+                // Get user's name for personalized response
+                $userName = null;
+                if ($user) {
+                    $userName = trim(($user->name ?? '') . ' ' . ($user->family ?? ''));
+                    if (empty($userName)) {
+                        $userName = $user->phone ?? null;
+                    }
+                }
+                
                 $resp = Http::timeout(45)->post('https://ai.mokhtal.xyz/api/ask', [
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
                     'first_message' => $isFirstMessage,
                     'lang' => $lang,
+                    'user_name' => $userName, // Send user's name for personalization
                 ]);
 
                 if ($resp->successful()) {
@@ -271,10 +308,11 @@ class ConversationController extends Controller
                     $aiReplyText = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                     $aiVoiceDataUrl = $json['audio_data'] ?? $json['voice_base64'] ?? null;
 
-                    // اگر عنوان پیشنهاد داد
-                    if (!empty($json['suggested_title'])
+                    // اگر عنوان پیشنهاد داد (هم title و هم suggested_title را چک کن)
+                    $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
+                    if (!empty($suggestedTitle)
                         && (!$conversation->title || $conversation->title === 'چت جدید')) {
-                        $conversation->update(['title' => $json['suggested_title']]);
+                        $conversation->update(['title' => $suggestedTitle]);
                     }
                 } else {
                     $aiReplyText = 'خطا در سرویس ask (' . $resp->status() . ')';
