@@ -25,7 +25,7 @@ export const STORAGE_KEY = 'app_language';
 // ============================================
 
 export const i18n = createI18n({
-    legacy: false, // Use Composition API mode
+    legacy: true, // Use legacy mode to avoid CSP issues with new Function()
     locale: getStoredLocale(),
     fallbackLocale: 'fa',
     messages: {
@@ -141,8 +141,8 @@ export function useLanguage() {
         // Update reactive state
         currentLocale.value = newLocale;
         
-        // Update vue-i18n
-        i18n.global.locale.value = newLocale;
+        // Update vue-i18n (legacy mode uses direct assignment)
+        i18n.global.locale = newLocale;
         
         // Persist to localStorage
         saveLocale(newLocale);
@@ -219,7 +219,7 @@ export const AppLanguage = {
     set locale(value) { 
         if (SUPPORTED_LOCALES.includes(value)) {
             currentLocale.value = value;
-            i18n.global.locale.value = value;
+            i18n.global.locale = value; // Legacy mode uses direct assignment
             saveLocale(value);
             applyLocaleToDocument(value);
         }

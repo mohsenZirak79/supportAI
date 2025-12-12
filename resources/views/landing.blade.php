@@ -341,7 +341,22 @@
         .navbar-actions {
             display: flex;
             align-items: center;
+            justify-content: flex-end;
             gap: var(--space-sm);
+            flex-wrap: nowrap;
+        }
+        
+        .navbar-actions .btn {
+            white-space: nowrap;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .navbar-actions .lang-pills {
+            height: 38px;
+            display: flex;
+            align-items: center;
         }
 
         /* Language Switcher */
@@ -411,39 +426,39 @@
            ============================================ */
         .lang-pills {
             display: flex;
-            gap: 4px;
-            padding: 4px;
-            background: rgba(255, 255, 255, 0.1);
+            gap: 3px;
+            padding: 3px;
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 50px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .lang-pill {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border: none;
             border-radius: 50%;
             background: transparent;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.8);
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         .lang-pill:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             color: white;
         }
 
         .lang-pill.active {
-            background: white;
-            color: var(--color-primary);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            background: var(--color-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(14, 116, 144, 0.4);
         }
 
         .lang-pill__text {
@@ -452,17 +467,17 @@
 
         /* Scrolled state - dark pills */
         .navbar.scrolled .lang-pills {
-            background: rgba(14, 116, 144, 0.1);
+            background: rgba(14, 116, 144, 0.08);
             border-color: rgba(14, 116, 144, 0.15);
         }
 
         .navbar.scrolled .lang-pill {
-            color: rgba(14, 116, 144, 0.7);
+            color: var(--color-primary);
         }
 
         .navbar.scrolled .lang-pill:hover {
             background: rgba(14, 116, 144, 0.1);
-            color: var(--color-primary);
+            color: var(--color-primary-dark);
         }
 
         .navbar.scrolled .lang-pill.active {
@@ -1335,7 +1350,7 @@
                         <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
                     </svg>
                 </div>
-                <span>پنل پشتیبانی مناطق آزاد تجاری</span>
+                <span data-i18n="landing.brandName">پنل پشتیبانی مناطق آزاد تجاری</span>
             </a>
             <div class="navbar-actions">
                 <!-- Beautiful Language Switcher -->
@@ -1443,10 +1458,10 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                     </svg>
-                    <span>ویژگی‌های برتر</span>
+                    <span data-i18n="landing.topFeatures">ویژگی‌های برتر</span>
                 </div>
-                <h2 class="section-title" data-reveal>ویژگی‌های پلتفرم</h2>
-                <p class="section-subtitle" data-reveal>ابزارهای قدرتمند برای مدیریت بهتر پشتیبانی</p>
+                <h2 class="section-title" data-reveal data-i18n="landing.featuresTitle">ویژگی‌های پلتفرم</h2>
+                <p class="section-subtitle" data-reveal data-i18n="landing.featuresSubtitle">ابزارهای قدرتمند برای مدیریت بهتر پشتیبانی</p>
             </header>
 
             <div class="features-grid">
@@ -1458,8 +1473,8 @@
                             </svg>
                         </div>
                     </div>
-                    <h3>گفت‌وگوی هوشمند</h3>
-                    <p>سیستم چت پیشرفته با پشتیبانی از هوش مصنوعی برای پاسخگویی سریع و دقیق به کاربران</p>
+                    <h3 data-i18n="landing.smartChat">گفت‌وگوی هوشمند</h3>
+                    <p data-i18n="landing.smartChatDesc">سیستم چت پیشرفته با پشتیبانی از هوش مصنوعی برای پاسخگویی سریع و دقیق به کاربران</p>
                 </article>
 
                 <article class="feature-card" data-reveal tabindex="0">
@@ -1474,8 +1489,8 @@
                             </svg>
                         </div>
                     </div>
-                    <h3>مدیریت تیکت‌ها</h3>
-                    <p>سیستم کامل مدیریت تیکت‌های پشتیبانی با امکان پیگیری، اولویت‌بندی و پاسخگویی</p>
+                    <h3 data-i18n="landing.ticketManagement">مدیریت تیکت‌ها</h3>
+                    <p data-i18n="landing.ticketManagementDesc">سیستم کامل مدیریت تیکت‌های پشتیبانی با امکان پیگیری، اولویت‌بندی و پاسخگویی</p>
                 </article>
 
                 <article class="feature-card" data-reveal tabindex="0">
@@ -1489,8 +1504,8 @@
                             </svg>
                         </div>
                     </div>
-                    <h3>تیم پشتیبانی</h3>
-                    <p>مدیریت تیم‌های پشتیبانی با سیستم نقش‌ها و دسترسی‌های پیشرفته</p>
+                    <h3 data-i18n="landing.supportTeam">تیم پشتیبانی</h3>
+                    <p data-i18n="landing.supportTeamDesc">مدیریت تیم‌های پشتیبانی با سیستم نقش‌ها و دسترسی‌های پیشرفته</p>
                 </article>
 
                 <article class="feature-card" data-reveal tabindex="0">
@@ -1503,8 +1518,8 @@
                             </svg>
                         </div>
                     </div>
-                    <h3>گزارش‌گیری</h3>
-                    <p>داشبورد تحلیلی برای بررسی عملکرد و آمار تیکت‌ها و گفت‌وگوها</p>
+                    <h3 data-i18n="landing.reporting">گزارش‌گیری</h3>
+                    <p data-i18n="landing.reportingDesc">داشبورد تحلیلی برای بررسی عملکرد و آمار تیکت‌ها و گفت‌وگوها</p>
                 </article>
 
                 <article class="feature-card" data-reveal tabindex="0">
@@ -1516,8 +1531,8 @@
                             </svg>
                         </div>
                     </div>
-                    <h3>امنیت بالا</h3>
-                    <p>سیستم امنیتی پیشرفته با احراز هویت چندمرحله‌ای و مدیریت دسترسی‌ها</p>
+                    <h3 data-i18n="landing.security">امنیت بالا</h3>
+                    <p data-i18n="landing.securityDesc">سیستم امنیتی پیشرفته با احراز هویت چندمرحله‌ای و مدیریت دسترسی‌ها</p>
                 </article>
 
                 <article class="feature-card" data-reveal tabindex="0">
@@ -1528,8 +1543,8 @@
                             </svg>
                         </div>
                     </div>
-                    <h3>عملکرد سریع</h3>
-                    <p>پلتفرم بهینه‌شده با سرعت بالا و تجربه کاربری روان و حرفه‌ای</p>
+                    <h3 data-i18n="landing.performance">عملکرد سریع</h3>
+                    <p data-i18n="landing.performanceDesc">پلتفرم بهینه‌شده با سرعت بالا و تجربه کاربری روان و حرفه‌ای</p>
                 </article>
             </div>
         </div>
@@ -1540,19 +1555,19 @@
         <div class="stats-container">
             <div class="stat-item" data-reveal>
                 <div class="stat-number" data-count="1000">+۱۰۰۰</div>
-                <div class="stat-label">کاربر فعال</div>
+                <div class="stat-label" data-i18n="landing.activeUsers">کاربر فعال</div>
             </div>
             <div class="stat-item" data-reveal>
                 <div class="stat-number" data-count="5000">+۵۰۰۰</div>
-                <div class="stat-label">تیکت پاسخ داده شده</div>
+                <div class="stat-label" data-i18n="landing.ticketsAnswered">تیکت پاسخ داده شده</div>
             </div>
             <div class="stat-item" data-reveal>
                 <div class="stat-number" data-count="99">٪۹۹</div>
-                <div class="stat-label">رضایت کاربران</div>
+                <div class="stat-label" data-i18n="landing.satisfaction">رضایت کاربران</div>
             </div>
             <div class="stat-item" data-reveal>
                 <div class="stat-number" data-count="24">۲۴/۷</div>
-                <div class="stat-label">پشتیبانی آنلاین</div>
+                <div class="stat-label" data-i18n="landing.support247">پشتیبانی آنلاین</div>
             </div>
         </div>
     </section>
@@ -1572,16 +1587,16 @@
                             <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
                         </svg>
                     </div>
-                    <h3>پنل پشتیبانی مناطق آزاد تجاری</h3>
+                    <h3 data-i18n="landing.brandName">پنل پشتیبانی مناطق آزاد تجاری</h3>
                 </div>
-                <p class="footer-description">
+                <p class="footer-description" data-i18n="landing.footerDesc">
                     راه‌حل جامع و پیشرفته برای مدیریت ارتباط با کاربران و ارائه خدمات پشتیبانی حرفه‌ای با استفاده از تکنولوژی‌های روز دنیا
                 </p>
             </div>
         </div>
         
         <div class="footer-bottom">
-            <p>&copy; {{ date('Y') }} پنل پشتیبانی مناطق آزاد تجاری. تمام حقوق محفوظ است.</p>
+            <p>&copy; {{ date('Y') }} <span data-i18n="landing.copyright">پنل پشتیبانی مناطق آزاد تجاری. تمام حقوق محفوظ است.</span></p>
         </div>
     </footer>
 
