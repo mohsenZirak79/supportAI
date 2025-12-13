@@ -1914,7 +1914,6 @@ function handleMenuClickOutside(event) {
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-    padding-bottom: 96px;
 }
 
 .message {
@@ -2029,18 +2028,12 @@ function handleMenuClickOutside(event) {
     border-top: 1px solid #eaeaea;
     gap: 10px;
     flex-direction: column;
-    position: fixed;
+    position: sticky;
     bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
+    z-index: 10;
     box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08);
 }
 
-/* Reserve space for fixed input form */
-.messages-container {
-    padding-bottom: 100px !important;
-}
 
 .text-input-area {
     display: flex;
@@ -2133,9 +2126,9 @@ function handleMenuClickOutside(event) {
 }
 
 .scroll-bottom-btn {
-    position: fixed;
+    position: absolute;
     inset-inline-end: 24px;
-    bottom: 90px;
+    bottom: 80px;
     width: 40px;
     height: 40px;
     border-radius: 999px;
@@ -2148,7 +2141,7 @@ function handleMenuClickOutside(event) {
     align-items: center;
     justify-content: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    z-index: 45;
+    z-index: 5;
 }
 
 .scroll-bottom-btn svg {
@@ -3050,7 +3043,6 @@ function handleMenuClickOutside(event) {
 
     .messages-container {
         padding: 16px 12px;
-        padding-bottom: 90px !important;
     }
 
     .message-bubble {
@@ -3102,7 +3094,7 @@ function handleMenuClickOutside(event) {
 
     .scroll-bottom-btn {
         inset-inline-end: 12px;
-        bottom: 75px;
+        bottom: 70px;
         width: 36px;
         height: 36px;
     }
@@ -3149,7 +3141,6 @@ function handleMenuClickOutside(event) {
     
     .messages-container {
         padding: 12px 8px;
-        padding-bottom: 85px !important;
     }
     
     .message-bubble {
