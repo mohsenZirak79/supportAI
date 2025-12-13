@@ -481,7 +481,10 @@ const fetchDepartments = async () => {  // ← این تابع رو کامل ا�
 const formatDate = (isoString) => {
     if (!isoString) return '';
     const date = new Date(isoString);
-    return date.toLocaleString('fa-IR', {
+    // Use locale for date formatting
+    const localeMap = { 'fa': 'fa-IR', 'en': 'en-US', 'ar': 'ar-SA' };
+    const dateLocale = localeMap[locale.value] || 'fa-IR';
+    return date.toLocaleString(dateLocale, {
         hour: '2-digit',
         minute: '2-digit',
         day: '2-digit',
@@ -587,7 +590,7 @@ async function loadReferrals(chatId, {force = false} = {}) {
         state.loaded = true;
     } catch (err) {
         console.error('Failed to load referrals', err);
-        state.error = 'خطا در بارگذاری ارجاع‌ها. دوباره تلاش کنید.';
+        state.error = t('referral.loadError');
     } finally {
         state.loading = false;
     }
@@ -1262,7 +1265,7 @@ const deleteChat = async (chatId) => {
 };
 const copyText = (text) => {
     navigator.clipboard.writeText(text).then(() => {
-        toast.info('متن کپی شد')
+        toast.info(t('chat.textCopied'))
     });
 };
 const goToTickets = () => {

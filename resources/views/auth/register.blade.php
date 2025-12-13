@@ -714,7 +714,12 @@ document.addEventListener('DOMContentLoaded', () => {
             'auth.address': 'آدرس',
             'auth.hasAccount': 'قبلاً حساب کاربری دارید؟',
             'nav.register': 'ثبت‌نام',
-            'nav.login': 'ورود'
+            'nav.login': 'ورود',
+            'validation.required': 'این فیلد الزامی است.',
+            'validation.email': 'ایمیل وارد شده معتبر نیست.',
+            'validation.phone': 'شماره تلفن معتبر نیست.',
+            'validation.passwordMismatch': 'رمز عبور و تکرار آن مطابقت ندارند.',
+            'validation.phoneExists': 'این شماره تلفن قبلاً ثبت شده است.'
         },
         en: {
             'auth.welcome': 'Welcome',
@@ -735,7 +740,12 @@ document.addEventListener('DOMContentLoaded', () => {
             'auth.address': 'Address',
             'auth.hasAccount': 'Already have an account?',
             'nav.register': 'Register',
-            'nav.login': 'Login'
+            'nav.login': 'Login',
+            'validation.required': 'This field is required.',
+            'validation.email': 'The email is not valid.',
+            'validation.phone': 'The phone number is not valid.',
+            'validation.passwordMismatch': 'Passwords do not match.',
+            'validation.phoneExists': 'This phone number is already registered.'
         },
         ar: {
             'auth.welcome': 'مرحباً بك',
@@ -756,7 +766,12 @@ document.addEventListener('DOMContentLoaded', () => {
             'auth.address': 'العنوان',
             'auth.hasAccount': 'لديك حساب بالفعل؟',
             'nav.register': 'إنشاء حساب',
-            'nav.login': 'تسجيل الدخول'
+            'nav.login': 'تسجيل الدخول',
+            'validation.required': 'هذا الحقل مطلوب.',
+            'validation.email': 'البريد الإلكتروني غير صالح.',
+            'validation.phone': 'رقم الهاتف غير صالح.',
+            'validation.passwordMismatch': 'كلمات المرور غير متطابقة.',
+            'validation.phoneExists': 'رقم الهاتف هذا مسجل بالفعل.'
         }
     };
     

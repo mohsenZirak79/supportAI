@@ -754,6 +754,9 @@
             'auth.noAccount': 'حساب کاربری ندارید؟',
             'auth.phoneError': 'خطا در ارسال شماره',
             'auth.otpError': 'خطا در تأیید OTP',
+            'auth.phoneNotRegistered': 'این شماره تلفن ثبت نشده است.',
+            'auth.invalidOtp': 'کد تأیید نادرست است.',
+            'auth.otpExpired': 'کد تأیید منقضی شده است.',
             'nav.register': 'ثبت‌نام'
         },
         en: {
@@ -768,6 +771,9 @@
             'auth.noAccount': "Don't have an account?",
             'auth.phoneError': 'Error sending phone number',
             'auth.otpError': 'Error verifying OTP',
+            'auth.phoneNotRegistered': 'This phone number is not registered.',
+            'auth.invalidOtp': 'Invalid verification code.',
+            'auth.otpExpired': 'Verification code has expired.',
             'nav.register': 'Register'
         },
         ar: {
@@ -782,6 +788,9 @@
             'auth.noAccount': 'ليس لديك حساب؟',
             'auth.phoneError': 'خطأ في إرسال رقم الهاتف',
             'auth.otpError': 'خطأ في التحقق من الرمز',
+            'auth.phoneNotRegistered': 'رقم الهاتف هذا غير مسجل.',
+            'auth.invalidOtp': 'رمز التحقق غير صحيح.',
+            'auth.otpExpired': 'انتهت صلاحية رمز التحقق.',
             'nav.register': 'إنشاء حساب'
         }
     };
@@ -883,6 +892,28 @@
         return translations[locale][type] || type;
     }
     
+    // Translate common API error messages
+    function translateApiError(message) {
+        const locale = getStoredLocale();
+        const errorMap = {
+            // Persian error messages from API
+            'این شماره تلفن ثبت نشده است': translations[locale]['auth.phoneNotRegistered'],
+            'کد تأیید نادرست است': translations[locale]['auth.invalidOtp'],
+            'کد تأیید منقضی شده است': translations[locale]['auth.otpExpired'],
+            'شماره تلفن ثبت نشده': translations[locale]['auth.phoneNotRegistered'],
+            'کد اشتباه است': translations[locale]['auth.invalidOtp'],
+            'کد منقضی شده': translations[locale]['auth.otpExpired'],
+        };
+        
+        // Check if message matches any known error
+        for (const [key, value] of Object.entries(errorMap)) {
+            if (message && message.includes(key)) {
+                return value || message;
+            }
+        }
+        return message;
+    }
+    
     // Phone form submit
     loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -910,7 +941,8 @@
 
                 if (res.data.otp) alert('Test OTP: ' + res.data.otp);
             } catch (err) {
-            showError(err?.response?.data?.message || getErrorText('auth.phoneError'));
+            const apiMsg = err?.response?.data?.message;
+            showError(apiMsg ? translateApiError(apiMsg) : getErrorText('auth.phoneError'));
         } finally {
             btn.disabled = false;
             }
@@ -932,7 +964,8 @@
                 const res = await axios.post('/login', { phone, otp });
                 window.location.href = res.data.redirect_url;
             } catch (err) {
-            showError(err?.response?.data?.error?.message || getErrorText('auth.otpError'));
+            const apiMsg = err?.response?.data?.error?.message || err?.response?.data?.message;
+            showError(apiMsg ? translateApiError(apiMsg) : getErrorText('auth.otpError'));
         } finally {
             btn.disabled = false;
         }
