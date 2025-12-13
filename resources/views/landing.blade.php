@@ -1945,7 +1945,7 @@
             // ============================================
             // STATS COUNTER ANIMATION
             // ============================================
-            const statNumbers = document.querySelectorAll('.stat-number');
+            const statNumberElements = document.querySelectorAll('.stat-number');
             
             const statsObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -1957,7 +1957,7 @@
                 });
             }, { threshold: 0.5 });
             
-            statNumbers.forEach(stat => statsObserver.observe(stat));
+            statNumberElements.forEach(stat => statsObserver.observe(stat));
             
             // ============================================
             // KEYBOARD NAVIGATION ENHANCEMENT
@@ -1984,7 +1984,7 @@
             const STORAGE_KEY = 'app_language';
             
             // Stat numbers for each language
-            const statNumbers = {
+            const statTexts = {
                 fa: { activeUsers: '+۱۰۰۰', ticketsAnswered: '+۵۰۰۰', satisfaction: '۹۹٪', support247: '۲۴/۷' },
                 en: { activeUsers: '1000+', ticketsAnswered: '5000+', satisfaction: '99%', support247: '24/7' },
                 ar: { activeUsers: '١٠٠٠+', ticketsAnswered: '٥٠٠٠+', satisfaction: '٩٩٪', support247: '٢٤/٧' }
@@ -2112,8 +2112,8 @@
                 // Update stat numbers
                 document.querySelectorAll('[data-stat]').forEach(el => {
                     const key = el.dataset.stat;
-                    if (statNumbers[locale] && statNumbers[locale][key]) {
-                        el.textContent = statNumbers[locale][key];
+                    if (statTexts[locale] && statTexts[locale][key]) {
+                        el.textContent = statTexts[locale][key];
                     }
                 });
             }

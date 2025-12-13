@@ -940,8 +940,7 @@ const getDepartmentName = (deptId) => {
 };
 
 const getStatusLabel = (status) => {
-    const labels = {pending: 'در انتظار پاسخ', answered: 'پاسخ داده شده', closed: 'بسته شده'};
-    return labels[status] || status;
+    return t(`ticket.statuses.${status}`) || status;
 };
 
 const getStatusClass = (status) => {
@@ -954,8 +953,7 @@ const getStatusClass = (status) => {
 };
 
 const getPriorityLabel = (priority) => {
-    const labels = {low: 'کم', normal: 'معمولی', high: 'بالا', urgent: 'فوری'};
-    return labels[priority] || priority;
+    return t(`ticket.priorities.${priority}`) || priority;
 };
 
 const getPriorityClass = (priority) => {
@@ -972,7 +970,9 @@ const getPriorityClass = (priority) => {
 const isSupport = (t) => String(t || '').toLowerCase() === 'admin';
 const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fa-IR', {
+    const localeMap = { 'fa': 'fa-IR', 'en': 'en-US', 'ar': 'ar-SA' };
+    const dateLocale = localeMap[locale.value] || 'fa-IR';
+    return date.toLocaleDateString(dateLocale, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
