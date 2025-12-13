@@ -345,11 +345,21 @@ class ConversationController extends Controller
                     ]);
                     
                     if (!empty($suggestedTitle)) {
+                        // Trim and clean the suggested title
+                        $cleanTitle = trim($suggestedTitle);
                         $currentTitle = trim($conversation->title ?? '');
-                        if (empty($currentTitle) || $currentTitle === 'چت جدید') {
-                            $conversation->update(['title' => $suggestedTitle]);
+                        
+                        \Log::info('Title comparison', [
+                            'suggested_raw' => $suggestedTitle,
+                            'suggested_clean' => $cleanTitle,
+                            'suggested_length' => strlen($cleanTitle),
+                            'current_title' => $currentTitle,
+                        ]);
+                        
+                        if (!empty($cleanTitle) && (empty($currentTitle) || $currentTitle === 'چت جدید')) {
+                            $conversation->update(['title' => $cleanTitle]);
                             $conversation->refresh();
-                            \Log::info('Conversation title updated', ['new_title' => $suggestedTitle]);
+                            \Log::info('Conversation title updated', ['new_title' => $cleanTitle]);
                         }
                     }
                 } else {
