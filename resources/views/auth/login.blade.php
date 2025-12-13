@@ -165,72 +165,39 @@
         /* ============================================
            RESPONSIVE STYLES
            ============================================ */
-        @media (max-width: 480px) {
+        /* Tablet and smaller desktop */
+        @media (max-width: 768px) {
             body {
-                padding: 1rem;
+                padding: 1.5rem;
+                overflow-y: auto;
             }
             
             .lang-switcher {
-                top: 0.75rem;
-                right: 0.75rem;
-                gap: 0.25rem;
+                position: fixed;
+                top: 1rem;
+                right: 1rem;
             }
             
             html[dir="ltr"] .lang-switcher {
-                left: 0.75rem;
-            }
-            
-            .lang-btn {
-                padding: 0.35rem 0.6rem;
-                font-size: 0.75rem;
+                right: auto;
+                left: 1rem;
             }
             
             .login-card {
-                padding: 1.75rem;
-                border-radius: 18px;
-                margin-top: 3rem;
-            }
-            
-            .logo-icon {
-                width: 52px;
-                height: 52px;
-            }
-            
-            .logo-icon svg {
-                width: 28px;
-                height: 28px;
-            }
-            
-            .login-title {
-                font-size: 1.25rem;
-            }
-            
-            .login-subtitle {
-                font-size: 0.875rem;
-            }
-            
-            .form-input {
-                padding: 0.75rem 0.875rem;
-                font-size: 0.95rem;
-            }
-            
-            .submit-btn {
-                padding: 0.875rem;
-            }
-            
-            .card-footer {
-                margin-top: 1.5rem;
-                padding-top: 1.25rem;
+                padding: 2rem;
+                max-width: 380px;
             }
             
             .bg-gradient-orb-1 {
-                width: 300px;
-                height: 300px;
+                width: 350px;
+                height: 350px;
+                top: -100px;
+                right: -100px;
             }
             
             .bg-gradient-orb-2 {
-                width: 250px;
-                height: 250px;
+                width: 300px;
+                height: 300px;
             }
             
             .bg-gradient-orb-3 {
@@ -239,13 +206,222 @@
             }
         }
         
-        @media (max-width: 360px) {
+        /* Mobile devices */
+        @media (max-width: 576px) {
+            body {
+                padding: 1rem;
+                min-height: 100vh;
+                min-height: -webkit-fill-available;
+            }
+            
+            html {
+                height: -webkit-fill-available;
+            }
+            
+            .lang-switcher {
+                top: 0.75rem;
+                right: 0.75rem;
+                gap: 0.3rem;
+            }
+            
+            html[dir="ltr"] .lang-switcher {
+                left: 0.75rem;
+            }
+            
+            .lang-btn {
+                padding: 0.4rem 0.65rem;
+                font-size: 0.75rem;
+            }
+            
             .login-card {
-                padding: 1.5rem;
+                padding: 1.75rem;
+                border-radius: 20px;
+                max-width: 100%;
+                margin-top: 2.5rem;
+            }
+            
+            .logo-container {
+                margin-bottom: 1.5rem;
+            }
+            
+            .logo-icon {
+                width: 56px;
+                height: 56px;
+                margin-bottom: 0.75rem;
+            }
+            
+            .logo-icon svg {
+                width: 30px;
+                height: 30px;
             }
             
             .login-title {
-                font-size: 1.125rem;
+                font-size: 1.35rem;
+            }
+            
+            .login-subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .form-group {
+                margin-bottom: 1.25rem;
+            }
+            
+            .form-label {
+                font-size: 0.85rem;
+            }
+            
+            .form-input {
+                padding: 0.85rem 1rem;
+                font-size: 1rem;
+                border-radius: 10px;
+            }
+            
+            .submit-btn {
+                padding: 0.9rem;
+                font-size: 0.95rem;
+                border-radius: 10px;
+            }
+            
+            .card-footer {
+                margin-top: 1.5rem;
+                padding-top: 1.25rem;
+            }
+            
+            .card-footer p {
+                font-size: 0.85rem;
+            }
+            
+            .bg-gradient-orb-1 {
+                width: 250px;
+                height: 250px;
+                top: -80px;
+                right: -80px;
+            }
+            
+            .bg-gradient-orb-2 {
+                width: 200px;
+                height: 200px;
+                bottom: -60px;
+                left: -60px;
+            }
+            
+            .bg-gradient-orb-3 {
+                width: 150px;
+                height: 150px;
+            }
+        }
+        
+        /* Small mobile devices */
+        @media (max-width: 400px) {
+            body {
+                padding: 0.75rem;
+            }
+            
+            .lang-switcher {
+                top: 0.5rem;
+                right: 0.5rem;
+                gap: 0.2rem;
+            }
+            
+            html[dir="ltr"] .lang-switcher {
+                left: 0.5rem;
+            }
+            
+            .lang-btn {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.7rem;
+            }
+            
+            .login-card {
+                padding: 1.5rem;
+                border-radius: 16px;
+                margin-top: 2rem;
+            }
+            
+            .logo-icon {
+                width: 48px;
+                height: 48px;
+            }
+            
+            .logo-icon svg {
+                width: 26px;
+                height: 26px;
+            }
+            
+            .login-title {
+                font-size: 1.2rem;
+            }
+            
+            .login-subtitle {
+                font-size: 0.85rem;
+            }
+            
+            .form-input {
+                padding: 0.75rem 0.875rem;
+                font-size: 0.95rem;
+            }
+            
+            .submit-btn {
+                padding: 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Very small devices */
+        @media (max-width: 320px) {
+            .login-card {
+                padding: 1.25rem;
+            }
+            
+            .login-title {
+                font-size: 1.1rem;
+            }
+            
+            .login-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .lang-btn {
+                padding: 0.3rem 0.4rem;
+                font-size: 0.65rem;
+            }
+        }
+        
+        /* Landscape mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 0.75rem;
+                align-items: flex-start;
+                padding-top: 3rem;
+            }
+            
+            .login-card {
+                padding: 1.25rem;
+                margin-bottom: 1rem;
+            }
+            
+            .logo-container {
+                margin-bottom: 1rem;
+            }
+            
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                margin-bottom: 0.5rem;
+            }
+            
+            .login-title {
+                font-size: 1.1rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .login-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .form-group {
+                margin-bottom: 0.75rem;
             }
         }
         
@@ -499,13 +675,13 @@
         <button class="lang-btn" data-lang="fa">فارسی</button>
         <button class="lang-btn" data-lang="en">English</button>
         <button class="lang-btn" data-lang="ar">العربية</button>
-    </div>
-    
-    @if(session('success'))
+</div>
+
+@if(session('success'))
         <div class="success-alert" id="successAlert">
-            {{ session('success') }}
-        </div>
-    @endif
+        {{ session('success') }}
+    </div>
+@endif
     
     <!-- Login Card -->
     <div class="login-card">
@@ -518,26 +694,26 @@
             </div>
             <h1 class="login-title" data-i18n="auth.welcome">خوش آمدید</h1>
             <p class="login-subtitle" data-i18n="auth.enterPhone">شماره تلفن همراه خود را وارد کنید.</p>
-        </div>
-        
+                            </div>
+
         <!-- Phone Form -->
         <form id="loginForm" class="form-section">
-            @csrf
+                                    @csrf
             <div class="form-group">
                 <label class="form-label" data-i18n="auth.phone">شماره تلفن</label>
                 <input type="tel" class="form-input" name="phone" 
                        data-i18n-placeholder="auth.phonePlaceholder"
-                       placeholder="شماره تلفن (مانند 09123456789)" required>
-            </div>
+                                               placeholder="شماره تلفن (مانند 09123456789)" required>
+                                    </div>
             <button type="submit" class="submit-btn" data-i18n="auth.sendOtp">
-                ارسال کد تایید
-            </button>
-        </form>
-        
+                                        ارسال کد تایید
+                                    </button>
+                                </form>
+
         <!-- OTP Form -->
         <form id="otpForm" class="form-section hidden">
-            @csrf
-            <input type="hidden" name="phone">
+                                    @csrf
+                                    <input type="hidden" name="phone">
             <div class="form-group">
                 <label class="form-label" data-i18n="auth.otpPlaceholder">کد تایید</label>
                 <input type="text" class="form-input" name="otp" 
@@ -545,10 +721,10 @@
                        placeholder="کد تایید" required>
             </div>
             <button type="submit" class="submit-btn" data-i18n="auth.verifyOtp">
-                تایید کد
-            </button>
-        </form>
-        
+                                        تایید کد
+                                    </button>
+                                </form>
+
         <div id="error" class="error-msg"></div>
         
         <!-- Footer -->
@@ -556,12 +732,12 @@
             <p>
                 <span data-i18n="auth.noAccount">حساب کاربری ندارید؟</span>
                 <a href="{{ route('register') }}" data-i18n="nav.register">ثبت‌نام</a>
-            </p>
-        </div>
-    </div>
+                                </p>
+                            </div>
+                        </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // TRANSLATIONS
     // ==========================================
@@ -669,26 +845,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // FORM HANDLING
     // ==========================================
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
     
-    const normalizeDigits = (value = '') => {
-        const persianZero = 1776;
-        const arabicZero = 1632;
-        return value.replace(/[۰-۹٠-٩]/g, (char) => {
-            const code = char.charCodeAt(0);
-            if (code >= persianZero && code <= persianZero + 9) {
-                return String(code - persianZero);
-            }
-            if (code >= arabicZero && code <= arabicZero + 9) {
-                return String(code - arabicZero);
-            }
-            return char;
-        });
-    };
+        const normalizeDigits = (value = '') => {
+            const persianZero = 1776;
+            const arabicZero = 1632;
+            return value.replace(/[۰-۹٠-٩]/g, (char) => {
+                const code = char.charCodeAt(0);
+                if (code >= persianZero && code <= persianZero + 9) {
+                    return String(code - persianZero);
+                }
+                if (code >= arabicZero && code <= arabicZero + 9) {
+                    return String(code - arabicZero);
+                }
+                return char;
+            });
+        };
     
-    const phoneInput = document.querySelector('#loginForm input[name="phone"]');
-    const otpInput = document.querySelector('#otpForm input[name="otp"]');
+        const phoneInput = document.querySelector('#loginForm input[name="phone"]');
+        const otpInput = document.querySelector('#otpForm input[name="otp"]');
     const loginForm = document.getElementById('loginForm');
     const otpForm = document.getElementById('otpForm');
     const errorDiv = document.getElementById('error');
@@ -709,53 +885,53 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Phone form submit
     loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+            e.preventDefault();
         hideError();
         
-        const phone = normalizeDigits(phoneInput.value.trim());
-        phoneInput.value = phone;
-        if (!phone) return;
+            const phone = normalizeDigits(phoneInput.value.trim());
+            phoneInput.value = phone;
+            if (!phone) return;
         
         const btn = loginForm.querySelector('.submit-btn');
         btn.disabled = true;
-        
-        try {
-            const res = await axios.post('/api/v1/auth/login', { phone });
+
+            try {
+                const res = await axios.post('/api/v1/auth/login', { phone });
             
             // Transition to OTP form
             loginForm.classList.add('fade-out');
-            setTimeout(() => {
+                setTimeout(() => {
                 loginForm.classList.add('hidden');
                 otpForm.classList.remove('hidden');
                 otpForm.classList.add('fade-in');
                 otpForm.querySelector('input[name="phone"]').value = phone;
                 otpInput.focus();
             }, 300);
-            
-            if (res.data.otp) alert('Test OTP: ' + res.data.otp);
-        } catch (err) {
+
+                if (res.data.otp) alert('Test OTP: ' + res.data.otp);
+            } catch (err) {
             showError(err?.response?.data?.message || getErrorText('auth.phoneError'));
         } finally {
             btn.disabled = false;
-        }
-    });
-    
+            }
+        });
+
     // OTP form submit
     otpForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+            e.preventDefault();
         hideError();
         
         const phone = otpForm.querySelector('input[name="phone"]').value;
-        const otp = normalizeDigits(otpInput.value.trim());
-        otpInput.value = otp;
+            const otp = normalizeDigits(otpInput.value.trim());
+            otpInput.value = otp;
         
         const btn = otpForm.querySelector('.submit-btn');
         btn.disabled = true;
-        
-        try {
-            const res = await axios.post('/login', { phone, otp });
-            window.location.href = res.data.redirect_url;
-        } catch (err) {
+
+            try {
+                const res = await axios.post('/login', { phone, otp });
+                window.location.href = res.data.redirect_url;
+            } catch (err) {
             showError(err?.response?.data?.error?.message || getErrorText('auth.otpError'));
         } finally {
             btn.disabled = false;
@@ -770,7 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => successAlert.remove(), 300);
         }, 3000);
     }
-});
+    });
 </script>
 </body>
 </html>

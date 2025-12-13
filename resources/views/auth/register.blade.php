@@ -366,17 +366,21 @@
         /* ============================================
            RESPONSIVE STYLES
            ============================================ */
+        /* Tablet */
         @media (max-width: 768px) {
             body {
                 padding: 1rem;
+                overflow-y: auto;
             }
             
             .register-card {
-                padding: 1.75rem;
-                margin: 3rem 0;
+                padding: 2rem;
+                margin: 3rem 0 2rem;
+                max-width: 100%;
             }
             
             .lang-switcher {
+                position: fixed;
                 top: 0.75rem;
                 right: 0.75rem;
                 gap: 0.25rem;
@@ -387,25 +391,44 @@
             }
             
             .lang-btn {
-                padding: 0.35rem 0.6rem;
+                padding: 0.4rem 0.65rem;
                 font-size: 0.75rem;
+            }
+            
+            .bg-gradient-orb-1 {
+                width: 350px;
+                height: 350px;
+            }
+            
+            .bg-gradient-orb-2 {
+                width: 280px;
+                height: 280px;
             }
         }
         
-        @media (max-width: 480px) {
+        /* Mobile */
+        @media (max-width: 576px) {
             body {
                 padding: 0.75rem;
+                align-items: flex-start;
+                padding-top: 3rem;
             }
             
             .register-card {
                 padding: 1.5rem;
                 border-radius: 18px;
-                margin-top: 3.5rem;
+                margin-top: 1rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .logo-container {
+                margin-bottom: 1.5rem;
             }
             
             .logo-icon {
                 width: 48px;
                 height: 48px;
+                margin-bottom: 0.75rem;
             }
             
             .logo-icon svg {
@@ -414,33 +437,41 @@
             }
             
             .register-title {
-                font-size: 1.125rem;
+                font-size: 1.2rem;
             }
             
             .register-subtitle {
-                font-size: 0.825rem;
+                font-size: 0.85rem;
             }
             
             .form-row {
                 grid-template-columns: 1fr;
-                gap: 0.75rem;
+                gap: 0;
             }
             
             .form-group {
-                margin-bottom: 0.75rem;
+                margin-bottom: 0.875rem;
             }
             
             .form-label {
-                font-size: 0.75rem;
+                font-size: 0.8rem;
+                margin-bottom: 0.35rem;
             }
             
             .form-input, .form-textarea {
-                padding: 0.65rem 0.875rem;
-                font-size: 0.9rem;
+                padding: 0.7rem 0.875rem;
+                font-size: 0.95rem;
+                border-radius: 10px;
+            }
+            
+            .form-textarea {
+                min-height: 70px;
             }
             
             .submit-btn {
                 padding: 0.875rem;
+                font-size: 0.95rem;
+                margin-top: 0.5rem;
             }
             
             .card-footer {
@@ -449,27 +480,91 @@
             }
             
             .card-footer p {
-                font-size: 0.8rem;
+                font-size: 0.85rem;
             }
             
             .bg-gradient-orb-1 {
-                width: 300px;
-                height: 300px;
+                width: 250px;
+                height: 250px;
+                top: -80px;
+                right: -80px;
             }
             
             .bg-gradient-orb-2 {
-                width: 250px;
-                height: 250px;
+                width: 200px;
+                height: 200px;
+                bottom: -60px;
+                left: -60px;
             }
         }
         
-        @media (max-width: 360px) {
+        /* Small mobile */
+        @media (max-width: 400px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .lang-switcher {
+                top: 0.5rem;
+                right: 0.5rem;
+                gap: 0.2rem;
+            }
+            
+            html[dir="ltr"] .lang-switcher {
+                left: 0.5rem;
+            }
+            
+            .lang-btn {
+                padding: 0.3rem 0.5rem;
+                font-size: 0.7rem;
+            }
+            
             .register-card {
                 padding: 1.25rem;
+                border-radius: 14px;
+            }
+            
+            .logo-icon {
+                width: 42px;
+                height: 42px;
+            }
+            
+            .register-title {
+                font-size: 1.1rem;
+            }
+            
+            .register-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .form-label {
+                font-size: 0.75rem;
+            }
+            
+            .form-input, .form-textarea {
+                padding: 0.6rem 0.75rem;
+                font-size: 0.9rem;
+            }
+            
+            .submit-btn {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Very small */
+        @media (max-width: 320px) {
+            .register-card {
+                padding: 1rem;
             }
             
             .register-title {
                 font-size: 1rem;
+            }
+            
+            .lang-btn {
+                padding: 0.25rem 0.4rem;
+                font-size: 0.65rem;
             }
         }
     </style>

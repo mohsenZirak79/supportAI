@@ -222,8 +222,19 @@
                         @keydown="onKeydown"
                     />
                         <div class="input-actions">
-                            <button type="button" @click="startRecording" class="mic-btn" :disabled="loading">🎤</button>
-                            <button type="submit" class="btn btn-primary" :disabled="loading">{{ $t('chat.send') }}</button>
+                            <button type="button" @click="startRecording" class="mic-btn" :disabled="loading" :title="$t('chat.recordVoice')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                    <line x1="12" y1="19" x2="12" y2="23"/>
+                                    <line x1="8" y1="23" x2="16" y2="23"/>
+                                </svg>
+                            </button>
+                            <button type="submit" class="send-btn" :disabled="loading || !inputMessage.trim()" :title="$t('chat.send')">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -1513,6 +1524,7 @@ function handleMenuClickOutside(event) {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    padding-top: 56px;
 }
 
 /* Unified Header Styles */
@@ -1521,8 +1533,10 @@ function handleMenuClickOutside(event) {
     color: white;
     padding: 0 24px;
     height: 56px;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
 }
 
@@ -2010,81 +2024,131 @@ function handleMenuClickOutside(event) {
 
 .input-form {
     display: flex;
-    padding: 16px;
+    padding: 12px 16px;
     background: white;
     border-top: 1px solid #eaeaea;
-    gap: 12px;
+    gap: 10px;
     flex-direction: column;
-    position: sticky;
+    position: fixed;
     bottom: 0;
-    z-index: 4;
-    box-shadow: 0 -6px 18px rgba(15, 23, 42, 0.08);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08);
+}
+
+/* Reserve space for fixed input form */
+.messages-container {
+    padding-bottom: 100px !important;
 }
 
 .text-input-area {
     display: flex;
-    gap: 12px;
-    align-items: flex-end;
+    gap: 8px;
+    align-items: center;
 }
 
 .text-input-area textarea {
     flex: 1;
-    padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 24px;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
     resize: none;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-family: inherit;
     outline: none;
-    max-height: 150px;
+    max-height: 120px;
+    min-height: 42px;
+    background: #f8fafc;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .input-form textarea:focus {
     border-color: #0891b2;
-    box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.2);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.15);
 }
 
 .input-actions button {
-    padding: 12px 20px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
     border: none;
-    border-radius: 24px;
+    border-radius: 50%;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .input-actions .mic-btn {
     background: #f1f5f9;
-    color: #4b5563;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.input-actions .mic-btn:hover {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.input-actions .send-btn {
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    color: white;
+}
+
+.input-actions .send-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
 }
 
 .input-actions button:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
+}
+
+.input-actions button svg {
+    width: 20px;
+    height: 20px;
+}
+
+.input-actions .mic-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.input-actions .send-btn svg {
+    width: 20px;
+    height: 20px;
+    margin-inline-start: 2px;
 }
 
 .scroll-bottom-btn {
-    position: absolute;
+    position: fixed;
     inset-inline-end: 24px;
-    bottom: 110px;
-    width: 44px;
-    height: 44px;
+    bottom: 90px;
+    width: 40px;
+    height: 40px;
     border-radius: 999px;
     border: none;
     background: linear-gradient(135deg, #0e7490, #0891b2);
-    box-shadow: 0 10px 25px rgba(14, 116, 144, 0.35);
+    box-shadow: 0 6px 16px rgba(14, 116, 144, 0.3);
     color: #fff;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    z-index: 5;
+    z-index: 45;
 }
 
 .scroll-bottom-btn svg {
@@ -2529,9 +2593,12 @@ function handleMenuClickOutside(event) {
 
 .referral-panel-backdrop {
     position: fixed;
-    inset: 0;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(15, 23, 42, 0.45);
-    z-index: 60;
+    z-index: 75;
 }
 
 .modal-backdrop {
@@ -2618,18 +2685,27 @@ function handleMenuClickOutside(event) {
 
 .referral-panel {
     position: fixed;
-    top: 0;
+    top: 56px;
     bottom: 0;
     right: 0;
     width: min(420px, 92vw);
     background: #fff;
     box-shadow: -10px 0 35px rgba(15, 23, 42, 0.25);
     border-top-left-radius: 18px;
-    border-bottom-left-radius: 18px;
-    z-index: 70;
+    border-bottom-left-radius: 0;
+    z-index: 80;
     display: flex;
     flex-direction: column;
     padding: 20px;
+    overflow-y: auto;
+}
+
+[dir="ltr"] .referral-panel {
+    right: auto;
+    left: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 18px;
+    box-shadow: 10px 0 35px rgba(15, 23, 42, 0.25);
 }
 
 .referral-panel.is-mobile {
@@ -2637,6 +2713,7 @@ function handleMenuClickOutside(event) {
     right: 0;
     left: 0;
     border-radius: 0;
+    top: 56px;
 }
 
 .referral-panel.is-mobile.slide-panel-enter-from,
@@ -2927,10 +3004,10 @@ function handleMenuClickOutside(event) {
         flex-direction: column;
     }
 
-    /* سایدبار به صورت drawer ثابت از راست */
+    /* سایدبار به صورت drawer ثابت از راست - زیر navbar */
     .sidebar.is-mobile {
         position: fixed;
-        top: 0;
+        top: 56px;
         bottom: 0;
         left: auto;
         right: 0;
@@ -2938,11 +3015,11 @@ function handleMenuClickOutside(event) {
         transform: translateX(110%);
         border: none;
         box-shadow: -8px 0 24px rgba(15, 23, 42, 0.25);
-        z-index: 40;
+        z-index: 90;
         background: #fff;
-        max-height: 100vh;
         display: flex;
         flex-direction: column;
+        transition: transform 0.3s ease;
     }
 
     .sidebar.is-mobile.is-open {
@@ -2952,35 +3029,58 @@ function handleMenuClickOutside(event) {
     .sidebar-overlay {
         display: block;
         position: fixed;
-        inset: 0;
+        top: 56px;
+        left: 0;
+        right: 0;
+        bottom: 0;
         background: rgba(15, 23, 42, 0.45);
-        z-index: 30;
+        z-index: 85;
+    }
+    
+    /* chat list باید تمام فضای موجود رو بگیره */
+    .sidebar.is-mobile .chat-list {
+        flex: 1;
+        overflow-y: auto;
+        max-height: none;
+    }
+    
+    .sidebar.is-mobile .new-chat-btn {
+        flex-shrink: 0;
     }
 
     .messages-container {
         padding: 16px 12px;
+        padding-bottom: 90px !important;
     }
 
     .message-bubble {
         max-width: 100%;
     }
 
+    /* input form - یک ردیف در موبایل */
     .input-form {
-        padding: 12px;
+        padding: 10px 12px;
     }
 
     .text-input-area {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .text-input-area textarea {
+        min-height: 40px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
     }
 
     .input-actions {
-        width: 100%;
-        justify-content: space-between;
+        gap: 6px;
     }
 
     .input-actions button {
-        flex: 1;
+        width: 38px;
+        height: 38px;
     }
 
     .nav-btn {
@@ -3002,14 +3102,19 @@ function handleMenuClickOutside(event) {
 
     .scroll-bottom-btn {
         inset-inline-end: 12px;
-        bottom: 95px;
-        width: 38px;
-        height: 38px;
+        bottom: 75px;
+        width: 36px;
+        height: 36px;
     }
     
     .referral-panel {
         width: 100%;
-        border-radius: 12px 12px 0 0;
+        border-radius: 0;
+        top: 56px;
+    }
+    
+    .referral-panel-backdrop {
+        top: 56px;
     }
     
     .modal-backdrop {
@@ -3027,9 +3132,24 @@ function handleMenuClickOutside(event) {
 }
 
 @media (max-width: 480px) {
+    .app-header {
+        height: 48px;
+    }
+    
+    .chat-app {
+        padding-top: 48px;
+    }
+    
+    .sidebar.is-mobile,
+    .sidebar-overlay,
+    .referral-panel,
+    .referral-panel-backdrop {
+        top: 48px;
+    }
+    
     .messages-container {
         padding: 12px 8px;
-        padding-bottom: 80px;
+        padding-bottom: 85px !important;
     }
     
     .message-bubble {
@@ -3038,23 +3158,34 @@ function handleMenuClickOutside(event) {
     }
     
     .input-form {
-        padding: 10px 8px;
+        padding: 8px 10px;
     }
     
-    .chat-input {
-        min-height: 44px;
-        font-size: 0.9rem;
-    }
-    
-    .input-actions button {
-        padding: 10px 14px;
+    .text-input-area textarea {
+        min-height: 36px;
+        padding: 7px 10px;
         font-size: 0.85rem;
     }
     
-    .scroll-bottom-btn {
+    .input-actions button {
         width: 36px;
         height: 36px;
-        bottom: 85px;
+    }
+    
+    .input-actions button svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .scroll-bottom-btn {
+        width: 32px;
+        height: 32px;
+        bottom: 70px;
+    }
+    
+    .scroll-bottom-btn svg {
+        width: 18px;
+        height: 18px;
     }
     
     .new-chat-btn {
@@ -3065,6 +3196,7 @@ function handleMenuClickOutside(event) {
     
     .chat-item {
         padding: 10px 14px;
+        font-size: 0.9rem;
     }
     
     .empty-content h2 {
@@ -3073,6 +3205,14 @@ function handleMenuClickOutside(event) {
     
     .empty-content p {
         font-size: 0.85rem;
+    }
+    
+    .referral-panel {
+        padding: 14px;
+    }
+    
+    .referral-card {
+        padding: 12px;
     }
 }
 
