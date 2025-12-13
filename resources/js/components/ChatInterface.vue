@@ -1977,9 +1977,11 @@ function handleMenuClickOutside(event) {
 }
 
 .bot-message .message-bubble {
-    background-color: #f1f5f9;
-    color: #333;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    color: #1e293b;
     border-bottom-left-radius: 4px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
 }
 
 [dir="rtl"] .bot-message .message-bubble {
@@ -2379,9 +2381,26 @@ function handleMenuClickOutside(event) {
     color: #64748b;
 }
 
+/* Bot avatar - displayed as a small badge */
+.bot-message .message-bubble {
+    position: relative;
+}
+
 .bot-message .message-bubble::before {
     content: "🤖";
-    margin-inline-end: 6px;
+    position: absolute;
+    top: -8px;
+    inset-inline-start: -8px;
+    font-size: 1rem;
+    background: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
 }
 
 .header-content {

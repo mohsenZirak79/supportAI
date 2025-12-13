@@ -421,36 +421,111 @@ onBeforeUnmount(() => stop());
 .ai-answer {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 /* متن قالب‌بندی‌شده */
 .answer-text {
     white-space: normal;
-    line-height: 1.8;
+    line-height: 1.85;
+    font-size: 0.95rem;
+    color: #1e293b;
 }
 
-/* Headings و لیست‌ها */
-.answer-text h3 {
-    font-size: 1.05rem;
-    margin: 8px 0 6px;
-    font-weight: 700;
+/* Headings - زیباتر و کوچکتر */
+.answer-text :deep(h3) {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 14px 0 8px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
-.answer-text p {
+
+.answer-text :deep(h3)::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: linear-gradient(135deg, #0e7490, #06b6d4);
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+/* پاراگراف‌ها */
+.answer-text :deep(p) {
+    margin: 8px 0;
+    text-align: justify;
+    color: #334155;
+}
+
+/* لیست‌ها */
+.answer-text :deep(ul),
+.answer-text :deep(ol) {
+    margin: 10px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.answer-text :deep(li) {
+    position: relative;
     margin: 6px 0;
-}
-.answer-text ul, .answer-text ol {
-    margin: 6px 0 6px 18px;
-    padding: 0 0 0 16px;
+    padding-inline-start: 22px;
+    line-height: 1.75;
+    color: #475569;
 }
 
-[dir="rtl"] .answer-text ul, [dir="rtl"] .answer-text ol {
-    margin: 6px 18px 6px 0;
-    padding: 0 16px 0 0;
+/* Bullet برای ul */
+.answer-text :deep(ul li)::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 9px;
+    width: 6px;
+    height: 6px;
+    background: #0e7490;
+    border-radius: 50%;
 }
-.answer-text li {
-    margin: 4px 0;
-    line-height: 1.8;
+
+/* شماره برای ol */
+.answer-text :deep(ol) {
+    counter-reset: list-counter;
+}
+
+.answer-text :deep(ol li) {
+    counter-increment: list-counter;
+}
+
+.answer-text :deep(ol li)::before {
+    content: counter(list-counter);
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #0e7490;
+    background: #ecfeff;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Bold text */
+.answer-text :deep(strong) {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+/* First paragraph after greeting */
+.answer-text :deep(p:first-child) {
+    font-size: 0.95rem;
+    color: #334155;
 }
 
 /* TTS Button - Beautiful minimal design */
