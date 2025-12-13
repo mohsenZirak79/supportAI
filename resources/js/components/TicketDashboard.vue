@@ -1664,24 +1664,6 @@ onMounted(() => {
         padding: 14px !important;
     }
     
-    /* Filters */
-    .flex.flex-wrap.gap-4 {
-        flex-direction: column;
-        gap: 12px !important;
-    }
-    
-    /* Ticket card header */
-    .ticket-card .flex.justify-between.items-start {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .ticket-card .flex.items-center.space-x-3 {
-        width: 100%;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    
     .ticket-card h3 {
         font-size: 1rem;
     }
@@ -1689,25 +1671,12 @@ onMounted(() => {
     .ticket-card .text-sm {
         font-size: 0.8rem;
     }
-    
-    /* Modal */
-    .fixed.inset-0 .rounded-2xl {
-        border-radius: 12px;
-    }
-    
-    .fixed.inset-0 .p-6 {
-        padding: 16px !important;
-    }
 }
 
 @media (max-width: 480px) {
     .max-w-7xl {
         padding-left: 8px !important;
         padding-right: 8px !important;
-    }
-    
-    .grid.grid-cols-1.md\\:grid-cols-3.lg\\:grid-cols-4 {
-        gap: 12px !important;
     }
     
     .stat {
@@ -1730,15 +1699,6 @@ onMounted(() => {
     .badge {
         padding: 4px 8px;
         font-size: 0.7rem;
-    }
-    
-    /* Modal full screen on mobile */
-    .fixed.inset-0.bg-black\\/60 > div,
-    .fixed.inset-0.bg-black.bg-opacity-50 > div {
-        max-width: 100% !important;
-        max-height: 100% !important;
-        border-radius: 0 !important;
-        margin: 0;
     }
 }
 
