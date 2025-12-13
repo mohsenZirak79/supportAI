@@ -1519,12 +1519,17 @@ function handleMenuClickOutside(event) {
 .chat-app {
     font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
     background: #f8fafc;
-    min-height: 100vh;
     height: 100vh;
+    height: 100dvh; /* برای موبایل - dynamic viewport height */
     overflow: hidden;
     display: flex;
     flex-direction: column;
     padding-top: 56px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 /* Unified Header Styles */
@@ -1887,6 +1892,7 @@ function handleMenuClickOutside(event) {
     background-color: #ffffff;
     position: relative;
     min-height: 0;
+    overflow: hidden;
 }
 
 .empty-state {
@@ -3010,16 +3016,34 @@ function handleMenuClickOutside(event) {
         justify-content: center;
     }
 
+    .chat-app {
+        padding-top: 52px;
+    }
+    
+    .app-header {
+        height: 52px;
+    }
+    
     .chat-container {
         position: relative;
-        overflow: visible;
+        overflow: hidden;
         flex-direction: column;
+        flex: 1;
+        min-height: 0;
+    }
+    
+    .chat-main {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
 
     /* سایدبار به صورت drawer ثابت از راست - زیر navbar */
     .sidebar.is-mobile {
         position: fixed;
-        top: 56px;
+        top: 52px;
         bottom: 0;
         left: auto;
         right: 0;
@@ -3041,7 +3065,7 @@ function handleMenuClickOutside(event) {
     .sidebar-overlay {
         display: block;
         position: fixed;
-        top: 56px;
+        top: 52px;
         left: 0;
         right: 0;
         bottom: 0;
@@ -3121,11 +3145,11 @@ function handleMenuClickOutside(event) {
     .referral-panel {
         width: 100%;
         border-radius: 0;
-        top: 56px;
+        top: 52px;
     }
     
     .referral-panel-backdrop {
-        top: 56px;
+        top: 52px;
     }
     
     .modal-backdrop {

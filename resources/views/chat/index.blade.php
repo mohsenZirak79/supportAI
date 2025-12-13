@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta http-equiv="Content-Security-Policy"
           content="
 default-src 'self';
@@ -32,8 +32,16 @@ media-src 'self' blob: data: https:;
     @vite(['resources/css/app.css', 'resources/css/user.css', 'resources/js/chat.js'])
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
-        body {
+        html, body {
             margin: 0;
+            padding: 0;
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
         }
         /* RTL font family */
         html[dir="rtl"] body {
@@ -42,6 +50,10 @@ media-src 'self' blob: data: https:;
         /* LTR font family */
         html[dir="ltr"] body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        #app {
+            height: 100%;
+            overflow: hidden;
         }
     </style>
     <script>
