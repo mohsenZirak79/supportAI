@@ -307,6 +307,8 @@ async function play() {
         };
 
         audio.onerror = (e) => {
+            // Don't show error if we're stopping manually
+            if (isStoppingManually) return;
             console.error('Audio error:', e, audio.error);
             const errorMsg = audio.error ? 
                 `خطا ${audio.error.code}: ${audio.error.message}` : 
@@ -358,6 +360,11 @@ async function play() {
                 };
 
                 audio.onerror = (e) => {
+                    // Don't show error if we're stopping manually
+                    if (isStoppingManually) {
+                        cleanup();
+                        return;
+                    }
                     console.error('Audio loading error:', e, audio.error);
                     cleanup();
                     
@@ -392,6 +399,8 @@ async function play() {
         }
 
     } catch (err) {
+        // Don't show error if we're stopping manually
+        if (isStoppingManually) return;
         console.error('TTS error:', err);
         error.value = err.message || 'خطا در تولید صوت';
         speaking.value = false;
@@ -400,7 +409,11 @@ async function play() {
     }
 }
 
+let isStoppingManually = false;
+
 function stop() {
+    isStoppingManually = true;
+    error.value = ''; // Clear any error when stopping manually
     if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
@@ -412,6 +425,8 @@ function stop() {
     }
     speaking.value = false;
     loading.value = false;
+    // Reset flag after a short delay
+    setTimeout(() => { isStoppingManually = false; }, 100);
 }
 
 onBeforeUnmount(() => stop());
