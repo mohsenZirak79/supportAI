@@ -737,10 +737,29 @@ onMounted(() => {
     animation: spin 0.8s linear infinite;
 }
 
-/* Responsive */
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 900px) {
+    .profile-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-sidebar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+}
+
 @media (max-width: 768px) {
     .app-header {
         padding: 0 16px;
+        height: 52px;
+    }
+    
+    .header-inner {
+        gap: 8px;
     }
     
     .header-nav {
@@ -748,7 +767,12 @@ onMounted(() => {
     }
     
     .nav-link {
-        padding: 6px 8px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .lang-select {
+        padding: 5px 8px;
         font-size: 0.8rem;
     }
     
@@ -763,6 +787,121 @@ onMounted(() => {
     
     .avatar-placeholder {
         font-size: 1.5rem;
+    }
+    
+    .avatar-card, .quick-stats, .form-card {
+        padding: 18px;
+    }
+    
+    .form-grid {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 640px) {
+    .app-header {
+        padding: 0 12px;
+        height: 48px;
+    }
+    
+    .brand-text {
+        display: none;
+    }
+    
+    .brand-icon {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .header-nav {
+        gap: 3px;
+    }
+    
+    .nav-link {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .lang-select {
+        padding: 4px 6px;
+        font-size: 0.75rem;
+    }
+    
+    .profile-sidebar {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-main {
+        padding: 16px 12px;
+    }
+    
+    .avatar-card, .quick-stats, .form-card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .user-name {
+        font-size: 1.1rem;
+    }
+    
+    .user-email {
+        font-size: 0.85rem;
+    }
+    
+    .member-since {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        padding: 0 10px;
+    }
+    
+    .nav-link {
+        padding: 4px 6px;
+        font-size: 0.7rem;
+    }
+    
+    .profile-main {
+        padding: 12px 10px;
+    }
+    
+    .avatar-container {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .avatar-placeholder {
+        font-size: 1.25rem;
+    }
+    
+    .form-group label {
+        font-size: 0.8rem;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-primary {
+        padding: 8px 20px;
+        font-size: 0.85rem;
+    }
+    
+    .card-header h3 {
+        font-size: 0.9rem;
+    }
+    
+    .header-icon {
+        width: 34px;
+        height: 34px;
     }
 }
 

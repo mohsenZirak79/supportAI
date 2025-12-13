@@ -1532,12 +1532,15 @@ function handleMenuClickOutside(event) {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 10px;
 }
 
 .header-brand {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
 .mobile-menu-btn {
@@ -1551,6 +1554,7 @@ function handleMenuClickOutside(event) {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .brand-icon {
@@ -1561,6 +1565,7 @@ function handleMenuClickOutside(event) {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .brand-icon svg {
@@ -1571,12 +1576,16 @@ function handleMenuClickOutside(event) {
 .brand-text {
     font-weight: 600;
     font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .header-nav {
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-shrink: 0;
 }
 
 .lang-select {
@@ -1605,6 +1614,7 @@ function handleMenuClickOutside(event) {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .nav-link:hover {
@@ -1628,6 +1638,68 @@ function handleMenuClickOutside(event) {
     height: 6px;
     background: #f87171;
     border-radius: 50%;
+}
+
+/* Header Responsive */
+@media (max-width: 640px) {
+    .app-header {
+        padding: 0 12px;
+        height: 52px;
+    }
+    
+    .header-inner {
+        gap: 8px;
+    }
+    
+    .brand-text {
+        display: none;
+    }
+    
+    .brand-icon {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .header-nav {
+        gap: 4px;
+    }
+    
+    .lang-select {
+        padding: 4px 6px;
+        font-size: 0.75rem;
+    }
+    
+    .nav-link {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        height: 48px;
+        padding: 0 10px;
+    }
+    
+    .mobile-menu-btn {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .brand-icon {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .nav-link {
+        padding: 4px 6px;
+        font-size: 0.7rem;
+    }
+    
+    .lang-select {
+        padding: 4px 5px;
+        font-size: 0.7rem;
+    }
 }
 
 /* Legacy header styles for compatibility */
@@ -2931,6 +3003,76 @@ function handleMenuClickOutside(event) {
     .scroll-bottom-btn {
         inset-inline-end: 12px;
         bottom: 95px;
+        width: 38px;
+        height: 38px;
+    }
+    
+    .referral-panel {
+        width: 100%;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .modal-backdrop {
+        padding: 10px;
+    }
+    
+    .rename-modal {
+        padding: 18px;
+        border-radius: 14px;
+    }
+    
+    .voice-player audio {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .messages-container {
+        padding: 12px 8px;
+        padding-bottom: 80px;
+    }
+    
+    .message-bubble {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .input-form {
+        padding: 10px 8px;
+    }
+    
+    .chat-input {
+        min-height: 44px;
+        font-size: 0.9rem;
+    }
+    
+    .input-actions button {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+    
+    .scroll-bottom-btn {
+        width: 36px;
+        height: 36px;
+        bottom: 85px;
+    }
+    
+    .new-chat-btn {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        margin: 10px;
+    }
+    
+    .chat-item {
+        padding: 10px 14px;
+    }
+    
+    .empty-content h2 {
+        font-size: 1.1rem;
+    }
+    
+    .empty-content p {
+        font-size: 0.85rem;
     }
 }
 

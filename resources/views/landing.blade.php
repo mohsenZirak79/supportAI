@@ -1252,29 +1252,87 @@
         /* ============================================
            RESPONSIVE STYLES
            ============================================ */
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .navbar {
                 padding: var(--space-sm) var(--space-md);
-                margin: 0 var(--space-sm);
+                flex-wrap: wrap;
+                gap: 10px;
             }
-
+            
             .navbar-brand span {
                 font-size: var(--font-size-sm);
             }
-
+            
             .navbar-actions {
-                gap: var(--space-xs);
+                gap: 6px;
+            }
+            
+            .btn {
+                padding: 8px 14px;
+                font-size: 0.8rem;
+            }
+            
+            .lang-pill {
+                width: 28px;
+                height: 28px;
+                font-size: 0.7rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .landing-header {
+                padding: var(--space-sm);
+            }
+            
+            .navbar {
+                padding: 10px 14px;
+                margin: 0 var(--space-xs);
+                border-radius: var(--radius-lg);
             }
 
-            .btn {
-                padding: var(--space-xs) var(--space-md);
-                font-size: var(--font-size-xs);
+            .navbar-brand span {
+                font-size: 0.8rem;
+                max-width: 120px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .navbar-brand-icon {
+                width: 36px;
+                height: 36px;
+            }
+
+            .navbar-actions {
+                gap: 4px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+            
+            .navbar-actions .btn {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+            
+            .lang-pills {
+                padding: 2px;
+            }
+            
+            .lang-pill {
+                width: 26px;
+                height: 26px;
+                font-size: 0.65rem;
             }
 
             .hero {
                 padding: var(--space-4xl) var(--space-md);
                 min-height: auto;
-                padding-top: 120px;
+                padding-top: 110px;
+            }
+            
+            .hero-badge {
+                font-size: 0.75rem;
+                padding: 6px 12px;
             }
 
             .hero-cta {
@@ -1303,6 +1361,14 @@
             .feature-card {
                 padding: var(--space-xl);
             }
+            
+            .section-title {
+                font-size: var(--font-size-2xl);
+            }
+            
+            .section-subtitle {
+                font-size: var(--font-size-base);
+            }
 
             .stats {
                 padding: var(--space-3xl) var(--space-md);
@@ -1320,15 +1386,101 @@
             .footer {
                 padding: var(--space-3xl) var(--space-md) var(--space-xl);
             }
+            
+            .footer-brand h3 {
+                font-size: var(--font-size-lg);
+            }
+            
+            .footer-description {
+                font-size: var(--font-size-base);
+            }
         }
 
         @media (max-width: 480px) {
+            .navbar {
+                padding: 8px 12px;
+            }
+            
             .navbar-brand span {
                 display: none;
+            }
+            
+            .navbar-brand-icon {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .navbar-actions .btn {
+                padding: 5px 8px;
+                font-size: 0.7rem;
+            }
+            
+            .lang-pill {
+                width: 24px;
+                height: 24px;
+                font-size: 0.6rem;
+            }
+            
+            .hero {
+                padding-top: 90px;
+                padding-left: var(--space-sm);
+                padding-right: var(--space-sm);
+            }
+            
+            .hero-badge {
+                font-size: 0.7rem;
+            }
+            
+            .hero-cta .btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .features {
+                padding: var(--space-3xl) var(--space-sm);
+            }
+            
+            .feature-card {
+                padding: var(--space-lg);
+            }
+            
+            .feature-icon-wrapper {
+                width: 56px;
+                height: 56px;
+            }
+            
+            .feature-icon {
+                width: 56px;
+                height: 56px;
+            }
+            
+            .feature-card h3 {
+                font-size: var(--font-size-lg);
             }
 
             .stats-container {
                 grid-template-columns: 1fr;
+            }
+            
+            .stat-number {
+                font-size: var(--font-size-3xl);
+            }
+            
+            .footer-brand {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .navbar-actions .btn {
+                padding: 4px 6px;
+                font-size: 0.65rem;
+            }
+            
+            .lang-pill {
+                width: 22px;
+                height: 22px;
             }
         }
     </style>

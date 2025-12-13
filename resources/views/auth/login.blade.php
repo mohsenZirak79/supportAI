@@ -109,26 +109,26 @@
         /* Language Switcher */
         .lang-switcher {
             position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
+            top: 1rem;
+            right: 1rem;
             display: flex;
-            gap: 0.5rem;
+            gap: 0.35rem;
             z-index: 100;
         }
         
         html[dir="ltr"] .lang-switcher {
             right: auto;
-            left: 1.5rem;
+            left: 1rem;
         }
         
         .lang-btn {
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.75rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.05);
             color: rgba(255, 255, 255, 0.7);
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 500;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
@@ -160,6 +160,93 @@
             animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
             transform: translateY(20px);
+        }
+        
+        /* ============================================
+           RESPONSIVE STYLES
+           ============================================ */
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .lang-switcher {
+                top: 0.75rem;
+                right: 0.75rem;
+                gap: 0.25rem;
+            }
+            
+            html[dir="ltr"] .lang-switcher {
+                left: 0.75rem;
+            }
+            
+            .lang-btn {
+                padding: 0.35rem 0.6rem;
+                font-size: 0.75rem;
+            }
+            
+            .login-card {
+                padding: 1.75rem;
+                border-radius: 18px;
+                margin-top: 3rem;
+            }
+            
+            .logo-icon {
+                width: 52px;
+                height: 52px;
+            }
+            
+            .logo-icon svg {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .login-title {
+                font-size: 1.25rem;
+            }
+            
+            .login-subtitle {
+                font-size: 0.875rem;
+            }
+            
+            .form-input {
+                padding: 0.75rem 0.875rem;
+                font-size: 0.95rem;
+            }
+            
+            .submit-btn {
+                padding: 0.875rem;
+            }
+            
+            .card-footer {
+                margin-top: 1.5rem;
+                padding-top: 1.25rem;
+            }
+            
+            .bg-gradient-orb-1 {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .bg-gradient-orb-2 {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .bg-gradient-orb-3 {
+                width: 200px;
+                height: 200px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .login-card {
+                padding: 1.5rem;
+            }
+            
+            .login-title {
+                font-size: 1.125rem;
+            }
         }
         
         @keyframes cardEntrance {

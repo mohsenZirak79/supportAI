@@ -362,6 +362,116 @@
         .jdp-container {
             direction: rtl;
         }
+        
+        /* ============================================
+           RESPONSIVE STYLES
+           ============================================ */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .register-card {
+                padding: 1.75rem;
+                margin: 3rem 0;
+            }
+            
+            .lang-switcher {
+                top: 0.75rem;
+                right: 0.75rem;
+                gap: 0.25rem;
+            }
+            
+            html[dir="ltr"] .lang-switcher {
+                left: 0.75rem;
+            }
+            
+            .lang-btn {
+                padding: 0.35rem 0.6rem;
+                font-size: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 0.75rem;
+            }
+            
+            .register-card {
+                padding: 1.5rem;
+                border-radius: 18px;
+                margin-top: 3.5rem;
+            }
+            
+            .logo-icon {
+                width: 48px;
+                height: 48px;
+            }
+            
+            .logo-icon svg {
+                width: 26px;
+                height: 26px;
+            }
+            
+            .register-title {
+                font-size: 1.125rem;
+            }
+            
+            .register-subtitle {
+                font-size: 0.825rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .form-group {
+                margin-bottom: 0.75rem;
+            }
+            
+            .form-label {
+                font-size: 0.75rem;
+            }
+            
+            .form-input, .form-textarea {
+                padding: 0.65rem 0.875rem;
+                font-size: 0.9rem;
+            }
+            
+            .submit-btn {
+                padding: 0.875rem;
+            }
+            
+            .card-footer {
+                margin-top: 1.25rem;
+                padding-top: 1.25rem;
+            }
+            
+            .card-footer p {
+                font-size: 0.8rem;
+            }
+            
+            .bg-gradient-orb-1 {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .bg-gradient-orb-2 {
+                width: 250px;
+                height: 250px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .register-card {
+                padding: 1.25rem;
+            }
+            
+            .register-title {
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 
@@ -375,8 +485,8 @@
         <button class="lang-btn" data-lang="fa">فارسی</button>
         <button class="lang-btn" data-lang="en">English</button>
         <button class="lang-btn" data-lang="ar">العربية</button>
-    </div>
-    
+</div>
+
     <!-- Register Card -->
     <div class="register-card">
         <!-- Logo -->
@@ -388,20 +498,20 @@
             </div>
             <h1 class="register-title" data-i18n="auth.welcome">خوش آمدید</h1>
             <p class="register-subtitle" data-i18n="auth.enterInfo">لطفا اطلاعات خود را وارد کنید.</p>
-        </div>
+                            </div>
         
-        @if ($errors->any())
+                            @if ($errors->any())
             <div class="error-alert">
                 <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-        
-        <form id="registerForm" method="POST" action="{{ route('register') }}">
-            @csrf
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
+                                <form id="registerForm" method="POST" action="{{ route('register') }}">
+                                    @csrf
             
             <div class="form-row">
                 <div class="form-group">
@@ -413,47 +523,47 @@
                     <label class="form-label" data-i18n="auth.lastName">نام خانوادگی</label>
                     <input type="text" class="form-input" name="family" 
                            data-i18n-placeholder="auth.lastName" placeholder="نام خانوادگی" required>
-                </div>
-            </div>
-            
+                                    </div>
+                                    </div>
+
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.email">ایمیل</label>
                     <input type="email" class="form-input" name="email" 
                            data-i18n-placeholder="auth.emailPlaceholder" placeholder="ایمیل" required>
-                </div>
+                                    </div>
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.phone">شماره تلفن</label>
                     <input type="tel" class="form-input" name="phone" 
                            data-i18n-placeholder="auth.phonePlaceholder" placeholder="شماره تلفن (...09)" required>
-                </div>
-            </div>
+                                    </div>
+                                    </div>
             
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.password">رمز عبور</label>
                     <input type="password" class="form-input" name="password" 
                            data-i18n-placeholder="auth.password" placeholder="رمز عبور" required>
-                </div>
+                                        </div>
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.confirmPassword">تکرار رمز عبور</label>
                     <input type="password" class="form-input" name="password_confirmation" 
                            data-i18n-placeholder="auth.confirmPassword" placeholder="تکرار رمز عبور" required>
-                </div>
-            </div>
+                                        </div>
+                                    </div>
             
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.nationalId">کد ملی</label>
                     <input type="text" class="form-input" name="national_id" 
                            data-i18n-placeholder="auth.nationalId" placeholder="کد ملی">
-                </div>
+                                    </div>
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.postalCode">کد پستی</label>
                     <input type="text" class="form-input" name="postal_code" 
                            data-i18n-placeholder="auth.postalCode" placeholder="کد پستی">
-                </div>
-            </div>
+                                    </div>
+                                    </div>
             
             <div class="form-group">
                 <label class="form-label" data-i18n="auth.birthDate">تاریخ تولد (شمسی)</label>
@@ -462,8 +572,8 @@
                        autocomplete="off" dir="ltr"
                        data-jdp data-jdp-only-date="true"
                        data-jdp-config='{"selector":"#birth_date","dateFormat":"YYYY/MM/DD","autoShow":true}'>
-            </div>
-            
+                                    </div>
+
             <div class="form-group">
                 <label class="form-label" data-i18n="auth.address">آدرس</label>
                 <textarea class="form-input form-textarea" name="address" 
@@ -471,9 +581,9 @@
             </div>
             
             <button type="submit" class="submit-btn" data-i18n="nav.register">
-                ثبت‌نام
-            </button>
-        </form>
+                                        ثبت‌نام
+                                    </button>
+                                </form>
         
         <!-- Footer -->
         <div class="card-footer">
@@ -481,8 +591,8 @@
                 <span data-i18n="auth.hasAccount">قبلاً حساب کاربری دارید؟</span>
                 <a href="{{ route('login') }}" data-i18n="nav.login">ورود</a>
             </p>
-        </div>
-    </div>
+                        </div>
+                    </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -614,8 +724,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize date picker
     if (typeof jalaliDatepicker !== 'undefined') {
         jalaliDatepicker.startWatch();
-    }
-});
+        }
+    });
 </script>
 </body>
 </html>
