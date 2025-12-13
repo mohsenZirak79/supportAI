@@ -8,9 +8,10 @@
 default-src 'self';
 script-src 'self' 'unsafe-inline' http: https: ws: wss:;
 connect-src 'self' http: https: ws: wss:;
-img-src 'self' data: https:;
+img-src 'self' data: https: blob:;
 style-src 'self' 'unsafe-inline' http: https:;
 font-src 'self' data: http: https:;
+media-src 'self' blob: data: https:;
 ">
     <title>ربات چت</title>
     
