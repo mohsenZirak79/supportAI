@@ -1707,19 +1707,19 @@
     <section class="stats" role="region" aria-label="آمار و ارقام">
         <div class="stats-container">
             <div class="stat-item" data-reveal>
-                <div class="stat-number" data-i18n-stat="activeUsers">+۱۰۰۰</div>
+                <div class="stat-number" data-stat="activeUsers">+۱۰۰۰</div>
                 <div class="stat-label" data-i18n="landing.activeUsers">کاربر فعال</div>
             </div>
             <div class="stat-item" data-reveal>
-                <div class="stat-number" data-i18n-stat="ticketsAnswered">+۵۰۰۰</div>
+                <div class="stat-number" data-stat="ticketsAnswered">+۵۰۰۰</div>
                 <div class="stat-label" data-i18n="landing.ticketsAnswered">تیکت پاسخ داده شده</div>
             </div>
             <div class="stat-item" data-reveal>
-                <div class="stat-number" data-i18n-stat="satisfaction">٪۹۹</div>
+                <div class="stat-number" data-stat="satisfaction">99%</div>
                 <div class="stat-label" data-i18n="landing.satisfaction">رضایت کاربران</div>
             </div>
             <div class="stat-item" data-reveal>
-                <div class="stat-number" data-i18n-stat="support247">۲۴/۷</div>
+                <div class="stat-number" data-stat="support247">24/7</div>
                 <div class="stat-label" data-i18n="landing.support247">پشتیبانی آنلاین</div>
             </div>
         </div>
@@ -1983,27 +1983,11 @@
             const RTL_LOCALES = ['fa', 'ar'];
             const STORAGE_KEY = 'app_language';
             
-            // Translation data for landing page
             // Stat numbers for each language
             const statNumbers = {
-                fa: {
-                    activeUsers: '+۱۰۰۰',
-                    ticketsAnswered: '+۵۰۰۰',
-                    satisfaction: '٪۹۹',
-                    support247: '۲۴/۷'
-                },
-                en: {
-                    activeUsers: '1000+',
-                    ticketsAnswered: '5000+',
-                    satisfaction: '99%',
-                    support247: '24/7'
-                },
-                ar: {
-                    activeUsers: '+١٠٠٠',
-                    ticketsAnswered: '+٥٠٠٠',
-                    satisfaction: '٪٩٩',
-                    support247: '٢٤/٧'
-                }
+                fa: { activeUsers: '+۱۰۰۰', ticketsAnswered: '+۵۰۰۰', satisfaction: '۹۹٪', support247: '۲۴/۷' },
+                en: { activeUsers: '1000+', ticketsAnswered: '5000+', satisfaction: '99%', support247: '24/7' },
+                ar: { activeUsers: '١٠٠٠+', ticketsAnswered: '٥٠٠٠+', satisfaction: '٩٩٪', support247: '٢٤/٧' }
             };
             
             const translations = {
@@ -2126,8 +2110,8 @@
                 });
                 
                 // Update stat numbers
-                document.querySelectorAll('[data-i18n-stat]').forEach(el => {
-                    const key = el.dataset.i18nStat;
+                document.querySelectorAll('[data-stat]').forEach(el => {
+                    const key = el.dataset.stat;
                     if (statNumbers[locale] && statNumbers[locale][key]) {
                         el.textContent = statNumbers[locale][key];
                     }

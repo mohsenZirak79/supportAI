@@ -596,10 +596,10 @@
                             </div>
         
                             @if ($errors->any())
-            <div class="error-alert">
+            <div class="error-alert" id="errorAlert">
                 <ul>
                                         @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
+                                            <li data-error-text="{{ $error }}">{{ $error }}</li>
                                         @endforeach
                                     </ul>
                                 </div>
@@ -714,12 +714,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'auth.address': 'آدرس',
             'auth.hasAccount': 'قبلاً حساب کاربری دارید؟',
             'nav.register': 'ثبت‌نام',
-            'nav.login': 'ورود',
-            'validation.required': 'این فیلد الزامی است.',
-            'validation.email': 'ایمیل وارد شده معتبر نیست.',
-            'validation.phone': 'شماره تلفن معتبر نیست.',
-            'validation.passwordMismatch': 'رمز عبور و تکرار آن مطابقت ندارند.',
-            'validation.phoneExists': 'این شماره تلفن قبلاً ثبت شده است.'
+            'nav.login': 'ورود'
         },
         en: {
             'auth.welcome': 'Welcome',
@@ -740,12 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'auth.address': 'Address',
             'auth.hasAccount': 'Already have an account?',
             'nav.register': 'Register',
-            'nav.login': 'Login',
-            'validation.required': 'This field is required.',
-            'validation.email': 'The email is not valid.',
-            'validation.phone': 'The phone number is not valid.',
-            'validation.passwordMismatch': 'Passwords do not match.',
-            'validation.phoneExists': 'This phone number is already registered.'
+            'nav.login': 'Login'
         },
         ar: {
             'auth.welcome': 'مرحباً بك',
@@ -766,12 +756,44 @@ document.addEventListener('DOMContentLoaded', () => {
             'auth.address': 'العنوان',
             'auth.hasAccount': 'لديك حساب بالفعل؟',
             'nav.register': 'إنشاء حساب',
-            'nav.login': 'تسجيل الدخول',
-            'validation.required': 'هذا الحقل مطلوب.',
-            'validation.email': 'البريد الإلكتروني غير صالح.',
-            'validation.phone': 'رقم الهاتف غير صالح.',
-            'validation.passwordMismatch': 'كلمات المرور غير متطابقة.',
-            'validation.phoneExists': 'رقم الهاتف هذا مسجل بالفعل.'
+            'nav.login': 'تسجيل الدخول'
+        }
+    };
+    
+    // Error message translations (Persian -> other languages)
+    const errorTranslations = {
+        fa: {}, // Keep original Persian
+        en: {
+            'فیلد نام الزامی است': 'The name field is required.',
+            'فیلد نام خانوادگی الزامی است': 'The last name field is required.',
+            'فیلد ایمیل الزامی است': 'The email field is required.',
+            'ایمیل باید یک آدرس ایمیل معتبر باشد': 'The email must be a valid email address.',
+            'ایمیل قبلا ثبت شده است': 'The email has already been taken.',
+            'فیلد شماره تلفن الزامی است': 'The phone number field is required.',
+            'شماره تلفن قبلا ثبت شده است': 'The phone number has already been taken.',
+            'شماره تلفن باید ۱۱ رقم باشد': 'The phone number must be 11 digits.',
+            'فرمت شماره تلفن نادرست است': 'The phone number format is invalid.',
+            'فیلد رمز عبور الزامی است': 'The password field is required.',
+            'رمز عبور باید حداقل ۶ کاراکتر باشد': 'The password must be at least 6 characters.',
+            'رمز عبور و تکرار آن مطابقت ندارند': 'The password confirmation does not match.',
+            'کد ملی باید ۱۰ رقم باشد': 'The national ID must be 10 digits.',
+            'کد پستی باید ۱۰ رقم باشد': 'The postal code must be 10 digits.',
+        },
+        ar: {
+            'فیلد نام الزامی است': 'حقل الاسم مطلوب.',
+            'فیلد نام خانوادگی الزامی است': 'حقل اسم العائلة مطلوب.',
+            'فیلد ایمیل الزامی است': 'حقل البريد الإلكتروني مطلوب.',
+            'ایمیل باید یک آدرس ایمیل معتبر باشد': 'يجب أن يكون البريد الإلكتروني صالحاً.',
+            'ایمیل قبلا ثبت شده است': 'البريد الإلكتروني مستخدم بالفعل.',
+            'فیلد شماره تلفن الزامی است': 'حقل رقم الهاتف مطلوب.',
+            'شماره تلفن قبلا ثبت شده است': 'رقم الهاتف مستخدم بالفعل.',
+            'شماره تلفن باید ۱۱ رقم باشد': 'يجب أن يكون رقم الهاتف ۱۱ رقماً.',
+            'فرمت شماره تلفن نادرست است': 'تنسيق رقم الهاتف غير صالح.',
+            'فیلد رمز عبور الزامی است': 'حقل كلمة المرور مطلوب.',
+            'رمز عبور باید حداقل ۶ کاراکتر باشد': 'يجب أن تكون كلمة المرور ۶ أحرف على الأقل.',
+            'رمز عبور و تکرار آن مطابقت ندارند': 'تأكيد كلمة المرور غير متطابق.',
+            'کد ملی باید ۱۰ رقم باشد': 'يجب أن يكون الرقم الوطني ۱۰ أرقام.',
+            'کد پستی باید ۱۰ رقم باشد': 'يجب أن يكون الرمز البريدي ۱۰ أرقام.',
         }
     };
     
@@ -817,6 +839,29 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update active button
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === locale);
+        });
+        
+        // Translate error messages
+        translateErrors(locale);
+    }
+    
+    function translateErrors(locale) {
+        document.querySelectorAll('[data-error-text]').forEach(el => {
+            const originalText = el.dataset.errorText;
+            if (locale === 'fa') {
+                el.textContent = originalText;
+            } else {
+                // Try to find a translation
+                const errMap = errorTranslations[locale] || {};
+                let translated = originalText;
+                for (const [key, value] of Object.entries(errMap)) {
+                    if (originalText.includes(key)) {
+                        translated = value;
+                        break;
+                    }
+                }
+                el.textContent = translated;
+            }
         });
     }
     

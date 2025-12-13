@@ -753,10 +753,13 @@
             'auth.verifyOtp': 'تایید کد',
             'auth.noAccount': 'حساب کاربری ندارید؟',
             'auth.phoneError': 'خطا در ارسال شماره',
-            'auth.otpError': 'خطا در تأیید OTP',
-            'auth.phoneNotRegistered': 'این شماره تلفن ثبت نشده است.',
+            'auth.otpError': 'خطا در تأیید کد',
+            'auth.phoneNotRegistered': 'شماره تلفن یافت نشد.',
+            'auth.invalidPhone': 'شماره تلفن نامعتبر است.',
             'auth.invalidOtp': 'کد تأیید نادرست است.',
             'auth.otpExpired': 'کد تأیید منقضی شده است.',
+            'auth.pleaseWait': 'لطفا صبر کنید.',
+            'auth.tooManyRequests': 'تعداد درخواست بیش از حد مجاز.',
             'nav.register': 'ثبت‌نام'
         },
         en: {
@@ -770,10 +773,13 @@
             'auth.verifyOtp': 'Verify Code',
             'auth.noAccount': "Don't have an account?",
             'auth.phoneError': 'Error sending phone number',
-            'auth.otpError': 'Error verifying OTP',
-            'auth.phoneNotRegistered': 'This phone number is not registered.',
+            'auth.otpError': 'Error verifying code',
+            'auth.phoneNotRegistered': 'Phone number not found.',
+            'auth.invalidPhone': 'Invalid phone number.',
             'auth.invalidOtp': 'Invalid verification code.',
             'auth.otpExpired': 'Verification code has expired.',
+            'auth.pleaseWait': 'Please wait.',
+            'auth.tooManyRequests': 'Too many requests.',
             'nav.register': 'Register'
         },
         ar: {
@@ -788,9 +794,12 @@
             'auth.noAccount': 'ليس لديك حساب؟',
             'auth.phoneError': 'خطأ في إرسال رقم الهاتف',
             'auth.otpError': 'خطأ في التحقق من الرمز',
-            'auth.phoneNotRegistered': 'رقم الهاتف هذا غير مسجل.',
+            'auth.phoneNotRegistered': 'رقم الهاتف غير موجود.',
+            'auth.invalidPhone': 'رقم الهاتف غير صالح.',
             'auth.invalidOtp': 'رمز التحقق غير صحيح.',
             'auth.otpExpired': 'انتهت صلاحية رمز التحقق.',
+            'auth.pleaseWait': 'يرجى الانتظار.',
+            'auth.tooManyRequests': 'طلبات كثيرة جداً.',
             'nav.register': 'إنشاء حساب'
         }
     };
@@ -896,13 +905,23 @@
     function translateApiError(message) {
         const locale = getStoredLocale();
         const errorMap = {
-            // Persian error messages from API
+            // Persian error messages from API - all variations
+            'شماره تلفن یافت نشد': translations[locale]['auth.phoneNotRegistered'],
             'این شماره تلفن ثبت نشده است': translations[locale]['auth.phoneNotRegistered'],
-            'کد تأیید نادرست است': translations[locale]['auth.invalidOtp'],
-            'کد تأیید منقضی شده است': translations[locale]['auth.otpExpired'],
             'شماره تلفن ثبت نشده': translations[locale]['auth.phoneNotRegistered'],
+            'کاربری با این شماره یافت نشد': translations[locale]['auth.phoneNotRegistered'],
+            'کاربر یافت نشد': translations[locale]['auth.phoneNotRegistered'],
+            'شماره تلفن نامعتبر': translations[locale]['auth.invalidPhone'],
+            'فرمت شماره تلفن نادرست': translations[locale]['auth.invalidPhone'],
+            'کد تأیید نادرست است': translations[locale]['auth.invalidOtp'],
+            'کد تأیید نادرست': translations[locale]['auth.invalidOtp'],
             'کد اشتباه است': translations[locale]['auth.invalidOtp'],
+            'کد نادرست': translations[locale]['auth.invalidOtp'],
+            'کد تأیید منقضی شده است': translations[locale]['auth.otpExpired'],
             'کد منقضی شده': translations[locale]['auth.otpExpired'],
+            'کد تایید منقضی': translations[locale]['auth.otpExpired'],
+            'لطفا صبر کنید': translations[locale]['auth.pleaseWait'],
+            'تعداد درخواست بیش از حد': translations[locale]['auth.tooManyRequests'],
         };
         
         // Check if message matches any known error
