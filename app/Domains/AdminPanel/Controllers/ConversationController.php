@@ -12,7 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use App\Notifications\ReferralRespondedNotification;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ConversationController extends Controller
@@ -372,8 +374,11 @@ class ConversationController extends Controller
             'agent_response' => $validated['agent_response'],
             'response_visibility' => $validated['response_visibility'],
         ]);
-        event(new \App\Domains\Shared\Events\ReferralResponded($referral)); // Broadcast to user
-        return response()->json($referral->fresh()->load(['user', 'conversation']));
+        $referral = $referral->fresh()->load(['user', 'conversation']);
+        if ($referral->user) {
+            Notification::send($referral->user, new ReferralRespondedNotification($referral));
+        }
+        return response()->json($referral);
     }
 
     public function handoff(Request $request, Message $message)

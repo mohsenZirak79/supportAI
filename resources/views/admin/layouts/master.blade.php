@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('پنل مدیریت'))</title>
 
     <!-- Favicon -->
@@ -146,6 +147,151 @@
             display: flex;
             align-items: center;
             gap: .65rem;
+        }
+
+        .admin-notifications {
+            position: relative;
+        }
+
+        .admin-notifications__trigger {
+            width: 42px;
+            height: 42px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--admin-primary-contrast);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+            position: relative;
+        }
+
+        .admin-notifications__trigger:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .admin-notifications__badge {
+            position: absolute;
+            top: 6px;
+            inset-inline-end: 6px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.65rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .admin-notifications__dropdown {
+            position: absolute;
+            top: 56px;
+            inset-inline-end: 0;
+            width: min(360px, 92vw);
+            background: var(--admin-surface);
+            border-radius: 16px;
+            box-shadow: var(--admin-shadow);
+            border: 1px solid var(--admin-border);
+            overflow: hidden;
+            display: none;
+            z-index: 60;
+        }
+
+        .admin-notifications__dropdown.is-open {
+            display: block;
+        }
+
+        .admin-notifications__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: rgba(15, 23, 42, 0.04);
+            font-weight: 600;
+            color: var(--admin-text);
+        }
+
+        .admin-notifications__actions {
+            display: inline-flex;
+            gap: 6px;
+        }
+
+        .admin-notifications__action {
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            background: #fff;
+            color: var(--admin-text);
+            border-radius: 8px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.78rem;
+        }
+
+        .admin-notifications__body {
+            max-height: 360px;
+            overflow-y: auto;
+        }
+
+        .admin-notifications__empty,
+        .admin-notifications__loading {
+            padding: 20px;
+            text-align: center;
+            color: var(--admin-muted-text);
+            font-size: 0.9rem;
+        }
+
+        .admin-notifications__list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-notifications__item {
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .admin-notifications__item:last-child {
+            border-bottom: none;
+        }
+
+        .admin-notifications__link {
+            width: 100%;
+            text-align: start;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 14px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .admin-notifications__item.unread .admin-notifications__link {
+            background: rgba(14, 165, 233, 0.08);
+        }
+
+        .admin-notifications__content strong {
+            display: block;
+            color: var(--admin-text);
+            font-size: 0.9rem;
+        }
+
+        .admin-notifications__content p {
+            margin: 4px 0 0;
+            color: var(--admin-muted-text);
+            font-size: 0.82rem;
+        }
+
+        .admin-notifications__timestamp {
+            font-size: 0.75rem;
+            color: var(--admin-muted-text);
+            white-space: nowrap;
         }
 
         .admin-navbar__toggle {
@@ -359,6 +505,28 @@
         </span>
     </a>
     <div class="admin-navbar__actions">
+        <div class="admin-notifications" data-admin-notifications>
+            <button class="admin-notifications__trigger" type="button" data-admin-notifications-trigger aria-haspopup="true" aria-expanded="false">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M12 2a5 5 0 0 0-5 5v3.1c0 .58-.2 1.14-.57 1.58L5 14.4h14l-.43-2.72A2.5 2.5 0 0 1 18 10.1V7a5 5 0 0 0-5-5zm0 18a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 20z"/>
+                </svg>
+                <span class="admin-notifications__badge" data-admin-notifications-badge style="display:none;">0</span>
+            </button>
+            <div class="admin-notifications__dropdown" data-admin-notifications-dropdown>
+                <div class="admin-notifications__header">
+                    <span data-admin-notifications-title>نوتیفیکیشن‌ها</span>
+                    <div class="admin-notifications__actions">
+                        <button type="button" class="admin-notifications__action" data-admin-notifications-refresh>⟳</button>
+                        <button type="button" class="admin-notifications__action" data-admin-notifications-mark-all>خوانده‌شده همه</button>
+                    </div>
+                </div>
+                <div class="admin-notifications__body">
+                    <div class="admin-notifications__loading" data-admin-notifications-loading style="display:none;">در حال بارگذاری…</div>
+                    <div class="admin-notifications__empty" data-admin-notifications-empty style="display:none;">نوتیفیکیشنی ثبت نشده.</div>
+                    <ul class="admin-notifications__list" data-admin-notifications-list></ul>
+                </div>
+            </div>
+        </div>
         <button class="admin-navbar__toggle" type="button" aria-label="{{ __('باز و بسته کردن منو') }}" data-menu-toggle>
             <span></span>
         </button>

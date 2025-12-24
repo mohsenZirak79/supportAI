@@ -1,6 +1,7 @@
 <?php
 
 //use App\Domains\Auth\Controllers\AuthController;
+use App\Domains\Shared\Controllers\NotificationController;
 use App\Domains\UserPanel\Controllers\TicketController;
 use Illuminate\Http\Request;
 use App\Services\FileUploadService;
@@ -114,6 +115,9 @@ Route::prefix('v1')
         // Text-to-Speech endpoints
         Route::post('text-to-speech', [ConversationController::class, 'textToSpeech']);
         Route::post('text-to-speech/chunks', [ConversationController::class, 'textToSpeechChunks']);
+        Route::get('notifications', [NotificationController::class, 'index']);
+        Route::patch('notifications/{id}/read', [NotificationController::class, 'markRead']);
+        Route::patch('notifications/read-all', [NotificationController::class, 'markAllRead']);
         
         // User Profile endpoints
         Route::get('user/profile', [\App\Http\Controllers\UserProfileController::class, 'show']);

@@ -67,6 +67,8 @@
   },
   "chat": {
     "title": "چت با هوش مصنوعی",
+    "welcomeToast": "{name} عزیز، خوش آمدید!",
+    "welcomeNameFallback": "دوست گرامی",
     "newChat": "+ چت جدید",
     "startNewChat": "چت جدیدی شروع کنید",
     "startNewChatDesc": "برای شروع گفت‌وگو، روی «چت جدید» کلیک کنید.",
@@ -100,7 +102,30 @@
     "openSidebar": "باز کردن لیست گفتگوها",
     "voiceProcessError": "نتوانستم پاسخ صوتی را پردازش کنم.",
     "uploadVoiceError": "خطا در ارسال/دریافت ویس",
-    "micAccessDenied": "دسترسی به میکروفون رد شد یا پشتیبانی نمی‌شود."
+    "micAccessDenied": "دسترسی به میکروفون رد شد یا پشتیبانی نمی‌شود.",
+    "micPermissionBlocked": "دسترسی میکروفون از قبل مسدود شده است. لطفاً از تنظیمات مرورگر آن را فعال کنید.",
+    "micPermissionError": "برای ضبط صدا دسترسی میکروفن را از مرورگر فعال کنید.",
+    "micNotFound": "هیچ میکروفنی پیدا نشد.",
+    "micNotReadable": "میکروفن در دسترس نیست یا توسط برنامه دیگری استفاده می‌شود.",
+    "micNotSupported": "مرورگرتان ضبط صدا را پشتیبانی نمی‌کند.",
+    "micUnknownError": "در دسترسی به میکروفن مشکلی پیش آمد."
+  },
+  "notifications": {
+    "title": "نوتیفیکیشن‌ها",
+    "loading": "در حال بارگذاری…",
+    "empty": "نوتیفیکیشنی ثبت نشده.",
+    "refresh": "بروزرسانی",
+    "markAll": "خوانده‌شده همه",
+    "loadError": "بارگذاری نوتیفیکیشن‌ها ممکن نشد.",
+    "ariaLabel": "نمایش نوتیفیکیشن‌ها",
+    "referralAssignedTitle": "ارجاع جدید",
+    "referralAssignedBody": "ارجاع جدیدی برای «{conversationTitle}» به شما رسید.",
+    "referralRespondedTitle": "پاسخ ارجاع",
+    "referralRespondedBody": "پاسخ مربوط به ارجاع شما در «{conversationTitle}» ثبت شد.",
+    "ticketAssignedTitle": "تیکت جدید",
+    "ticketAssignedBody": "تیکت «{ticketTitle}» برای بخش شما ثبت شد.",
+    "ticketRespondedTitle": "پاسخ پشتیبان",
+    "ticketRespondedBody": "پشتیبان به تیکت «{ticketTitle}» پاسخ داد: «{excerpt}»"
   },
   "referral": {
     "title": "ارجاعات فعال",
@@ -255,4 +280,3 @@
     "ar": "العربية"
   }
 }
-

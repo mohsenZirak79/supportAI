@@ -3,6 +3,7 @@
 use App\Domains\AdminPanel\Controllers\AdminChatController;
 use App\Domains\AdminPanel\Controllers\AdminTicketController;
 use App\Domains\Auth\Controllers\WebController;
+use App\Domains\Shared\Controllers\NotificationController;
 use App\Domains\Shared\Models\User;
 use App\Domains\Shared\Controllers\UserController;
 use App\Domains\AdminPanel\Controllers\ProfileController;
@@ -70,6 +71,9 @@ Route::middleware(['web', 'auth:web', \App\Http\Middleware\CheckPermissionForRou
         Route::get('/tickets/{id}', [\App\Domains\AdminPanel\Controllers\AdminTicketController::class, 'show'])->name('admin.tickets.show');
         Route::post('/tickets/{id}/messages', [\App\Domains\AdminPanel\Controllers\AdminTicketController::class, 'reply'])->name('admin.tickets.reply');
         Route::get('/chats', [AdminChatController::class, 'index'])->name('admin.chats');
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('admin.notifications.index');
+        Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('admin.notifications.read');
+        Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('admin.notifications.read-all');
         Route::get('dashboard', function (){
             return \view('admin.dashboard');
         })->name('admin.dashboard');

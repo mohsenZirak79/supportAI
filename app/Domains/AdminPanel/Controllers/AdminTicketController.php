@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Domains\Shared\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
+use App\Notifications\TicketRespondedNotification;
 class AdminTicketController extends Controller
 {
     public function index(Request $request)
@@ -165,6 +167,11 @@ class AdminTicketController extends Controller
 
         // به‌روزرسانی وضعیت والد (طبق قانونت)
         $root->update(['status' => 'answered']);
+
+        $root->refresh()->load('sender');
+        if ($root->sender) {
+            Notification::send($root->sender, new TicketRespondedNotification($root, $reply));
+        }
 
         return response()->json([
             'message' => 'پاسخ ثبت شد.',

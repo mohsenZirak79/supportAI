@@ -1,5 +1,18 @@
 <template>
     <div class="ticket-app" :dir="direction">
+        <transition name="fade">
+            <div v-if="ticketWelcomeVisible" class="ticket-welcome-overlay">
+                <div class="ticket-welcome-card">
+                    <p class="ticket-welcome-eyebrow">پنل پشتیبانی</p>
+                    <h2>همین حالا زمان شروع پیگیری است</h2>
+                    <p>برای ثبت تیکت جدید یا دیدن پاسخ‌های قدیمی کافی‌ست گوشه‌ی بالا سمت راست دکمه‌اش را بزنید.</p>
+                    <div class="ticket-welcome-actions">
+                        <button type="button" class="primary" @click="closeTicketWelcome">ثبت تیکت</button>
+                        <button type="button" class="ghost" @click="closeTicketWelcome">بعداً</button>
+                    </div>
+                </div>
+            </div>
+        </transition>
         <!-- Toast Container -->
         <!--        <div class="toast-container">
                     <div
@@ -37,6 +50,7 @@
                     <span class="brand-text">{{ $t('ticket.title') }}</span>
                 </div>
                 <nav class="header-nav">
+                    <NotificationBell @select="handleNotificationSelect" />
                     <select :value="locale" class="lang-select" @change="onLanguageChange">
                         <option value="fa">فارسی</option>
                         <option value="en">EN</option>
@@ -554,6 +568,7 @@
 <script setup>
 import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
 import axios from 'axios';
+import NotificationBell from './NotificationBell.vue';
 import { useLanguage } from '../i18n';
 
 // --- i18n - CSP-safe, no vue-i18n ---
@@ -563,6 +578,20 @@ const { locale, setLocale, direction, initLocale, t } = useLanguage();
 import {useToast} from 'vue-toast-notification'
 
 const toast = useToast();
+const ticketWelcomeVisible = ref(false);
+const TICKET_WELCOME_KEY = 'supportAI:ticket-welcome-seen';
+const checkTicketWelcome = () => {
+    if (typeof window === 'undefined') return;
+    if (!localStorage.getItem(TICKET_WELCOME_KEY)) {
+        ticketWelcomeVisible.value = true;
+    }
+};
+
+const closeTicketWelcome = () => {
+    ticketWelcomeVisible.value = false;
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(TICKET_WELCOME_KEY, String(Date.now()));
+};
 const logoutUrl = window?.AppConfig?.logoutUrl || '/logout';
 const csrfToken = window?.AppConfig?.csrfToken
     || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
@@ -1007,6 +1036,15 @@ const goToChat = () => {
     window.location.href = '/chat';
 };
 
+const handleNotificationSelect = async (notification) => {
+    if (!notification) return;
+    if (notification.category === 'ticket' && notification.ticket_id) {
+        await viewThread(notification.ticket_id);
+    } else if (notification.category === 'referral') {
+        goToChat();
+    }
+};
+
 const goToProfile = () => {
     window.location.href = '/user/profile';
 };
@@ -1024,14 +1062,78 @@ onMounted(() => {
 
     fetchDepartments();
     fetchTickets();
+    checkTicketWelcome();
 });
 </script>
 
 <style scoped>
 .ticket-app {
     font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
-    background: #f8fafc;
+    background: radial-gradient(circle at 20% 0%, rgba(59, 130, 246, 0.25), transparent 40%),
+        radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.25), transparent 35%),
+        #f4f6fb;
     min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.ticket-welcome-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+}
+
+.ticket-welcome-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 28px;
+    border-radius: 24px;
+    max-width: 460px;
+    text-align: center;
+    box-shadow: 0 30px 45px rgba(15, 23, 42, 0.2);
+}
+
+.ticket-welcome-card h2 {
+    margin: 12px 0;
+    font-size: 1.6rem;
+    color: #0f172a;
+}
+
+.ticket-welcome-eyebrow {
+    letter-spacing: 0.3em;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #22d3ee;
+}
+
+.ticket-welcome-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.ticket-welcome-actions .primary {
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+    border: none;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ticket-welcome-actions .ghost {
+    border: 1px solid #cbd5f5;
+    background: transparent;
+    color: #1e293b;
+    padding: 10px 18px;
+    border-radius: 999px;
+    cursor: pointer;
 }
 @keyframes shimmer-move { 100% { transform: translateX(100%); } }
 .shimmer {

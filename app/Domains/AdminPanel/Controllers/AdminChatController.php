@@ -9,7 +9,9 @@ use App\Domains\Shared\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use App\Notifications\ReferralRespondedNotification;
 
 class AdminChatController extends Controller
 {
@@ -126,9 +128,12 @@ class AdminChatController extends Controller
             }
         }
 
-        // event(new ReferralResponded($referral));
+        $referral = $referral->fresh()->load(['user', 'conversation']);
+        if ($referral->user) {
+            Notification::send($referral->user, new ReferralRespondedNotification($referral));
+        }
 
-        return response()->json(['message' => 'پاسخ ثبت شد.', 'referral' => $referral->fresh()]);
+        return response()->json(['message' => 'پاسخ ثبت شد.', 'referral' => $referral]);
     }
     public function assignMe(Request $request, Referral $referral)
     {

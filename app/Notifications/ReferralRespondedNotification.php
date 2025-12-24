@@ -2,11 +2,11 @@
 
 namespace App\Notifications;
 
+use App\Domains\Shared\Models\Referral;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use App\Domains\Shared\Models\Referral;
 
-class ReferralAssigned extends Notification
+class ReferralRespondedNotification extends Notification
 {
     use Queueable;
 
@@ -16,29 +16,28 @@ class ReferralAssigned extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast']; // Reverb سازگار
+        return ['database'];
     }
 
     public function toArray($notifiable)
     {
         $conversationTitle = optional($this->referral->conversation)->title ?: 'گفت‌وگو';
         return [
-            'title' => 'ارجاع جدید',
-            'body' => "ارجاع جدیدی برای «{$conversationTitle}» به شما رسید.",
-            'title_key' => 'notifications.referralAssignedTitle',
-            'body_key' => 'notifications.referralAssignedBody',
+            'title' => 'پاسخ ارجاع',
+            'body' => "پاسخ مربوط به ارجاع شما در «{$conversationTitle}» ثبت شد.",
+            'title_key' => 'notifications.referralRespondedTitle',
+            'body_key' => 'notifications.referralRespondedBody',
             'params' => [
                 'conversationTitle' => $conversationTitle,
             ],
             'category' => 'referral',
-            'related_id' => $this->referral->conversation_id,
             'conversation_id' => $this->referral->conversation_id,
-            'role' => $this->referral->assigned_role,
-            'status' => $this->referral->status,
             'referral_id' => $this->referral->id,
+            'related_id' => $this->referral->conversation_id,
+            'status' => $this->referral->status,
             'meta' => [
-                'trigger_message_id' => $this->referral->trigger_message_id,
-            ]
+                'response_visibility' => $this->referral->response_visibility,
+            ],
         ];
     }
 }

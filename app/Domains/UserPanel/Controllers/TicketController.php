@@ -6,7 +6,9 @@ use App\Domains\Role\Models\Role;
 use App\Http\Controllers\Controller;
 use App\Domains\Shared\Models\Ticket;
 use App\Http\Resources\TicketResource;
+use App\Notifications\TicketAssignedNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -128,7 +130,8 @@ class TicketController extends Controller
         ]);
 
         $id = (string) Str::uuid(); // ✅ یکبار بساز
-        $department = Role::where('id', $validated['department'])->firstOrFail()->name;
+        $departmentRole = Role::where('id', $validated['department'])->firstOrFail();
+        $department = $departmentRole->name;
         $ticket = Ticket::create([
             'id'          => $id,
             'root_id'     => $id,                 // ✅ مهم: ریشه = خودش
@@ -153,6 +156,11 @@ class TicketController extends Controller
             'media as attachments_count' => fn($q) =>
             $q->where('collection_name', 'ticket-attachments')
         ])->load('media');
+
+        $assignedUsers = $departmentRole->users()->get();
+        if ($assignedUsers->isNotEmpty()) {
+            Notification::send($assignedUsers, new TicketAssignedNotification($ticket));
+        }
 
         return new TicketResource($ticket);
     }

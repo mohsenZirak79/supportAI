@@ -67,6 +67,8 @@
   },
   "chat": {
     "title": "AI Chat",
+    "welcomeToast": "Welcome back, {name}!",
+    "welcomeNameFallback": "friend",
     "newChat": "+ New Chat",
     "startNewChat": "Start a new chat",
     "startNewChatDesc": "Click \"New Chat\" to start a conversation.",
@@ -100,7 +102,30 @@
     "openSidebar": "Open chat list",
     "voiceProcessError": "Could not process voice response.",
     "uploadVoiceError": "Error sending/receiving voice",
-    "micAccessDenied": "Microphone access denied or not supported."
+    "micAccessDenied": "Microphone access denied or not supported.",
+    "micPermissionBlocked": "Microphone access is already blocked. Enable it in your browser settings.",
+    "micPermissionError": "Please allow microphone access in your browser.",
+    "micNotFound": "No microphone was found.",
+    "micNotReadable": "Microphone is unavailable or in use by another app.",
+    "micNotSupported": "Your browser does not support audio recording.",
+    "micUnknownError": "There was a problem accessing the microphone."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "loading": "Loading…",
+    "empty": "No notifications yet.",
+    "refresh": "Refresh",
+    "markAll": "Mark all read",
+    "loadError": "Failed to load notifications.",
+    "ariaLabel": "Show notifications",
+    "referralAssignedTitle": "New referral",
+    "referralAssignedBody": "A new referral for “{conversationTitle}” is assigned to you.",
+    "referralRespondedTitle": "Referral response",
+    "referralRespondedBody": "A response for your referral in “{conversationTitle}” has been posted.",
+    "ticketAssignedTitle": "New ticket",
+    "ticketAssignedBody": "Ticket “{ticketTitle}” was assigned to your department.",
+    "ticketRespondedTitle": "Support reply",
+    "ticketRespondedBody": "Support replied to “{ticketTitle}”: “{excerpt}”"
   },
   "referral": {
     "title": "Active Referrals",
@@ -255,4 +280,3 @@
     "ar": "العربية"
   }
 }
-

@@ -67,6 +67,8 @@
   },
   "chat": {
     "title": "المحادثة الذكية",
+    "welcomeToast": "مرحبًا، {name}!",
+    "welcomeNameFallback": "صديقنا",
     "newChat": "+ محادثة جديدة",
     "startNewChat": "ابدأ محادثة جديدة",
     "startNewChatDesc": "انقر على \"محادثة جديدة\" لبدء المحادثة.",
@@ -100,7 +102,30 @@
     "openSidebar": "فتح قائمة المحادثات",
     "voiceProcessError": "لم أتمكن من معالجة الرد الصوتي.",
     "uploadVoiceError": "خطأ في إرسال/استقبال الصوت",
-    "micAccessDenied": "تم رفض الوصول للميكروفون أو غير مدعوم."
+    "micAccessDenied": "تم رفض الوصول للميكروفون أو غير مدعوم.",
+    "micPermissionBlocked": "تم حظر الميكروفون مسبقًا. فعّل الإذن من إعدادات المتصفح.",
+    "micPermissionError": "يرجى السماح بالوصول إلى الميكروفون من المتصفح.",
+    "micNotFound": "لم يتم العثور على ميكروفون.",
+    "micNotReadable": "الميكروفون غير متاح أو مستخدم من تطبيق آخر.",
+    "micNotSupported": "متصفحك لا يدعم تسجيل الصوت.",
+    "micUnknownError": "حدثت مشكلة في الوصول إلى الميكروفون."
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "loading": "جاري التحميل…",
+    "empty": "لا توجد إشعارات بعد.",
+    "refresh": "تحديث",
+    "markAll": "وضع الكل كمقروء",
+    "loadError": "تعذر تحميل الإشعارات.",
+    "ariaLabel": "عرض الإشعارات",
+    "referralAssignedTitle": "إحالة جديدة",
+    "referralAssignedBody": "تمت إحالة جديدة لـ \"{conversationTitle}\" إليك.",
+    "referralRespondedTitle": "رد الإحالة",
+    "referralRespondedBody": "تم نشر رد على إحالتك في \"{conversationTitle}\".",
+    "ticketAssignedTitle": "تذكرة جديدة",
+    "ticketAssignedBody": "تم إسناد التذكرة \"{ticketTitle}\" إلى قسمك.",
+    "ticketRespondedTitle": "رد الدعم",
+    "ticketRespondedBody": "رد الدعم على \"{ticketTitle}\": \"{excerpt}\""
   },
   "referral": {
     "title": "الإحالات النشطة",
@@ -255,4 +280,3 @@
     "ar": "العربية"
   }
 }
-

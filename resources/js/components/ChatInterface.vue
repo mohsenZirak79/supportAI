@@ -32,6 +32,7 @@
                     <span class="brand-text">{{ activeChat?.title || $t('chat.title') }}</span>
                 </div>
                 <nav class="header-nav">
+                    <NotificationBell @select="handleNotificationSelect" />
                     <select :value="locale" class="lang-select" @change="onLanguageChange">
                         <option value="fa">فارسی</option>
                         <option value="en">EN</option>
@@ -129,7 +130,7 @@
 
                                 <!-- ترنسکریپت متن صوتی -->
                                 <div v-if="message.text && message.text.trim()" class="voice-transcript">
-                                    <span class="transcript-label">{{ $t('chat.transcript') }}:</span>
+<!--                                    <span class="transcript-label">{{ $t('chat.transcript') }}:</span>-->
                                     <span class="transcript-text">{{ message.text }}</span>
                                 </div>
 
@@ -406,6 +407,7 @@
 <script setup>
 import {ref, computed, nextTick, onMounted, onUnmounted, reactive, watch} from 'vue';
 import HandoffModal from './HandoffModal.vue';
+import NotificationBell from './NotificationBell.vue';
 import AiAnswer from './AiAnswer.vue'
 import {useToast} from 'vue-toast-notification'
 import {apiFetch} from '../lib/http';
@@ -437,6 +439,10 @@ const logout = async () => {
         if (!response.ok) {
             throw new Error('Logout failed');
         }
+        const storage = getWelcomeStorage();
+        if (storage) {
+            storage.removeItem(WELCOME_STORAGE_KEY);
+        }
         window.location.href = '/login';
     } catch (error) {
         console.error('logout failed', error);
@@ -463,6 +469,7 @@ const renameModal = reactive({
     loading: false
 });
 const renameInputRef = ref(null);
+const WELCOME_STORAGE_KEY = 'supportAI:chat-welcome-session';
 const fetchDepartments = async () => {  // ← این تابع رو کامل اضافه کن
     try {
         const response = await apiFetch('/support-roles');
@@ -476,6 +483,57 @@ const fetchDepartments = async () => {  // ← این تابع رو کامل ا�
     } catch (error) {
         console.error('خطا در fetch departments:', error);
         // اختیاری: alert('خطا در بارگذاری بخش‌ها');
+    }
+};
+
+const getDisplayName = (user) => {
+    if (!user) return '';
+    const parts = [user?.name, user?.family].filter(Boolean);
+    return parts.join(' ').trim();
+};
+
+const fetchCurrentUserName = async () => {
+    try {
+        const res = await apiFetch('/user/profile');
+        if (!res.ok) return '';
+        const payload = await res.json();
+        return getDisplayName(payload?.user);
+    } catch (error) {
+        return '';
+    }
+};
+
+const getWelcomeStorage = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+        return window.sessionStorage;
+    } catch {
+        return window.localStorage;
+    }
+};
+
+const showWelcomeToast = async () => {
+    if (typeof window === 'undefined') return;
+    const storage = getWelcomeStorage();
+    if (storage && storage.getItem(WELCOME_STORAGE_KEY)) return;
+
+    const fetchedName = await fetchCurrentUserName();
+    const fallbackName = t('chat.welcomeNameFallback');
+    const displayName = fetchedName || fallbackName;
+    const template = t('chat.welcomeToast');
+    const message = template.replace('{name}', displayName);
+
+    toast.open({
+        message,
+        type: 'default',
+        position: isRtl.value ? 'top-left' : 'top-right',
+        duration: 3600,
+        dismissible: false,
+        className: 'welcome-toast'
+    });
+
+    if (storage) {
+        storage.setItem(WELCOME_STORAGE_KEY, String(Date.now()));
     }
 };
 const formatDate = (isoString) => {
@@ -731,9 +789,42 @@ async function ensureMediaLoaded(msg) {
 const AI_EMAIL = 'ai@system.local';
 let aiUserId = null;
 
+const getMicrophonePermissionState = async () => {
+    if (typeof navigator === 'undefined' || !navigator.permissions) return null;
+    try {
+        const status = await navigator.permissions.query({name: 'microphone'});
+        return status.state;
+    } catch {
+        return null;
+    }
+};
+
+const formatMicrophoneError = (error) => {
+    if (!error) return t('chat.micUnknownError');
+    switch (error.name) {
+        case 'NotAllowedError':
+        case 'PermissionDeniedError':
+            return t('chat.micPermissionError');
+        case 'NotFoundError':
+        case 'DevicesNotFoundError':
+            return t('chat.micNotFound');
+        case 'NotReadableError':
+            return t('chat.micNotReadable');
+        case 'NotSupportedError':
+            return t('chat.micNotSupported');
+        default:
+            return t('chat.micUnknownError');
+    }
+};
+
 // --- Methods ---
 const startRecording = async () => {
     try {
+        const permissionState = await getMicrophonePermissionState();
+        if (permissionState === 'denied') {
+            toast.error(t('chat.micPermissionBlocked'));
+            return;
+        }
         const stream = await navigator.mediaDevices.getUserMedia({audio: true});
         mediaRecorder.value = new MediaRecorder(stream);
         audioChunks.value = [];
@@ -760,7 +851,8 @@ const startRecording = async () => {
             }
         }, 100);
     } catch (error) {
-        alert('دسترسی به میکروفون رد شد یا پشتیبانی نمی‌شود.');
+        const message = formatMicrophoneError(error);
+        toast.error(message);
         console.error('Recording error:', error);
     }
 };
@@ -817,7 +909,7 @@ const uploadVoice = async (blob) => {
         formData.append('collection', 'message_voices');
 
         const uploadRes = await fetch('/api/v1/files', { method: 'POST', body: formData });
-        if (!uploadRes.ok) throw new Error('آپلود فایل شکست خورد');
+        if (!uploadRes.ok) throw new Error('upload failed');
         const { file_id } = await uploadRes.json();
 
         // 3) ارسال پیام ویسی به گفتگو
@@ -834,7 +926,7 @@ const uploadVoice = async (blob) => {
         if (!messageRes.ok) {
             const errText = await messageRes.text().catch(() => '');
             console.error('send voice failed', messageRes.status, errText);
-            throw new Error('ارسال پیام شکست خورد');
+            throw new Error('send failed');
         }
 
         const { user_message, ai_message, conversation } = await messageRes.json();
@@ -902,7 +994,7 @@ const uploadVoice = async (blob) => {
             chat.messages.push({
                 id: 'ai-fallback-' + Date.now(),
                 sender: 'bot',
-                text: 'نتوانستم پاسخ صوتی را پردازش کنم.',
+                text: t('chat.voiceProcessError'),
                 created_at: new Date().toISOString()
             });
         }
@@ -1103,7 +1195,7 @@ const startNewChat = async () => {
             setActiveChat(newChat.id);
         }
     } catch (e) {
-        alert('خطا در ایجاد چت جدید');
+        toast.error(t('chat.newChatError'));
     }
 };
 
@@ -1184,12 +1276,12 @@ const sendMessage = async () => {
                 scrollToBottom();
             }
         } else {
-            throw new Error('خطا در ارسال پیام');
+            throw new Error('send failed');
         }
     } catch (error) {
         activeChat.messages.push({
             sender: 'bot',
-            text: '❌ خطایی رخ داد. لطفاً دوباره تلاش کنید.'
+            text: t('chat.sendError')
         });
     } finally {
         loading.value = false;
@@ -1237,7 +1329,7 @@ const deleteChat = async (chatId) => {
     closeChatMenu();
     const chat = chats.value.find(c => c.id === chatId);
     if (!chat) return;
-    if (!confirm('آیا مطمئنید این گفتگو حذف شود؟')) return;
+    if (!confirm(t('chat.confirmDelete'))) return;
 
     deletingChatId.value = chatId;
     try {
@@ -1271,6 +1363,14 @@ const copyText = (text) => {
 const goToTickets = () => {
     window.location.href = '/ticket';
 };
+const handleNotificationSelect = async (notification) => {
+    if (!notification) return;
+    if (notification.category === 'referral' && notification.conversation_id) {
+        await setActiveChat(notification.conversation_id);
+    } else if (notification.category === 'ticket') {
+        goToTickets();
+    }
+};
 const goToProfile = () => {
     window.location.href = '/user/profile';
 };
@@ -1293,7 +1393,7 @@ const handleHandoffSubmit = async (data) => {
         )
 
         if (!res.ok) {
-            let msg = 'خطا در ارجاع'
+            let msg = t('chat.handoffError')
             try {
                 const j = await res.json();
                 msg = j?.message || j?.error || msg
@@ -1405,6 +1505,9 @@ onMounted(() => {
 
     loadChats();
     fetchDepartments();
+    nextTick(() => {
+        showWelcomeToast();
+    });
     if (typeof window !== 'undefined') {
         updateLayoutFlags();
         window.addEventListener('resize', updateLayoutFlags);
@@ -1521,7 +1624,21 @@ function handleMenuClickOutside(event) {
 
 .chat-app {
     font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
-    background: #f8fafc;
+    --brand-primary: #0f766e;
+    --brand-secondary: #0ea5e9;
+    --brand-accent: #22d3ee;
+    --ink-900: #0f172a;
+    --ink-700: #334155;
+    --surface-0: #ffffff;
+    --surface-1: #f8fafc;
+    --surface-2: #eef2ff;
+    --border-soft: rgba(148, 163, 184, 0.25);
+    --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.12);
+    --shadow-strong: 0 20px 45px rgba(15, 23, 42, 0.18);
+    background: radial-gradient(circle at 15% 10%, rgba(14, 165, 233, 0.25), transparent 40%),
+        radial-gradient(circle at 85% 20%, rgba(34, 211, 238, 0.2), transparent 38%),
+        radial-gradient(circle at 60% 80%, rgba(99, 102, 241, 0.12), transparent 45%),
+        #edf2f7;
     height: 100vh;
     height: 100dvh; /* برای موبایل - dynamic viewport height */
     overflow: hidden;
@@ -1535,9 +1652,10 @@ function handleMenuClickOutside(event) {
     bottom: 0;
 }
 
+
 /* Unified Header Styles */
 .app-header {
-    background: #0e7490;
+    background: linear-gradient(120deg, #0f766e 0%, #0ea5e9 50%, #22d3ee 100%);
     color: white;
     padding: 0 24px;
     height: 56px;
@@ -1582,12 +1700,13 @@ function handleMenuClickOutside(event) {
 .brand-icon {
     width: 28px;
     height: 28px;
-    background: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.2);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 10px 25px rgba(15, 118, 110, 0.35);
 }
 
 .brand-icon svg {
@@ -1608,6 +1727,7 @@ function handleMenuClickOutside(event) {
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
+    flex-wrap: nowrap;
 }
 
 .lang-select {
@@ -1684,6 +1804,14 @@ function handleMenuClickOutside(event) {
 
     .header-nav {
         gap: 4px;
+        max-width: 70vw;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .header-nav::-webkit-scrollbar {
+        display: none;
     }
 
     .lang-select {
@@ -1759,12 +1887,14 @@ function handleMenuClickOutside(event) {
 
 .sidebar {
     width: 260px;
-    background-color: white;
-    border-left: 1px solid #eaeaea;
+    background-color: rgba(255, 255, 255, 0.92);
+    border-left: 1px solid rgba(226, 232, 240, 0.9);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     transition: transform .3s ease, box-shadow .3s ease;
+    backdrop-filter: blur(14px);
+    box-shadow: var(--shadow-soft);
 }
 
 .new-chat-btn {
@@ -1892,10 +2022,22 @@ function handleMenuClickOutside(event) {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
+    background-color: var(--surface-0);
     position: relative;
     min-height: 0;
     overflow: hidden;
+}
+
+.chat-main::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 18% 20%, rgba(14, 165, 233, 0.08), transparent 40%),
+        radial-gradient(circle at 80% 10%, rgba(34, 211, 238, 0.08), transparent 38%),
+        linear-gradient(120deg, rgba(248, 250, 252, 0.6), rgba(255, 255, 255, 0.2));
+    pointer-events: none;
+    opacity: 0.9;
 }
 
 .empty-state {
@@ -1923,6 +2065,8 @@ function handleMenuClickOutside(event) {
     flex-direction: column;
     gap: 16px;
     min-height: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .message {
@@ -1957,7 +2101,7 @@ function handleMenuClickOutside(event) {
     word-break: break-word;
     line-height: 1.5;
     text-align: start;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
     animation: fadeInUp 0.3s ease;
     transition: box-shadow .2s ease, transform .2s ease;
 }
@@ -1975,8 +2119,9 @@ function handleMenuClickOutside(event) {
 
 
 .user-message .message-bubble {
-    background-color: #f1f5f9;
-    color: #333;
+    background: linear-gradient(140deg, rgba(14, 165, 233, 0.14), rgba(34, 211, 238, 0.22));
+    color: var(--ink-900);
+    border: 1px solid rgba(14, 116, 144, 0.15);
     border-bottom-right-radius: 4px;
 }
 
@@ -1986,11 +2131,11 @@ function handleMenuClickOutside(event) {
 }
 
 .bot-message .message-bubble {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    color: #1e293b;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    color: var(--ink-900);
     border-bottom-left-radius: 4px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
 }
 
 [dir="rtl"] .bot-message .message-bubble {
@@ -2042,7 +2187,7 @@ function handleMenuClickOutside(event) {
     position: sticky;
     bottom: 0;
     z-index: 10;
-    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.12);
 }
 
 
@@ -2055,7 +2200,7 @@ function handleMenuClickOutside(event) {
 .text-input-area textarea {
     flex: 1;
     padding: 10px 14px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 20px;
     resize: none;
     font-size: 0.95rem;
@@ -2063,7 +2208,7 @@ function handleMenuClickOutside(event) {
     outline: none;
     max-height: 120px;
     min-height: 42px;
-    background: #f8fafc;
+    background: rgba(248, 250, 252, 0.9);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -2105,7 +2250,7 @@ function handleMenuClickOutside(event) {
 }
 
 .input-actions .send-btn {
-    background: linear-gradient(135deg, #0e7490, #0891b2);
+    background: linear-gradient(135deg, #0f766e, #0ea5e9);
     color: white;
 }
 
@@ -2144,8 +2289,8 @@ function handleMenuClickOutside(event) {
     height: 40px;
     border-radius: 999px;
     border: none;
-    background: linear-gradient(135deg, #0e7490, #0891b2);
-    box-shadow: 0 6px 16px rgba(14, 116, 144, 0.3);
+    background: linear-gradient(135deg, #0f766e, #0ea5e9);
+    box-shadow: 0 10px 22px rgba(14, 116, 144, 0.3);
     color: #fff;
     cursor: pointer;
     display: inline-flex;
@@ -2167,7 +2312,7 @@ function handleMenuClickOutside(event) {
 }
 
 .scroll-bottom-btn:focus-visible {
-    outline: 3px solid rgba(99, 102, 241, 0.4);
+    outline: 3px solid rgba(14, 116, 144, 0.35);
     outline-offset: 2px;
 }
 
@@ -2410,6 +2555,30 @@ function handleMenuClickOutside(event) {
     justify-content: center;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
+}
+
+:global(.v-toast__item.welcome-toast) {
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.95), rgba(14, 165, 233, 0.95));
+    color: #fff;
+    border-radius: 16px;
+    padding: 14px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 18px 35px rgba(15, 23, 42, 0.2);
+    font-weight: 600;
+    letter-spacing: 0.1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+:global(.v-toast__item.welcome-toast::before) {
+    content: "✨";
+    display: inline-flex;
+}
+
+:global(.v-toast__item.welcome-toast .v-toast__text) {
+    display: inline-flex;
+    align-items: center;
 }
 
 .header-content {

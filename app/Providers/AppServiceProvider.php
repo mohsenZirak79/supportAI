@@ -1,10 +1,14 @@
 <?php
 
 namespace App\Providers;
+
+use App\Domains\AdminPanel\Listeners\NotifySupportRoleOnReferral;
+use App\Domains\Shared\Events\ReferralCreated;
 use App\Domains\Shared\Repositories\UserRepository;
 use App\Domains\Shared\Repositories\UserRepositoryInterface;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,5 +36,6 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('login', function (Request $request) {
             return Limit::perMinute(10)->by($request->ip()); // حداکثر ۱۰ لاگین در دقیقه
         });
+        Event::listen(ReferralCreated::class, NotifySupportRoleOnReferral::class);
     }
 }
