@@ -4,22 +4,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>پنل پشتیبانی کیش - سیستم مدیریت تیکت‌ها و گفت‌وگوها</title>
-    
+    <title>پنل پشتیبانی مناطق آزاد تجاری - سیستم مدیریت تیکت‌ها و گفت‌وگوها</title>
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
-    
+
     <!-- Manifest -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#0e7490">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="پشتیبانی کیش">
-    
+    <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
+
     @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/js/app.js'])
     <style>
         * {
@@ -805,7 +805,7 @@
                         <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
                     </svg>
                 </div>
-                <span>پنل پشتیبانی کیش</span>
+                <span>پنل پشتیبانی مناطق آزاد تجاری</span>
             </a>
             <div class="navbar-actions">
                 @auth
@@ -832,9 +832,9 @@
             <div class="hero-slide" style="background-image: url('/images/2.jpg');"></div>
             <div class="hero-slide" style="background-image: url('/images/3.jpg');"></div>
         </div>
-        
+
         <div class="hero-content">
-            <h1>سیستم مدیریت پشتیبانی کیش</h1>
+            <h1>سیستم مدیریت پشتیبانی مناطق آزاد تجاری</h1>
             <p>پلتفرم جامع برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط با کاربران</p>
             <div class="hero-cta">
                 @auth
@@ -933,12 +933,12 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <h3>پنل پشتیبانی کیش</h3>
+                <h3>پنل پشتیبانی مناطق آزاد تجاری</h3>
                 <p>راه‌حل جامع و پیشرفته برای مدیریت ارتباط با کاربران و ارائه خدمات پشتیبانی حرفه‌ای با استفاده از تکنولوژی‌های روز دنیا</p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; {{ date('Y') }} پنل پشتیبانی کیش. تمام حقوق محفوظ است.</p>
+            <p>&copy; {{ date('Y') }} پنل پشتیبانی مناطق آزاد تجاری. تمام حقوق محفوظ است.</p>
         </div>
     </footer>
 
@@ -946,16 +946,16 @@
         // Header scroll effect
         let lastScroll = 0;
         const header = document.getElementById('header');
-        
+
         window.addEventListener('scroll', () => {
             const currentScroll = window.pageYOffset;
-            
+
             if (currentScroll > 100) {
                 header.classList.add('scrolled');
             } else {
                 header.classList.remove('scrolled');
             }
-            
+
             lastScroll = currentScroll;
         });
 
@@ -967,10 +967,10 @@
         function nextSlide() {
             // Remove active class from current slide
             heroSlides[currentSlide].classList.remove('active');
-            
+
             // Move to next slide
             currentSlide = (currentSlide + 1) % heroSlides.length;
-            
+
             // Add active class to next slide
             heroSlides[currentSlide].classList.add('active');
         }

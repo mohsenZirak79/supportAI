@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 
 class TicketController extends Controller
 {
@@ -100,6 +101,25 @@ class TicketController extends Controller
     // POST /api/v1/tickets
     public function store(Request $request)
     {
+        $ipKey = 'ticket_store_ip:' . $request->ip();
+        $userKey = 'ticket_store_user:' . auth()->id();
+
+        if (RateLimiter::tooManyAttempts($ipKey, 6)) {
+            return response()->json([
+                'message' => 'تعداد ثبت تیکت از این آی‌پی بیش از حد مجاز است. لطفاً کمی بعد دوباره تلاش کنید.'
+            ], 429);
+        }
+        if ($userKey && RateLimiter::tooManyAttempts($userKey, 10)) {
+            return response()->json([
+                'message' => 'در حال حاضر امکان ایجاد تیکت جدید برای شما محدود شده است.'
+            ], 429);
+        }
+
+        RateLimiter::hit($ipKey, 600);
+        if ($userKey) {
+            RateLimiter::hit($userKey, 600);
+        }
+
         $validated = $request->validate([
             'title'      => 'required|string|max:255',
             'message'    => 'required|string',

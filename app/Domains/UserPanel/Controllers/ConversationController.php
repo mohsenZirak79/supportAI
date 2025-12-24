@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Symfony\Component\Process\Process;
@@ -370,6 +371,23 @@ class ConversationController extends Controller
     {
         $user = $request->user();
         abort_unless($user, 403);
+
+        $ipKey = 'chat_store_ip:' . $request->ip();
+        $userKey = 'chat_store_user:' . $user->id;
+
+        if (RateLimiter::tooManyAttempts($ipKey, 8)) {
+            return response()->json([
+                'message' => 'تعداد ایجاد چت از این آی‌پی موقتاً محدود شده است.'
+            ], 429);
+        }
+        if (RateLimiter::tooManyAttempts($userKey, 16)) {
+            return response()->json([
+                'message' => 'شما به سقف مجاز ایجاد چت در بازه زمانی مشخص رسیده‌اید.'
+            ], 429);
+        }
+
+        RateLimiter::hit($ipKey, 300);
+        RateLimiter::hit($userKey, 3600);
 
         $request->validate(['title' => 'nullable|string|max:100']);
 

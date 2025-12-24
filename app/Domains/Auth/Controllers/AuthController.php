@@ -24,11 +24,32 @@ class AuthController
     public function register(RegisterRequest $request)
     {
 
-        //TODO on comment this line
-        /*if (RateLimiter::tooManyAttempts('register_' . $request->ip(), 5)) {
-            return response()->json(['error' => ['code' => 'TOO_MANY_ATTEMPTS', 'message' => 'Too many registration attempts']], 429);
+        $ipKey = 'register_ip:' . $request->ip();
+        $phoneKey = $request->filled('phone') ? 'register_phone:' . $request->input('phone') : null;
+        $limitReached = RateLimiter::tooManyAttempts($ipKey, 5)
+            || ($phoneKey && RateLimiter::tooManyAttempts($phoneKey, 3));
+
+        if ($limitReached) {
+            $message = 'تعداد تلاش برای ثبت‌نام از حد مجاز بیشتر شده است. لطفاً بعداً دوباره تلاش کنید.';
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => [
+                        'code' => 'TOO_MANY_ATTEMPTS',
+                        'message' => $message,
+                    ],
+                ], 429);
+            }
+
+            return redirect()->back()
+                ->withErrors(['rate_limit' => $message])
+                ->withInput();
         }
-        RateLimiter::hit('register_' . $request->ip(), 60);*/
+
+        RateLimiter::hit($ipKey, 900);
+        if ($phoneKey) {
+            RateLimiter::hit($phoneKey, 900);
+        }
+
         $jalali = $request->input('birth_date');
         $carbon = Jalalian::fromFormat('Y/m/d', $jalali)->toCarbon();
 
@@ -168,6 +189,17 @@ class AuthController
             ], 429);
         }
         RateLimiter::hit($rateKey, 60);
+
+        $phoneKey = 'login_phone_' . $request->phone;
+        if (RateLimiter::tooManyAttempts($phoneKey, 5)) {
+            return response()->json([
+                'error' => [
+                    'code' => 'TOO_MANY_ATTEMPTS',
+                    'message' => 'تعداد تلاش برای ورود با این شماره بیش از حد مجاز است.'
+                ]
+            ], 429);
+        }
+        RateLimiter::hit($phoneKey, 120);
 
         // 3. پیدا کردن یوزر
         $user = User::where('phone', $request->phone)->first();
