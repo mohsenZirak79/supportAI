@@ -115,9 +115,16 @@ class ConversationController extends Controller
             'media_ids' => 'nullable|array',
             'media_ids.*' => 'integer',        // id جدول media در Spatie عددی است
             'media_kind' => 'nullable|in:file,voice',
+            'lang' => 'nullable|string|in:fa,en,ar', // Language code
         ]);
 
-        $isFirstMessage = $conversation->messages()->count() === 0;
+        $messageCount = $conversation->messages()->count();
+        $isFirstMessage = $messageCount === 0;
+        \Log::info('First message check', [
+            'conversation_id' => $conversation->id,
+            'message_count' => $messageCount,
+            'is_first_message' => $isFirstMessage
+        ]);
 
         // نوع پیام کاربر
         $type = 'text';
@@ -204,18 +211,38 @@ class ConversationController extends Controller
                         $filePath = $tmpWav ?: $srcPath;
                         $fileName = $tmpWav ? 'audio.wav' : basename($srcPath);
 
+                        $lang = $validated['lang'] ?? 'fa'; // Default to Persian
+                        
+                        // Get user's name for personalized response
+                        $userName = null;
+                        if ($user) {
+                            $userName = trim(($user->name ?? '') . ' ' . ($user->family ?? ''));
+                            if (empty($userName)) {
+                                $userName = $user->phone ?? null;
+                            }
+                        }
+                        
                         $resp1 = Http::asMultipart()
                             ->timeout(60)
                             ->attach('file', fopen($filePath, 'r'), $fileName)
                             ->post('https://ai.mokhtal.xyz/api/voice-to-answer', [
                                 'user_type'     => 'new',
                                 'first_message' => $isFirstMessage ? 'true' : 'false',
+                                'lang'          => $lang,
+                                'user_name'     => $userName,
                             ]);
 
                         if ($resp1->successful()) {
                             $json = $resp1->json();
                             $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                             $aiVoiceDataUrl= $json['audio_data'] ?? $json['voice_base64'] ?? null;
+                            
+                            // Handle suggested title for voice messages too
+                            $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
+                            if (!empty($suggestedTitle)
+                                && (!$conversation->title || $conversation->title === 'چت جدید')) {
+                                $conversation->update(['title' => $suggestedTitle]);
+                            }
                         } else {
                             $logHttpError('multipart', $resp1);
 
@@ -225,16 +252,26 @@ class ConversationController extends Controller
                             $b64 = base64_encode(file_get_contents($sendPath));
                             $dataUrl = "data:{$mimeForJson};base64,{$b64}";
 
+                            $lang = $validated['lang'] ?? 'fa'; // Default to Persian
                             $resp2 = Http::timeout(60)->post('https://ai.mokhtal.xyz/api/voice-to-answer', [
                                 'audio_data'    => $dataUrl,
                                 'user_type'     => 'new',
                                 'first_message' => $isFirstMessage,
+                                'lang'          => $lang,
+                                'user_name'     => $userName,
                             ]);
 
                             if ($resp2->successful()) {
                                 $json = $resp2->json();
                                 $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                                 $aiVoiceDataUrl= $json['audio_data'] ?? $json['voice_base64'] ?? null;
+                                
+                                // Handle suggested title for voice messages too
+                                $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
+                                if (!empty($suggestedTitle)
+                                    && (!$conversation->title || $conversation->title === 'چت جدید')) {
+                                    $conversation->update(['title' => $suggestedTitle]);
+                                }
                             } else {
                                 $logHttpError('json_base64', $resp2);
                                 $aiReplyText = 'خطا در سرویس voice-to-answer ('
@@ -254,10 +291,34 @@ class ConversationController extends Controller
                 }
             } else {
                 // متن
+                $lang = $validated['lang'] ?? 'fa'; // Default to Persian
+                
+                // Get user's name for personalized response
+                $userName = null;
+                if ($user) {
+                    $userName = trim(($user->name ?? '') . ' ' . ($user->family ?? ''));
+                    if (empty($userName)) {
+                        $userName = $user->phone ?? null;
+                    }
+                }
+                
+                // Log the request being sent
+                $messagesCountNow = $conversation->messages()->count();
+                \Log::info('Sending to AI API', [
+                    'question' => substr($validated['content'] ?? '', 0, 50),
+                    'first_message' => $isFirstMessage,
+                    'first_message_type' => gettype($isFirstMessage),
+                    'messages_count_now' => $messagesCountNow,
+                    'user_name' => $userName,
+                    'lang' => $lang,
+                ]);
+                
                 $resp = Http::timeout(45)->post('https://ai.mokhtal.xyz/api/ask', [
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
                     'first_message' => $isFirstMessage,
+                    'lang' => $lang,
+                    'user_name' => $userName, // Send user's name for personalization
                 ]);
 
                 if ($resp->successful()) {
@@ -265,13 +326,50 @@ class ConversationController extends Controller
                     $aiReplyText = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                     $aiVoiceDataUrl = $json['audio_data'] ?? $json['voice_base64'] ?? null;
 
-                    // اگر عنوان پیشنهاد داد
-                    if (!empty($json['suggested_title'])
-                        && (!$conversation->title || $conversation->title === 'چت جدید')) {
-                        $conversation->update(['title' => $json['suggested_title']]);
+                    // Log for debugging
+                    \Log::info('AI Response received', [
+                        'first_message_sent' => $isFirstMessage,
+                        'first_message_received_by_python' => $json['_debug_first_message'] ?? 'N/A',
+                        'has_title' => isset($json['title']),
+                        'title' => $json['title'] ?? null,
+                        'current_conversation_title' => $conversation->title,
+                        'full_response_keys' => array_keys($json),
+                    ]);
+
+                    // اگر عنوان پیشنهاد داد (هم title و هم suggested_title را چک کن)
+                    $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
+                    $debugFirstMsg = $json['_debug_first_message'] ?? 'not_set';
+                    \Log::info('Title debug', [
+                        'suggested_title' => $suggestedTitle,
+                        'debug_first_message_from_python' => $debugFirstMsg,
+                        'is_first_message_from_laravel' => $isFirstMessage,
+                    ]);
+                    
+                    if (!empty($suggestedTitle)) {
+                        // Trim and clean the suggested title
+                        $cleanTitle = trim($suggestedTitle);
+                        $currentTitle = trim($conversation->title ?? '');
+                        
+                        \Log::info('Title comparison', [
+                            'suggested_raw' => $suggestedTitle,
+                            'suggested_clean' => $cleanTitle,
+                            'suggested_length' => strlen($cleanTitle),
+                            'current_title' => $currentTitle,
+                        ]);
+                        
+                        if (!empty($cleanTitle) && (empty($currentTitle) || $currentTitle === 'چت جدید')) {
+                            $conversation->update(['title' => $cleanTitle]);
+                            $conversation->refresh();
+                            \Log::info('Conversation title updated', ['new_title' => $cleanTitle]);
+                        }
                     }
                 } else {
-                    $aiReplyText = 'خطا در سرویس ask (' . $resp->status() . ')';
+                    $errorBody = $resp->body();
+                    \Log::warning('AI API failed', ['status' => $resp->status(), 'body' => $errorBody]);
+                    // Show actual error for debugging
+                    $errorJson = json_decode($errorBody, true);
+                    $actualError = $errorJson['error'] ?? 'Unknown error';
+                    $aiReplyText = "خطا در سرویس ask ({$resp->status()}): {$actualError}";
                 }
             }
         } catch (\Throwable $e) {
@@ -343,13 +441,19 @@ class ConversationController extends Controller
     /** یک حدس ساده برای پسوند از روی mime */
     private function guessAudioExtension(string $mime): string
     {
-        return match ($mime) {
-            'audio/wav', 'audio/x-wav' => 'wav',
-            'audio/mpeg' => 'mp3',
-            'audio/ogg' => 'ogg',
-            'audio/webm' => 'webm',
-            default => 'webm',
-        };
+        switch ($mime) {
+            case 'audio/wav':
+            case 'audio/x-wav':
+                return 'wav';
+            case 'audio/mpeg':
+                return 'mp3';
+            case 'audio/ogg':
+                return 'ogg';
+            case 'audio/webm':
+                return 'webm';
+            default:
+                return 'webm';
+        }
     }
 
     // لیست چت‌ها (فقط active)
@@ -458,18 +562,18 @@ class ConversationController extends Controller
                     'assigned_role'      => $referral->assigned_role,
                     'status'             => $referral->status,
                     'description'        => $referral->description,
-                    'created_at'         => optional($referral->created_at)?->toIso8601String(),
+                    'created_at'         => $referral->created_at ? $referral->created_at->toIso8601String() : null,
                     'trigger_message_id' => $referral->trigger_message_id,
                     'trigger_message'    => $referral->triggerMessage ? [
                         'id'          => $referral->triggerMessage->id,
                         'sender_type' => $referral->triggerMessage->sender_type,
                         'content'     => $referral->triggerMessage->content,
-                        'created_at'  => optional($referral->triggerMessage->created_at)?->toIso8601String(),
+                        'created_at'  => $referral->triggerMessage->created_at ? $referral->triggerMessage->created_at->toIso8601String() : null,
                     ] : null,
                     'response'           => $responseIsPublic ? [
                         'text'        => $referral->agent_response,
                         'visibility'  => $referral->response_visibility,
-                        'created_at'  => optional($referral->updated_at ?? $referral->created_at)?->toIso8601String(),
+                        'created_at'  => ($referral->updated_at ?? $referral->created_at) ? ($referral->updated_at ?? $referral->created_at)->toIso8601String() : null,
                         'files'       => $files,
                     ] : null,
                 ];
@@ -576,5 +680,523 @@ class ConversationController extends Controller
             $referral->load(['conversation']),
             201
         );
+    }
+
+    /**
+     * Convert text to speech using Microsoft Edge TTS (FREE) with Persian support
+     * Matches the implementation from the reference app.py
+     */
+    public function textToSpeech(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'text' => 'required|string',
+                'chunk_index' => 'nullable|integer|min:0',
+                'lang' => 'nullable|string|in:fa,en,ar', // Language code
+            ]);
+
+            $text = $validated['text'];
+            $chunkIndex = $validated['chunk_index'] ?? 0;
+
+            if (empty($text)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'متن خالی است'
+                ], 400);
+            }
+
+            // Get the path to the Python script
+            $scriptPath = base_path('scripts/tts.py');
+            
+            if (!file_exists($scriptPath)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'اسکریپت TTS یافت نشد'
+                ], 500);
+            }
+
+            // Get language parameter (default to Persian)
+            $lang = $validated['lang'] ?? 'fa';
+            
+            // Prepare input data
+            $inputData = json_encode([
+                'text' => $text,
+                'chunk_index' => $chunkIndex,
+                'lang' => $lang,
+            ], JSON_UNESCAPED_UNICODE);
+
+            // Execute Python script - try python3 first, fallback to python
+            $pythonCommand = $this->findPythonCommand();
+            if (!$pythonCommand) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Python یافت نشد. لطفا Python را نصب کنید.'
+                ], 500);
+            }
+
+            $process = new Process([
+                $pythonCommand,
+                $scriptPath,
+            ]);
+
+            $process->setInput($inputData);
+            $process->setTimeout(60);
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                $errorOutput = $process->getErrorOutput();
+                $standardOutput = $process->getOutput();
+                
+                Log::error('TTS Python script failed', [
+                    'exit_code' => $process->getExitCode(),
+                    'error_output' => $errorOutput,
+                    'standard_output' => $standardOutput,
+                    'command' => $pythonCommand . ' ' . $scriptPath,
+                ]);
+
+                // Try to parse error output as JSON (Python script writes errors to stderr)
+                $errorJson = json_decode($errorOutput, true);
+                if ($errorJson && isset($errorJson['error'])) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => $errorJson['error']
+                    ], 500);
+                }
+
+                // Try to parse standard output as JSON (in case error was written to stdout)
+                $outputJson = json_decode($standardOutput, true);
+                if ($outputJson && isset($outputJson['error'])) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => $outputJson['error']
+                    ], 500);
+                }
+
+                // Return more detailed error
+                $errorMessage = 'خطا در تولید صوت';
+                if ($errorOutput) {
+                    $errorMessage .= ' (' . mb_substr(strip_tags($errorOutput), 0, 100) . ')';
+                }
+                
+                return response()->json([
+                    'success' => false,
+                    'error' => $errorMessage,
+                    'debug' => [
+                        'exit_code' => $process->getExitCode(),
+                        'error_preview' => mb_substr($errorOutput, 0, 200),
+                    ]
+                ], 500);
+            }
+
+            $output = $process->getOutput();
+            
+            // If output is empty, check error output
+            if (empty($output)) {
+                $errorOutput = $process->getErrorOutput();
+                Log::warning('TTS Python script returned empty output', [
+                    'error_output' => $errorOutput,
+                ]);
+                
+                $errorJson = json_decode($errorOutput, true);
+                if ($errorJson && isset($errorJson['error'])) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => $errorJson['error']
+                    ], 500);
+                }
+                
+                return response()->json([
+                    'success' => false,
+                    'error' => 'اسکریپت TTS خروجی نداشت'
+                ], 500);
+            }
+            
+            $result = json_decode($output, true);
+
+            if (!$result) {
+                Log::error('TTS Python script output is not valid JSON', [
+                    'output' => mb_substr($output, 0, 500),
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'error' => 'خطا در پردازش پاسخ از اسکریپت TTS',
+                    'debug' => [
+                        'output_preview' => mb_substr($output, 0, 200),
+                    ]
+                ], 500);
+            }
+
+            // If result contains audio data URL, extract base64 and create a temporary file
+            // This avoids browser security issues with data URLs
+            if (isset($result['audio']) && str_starts_with($result['audio'], 'data:')) {
+                try {
+                    // Extract base64 data
+                    $matches = [];
+                    if (preg_match('/^data:([^;]+);base64,(.+)$/', $result['audio'], $matches)) {
+                        $mimeType = $matches[1];
+                        $base64Data = $matches[2];
+                        $audioBytes = base64_decode($base64Data);
+                        
+                        // Determine file extension from MIME type
+                        $extension = 'webm'; // default
+                        if (str_contains($mimeType, 'webm')) {
+                            $extension = 'webm';
+                        } elseif (str_contains($mimeType, 'mp3') || str_contains($mimeType, 'mpeg')) {
+                            $extension = 'mp3';
+                        } elseif (str_contains($mimeType, 'ogg')) {
+                            $extension = 'ogg';
+                        }
+                        
+                        // Create temporary file
+                        $tempFile = tempnam(sys_get_temp_dir(), 'tts_') . '.' . $extension;
+                        file_put_contents($tempFile, $audioBytes);
+                        
+                        // Store temp file path in session or return it
+                        // For now, let's return the data URL as-is but ensure it's correct
+                        // Actually, let's keep the data URL approach but ensure MIME type is correct
+                        $result['audio'] = 'data:' . $mimeType . ';base64,' . $base64Data;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to process audio data URL: ' . $e->getMessage());
+                    // Continue with original result
+                }
+            }
+
+            return response()->json($result);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'داده‌های ورودی نامعتبر است',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('TTS error: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'خطا در پردازش درخواست'
+            ], 500);
+        }
+    }
+
+    /**
+     * Split text into chunks for streaming TTS
+     * Matches the implementation from the reference app.py exactly
+     */
+    public function textToSpeechChunks(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'text' => 'required|string',
+            ]);
+
+            $text = $validated['text'];
+
+            if (empty($text)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'متن خالی است'
+                ], 400);
+            }
+
+            // Get the path to the Python script
+            $scriptPath = base_path('scripts/tts_chunks.py');
+            
+            if (!file_exists($scriptPath)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'اسکریپت TTS chunks یافت نشد'
+                ], 500);
+            }
+
+            // Prepare input data
+            $inputData = json_encode([
+                'text' => $text,
+            ], JSON_UNESCAPED_UNICODE);
+
+            // Execute Python script - try python3 first, fallback to python
+            $pythonCommand = $this->findPythonCommand();
+            if (!$pythonCommand) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Python یافت نشد. لطفا Python را نصب کنید.'
+                ], 500);
+            }
+
+            $process = new Process([
+                $pythonCommand,
+                $scriptPath,
+            ]);
+
+            $process->setInput($inputData);
+            $process->setTimeout(30);
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                $errorOutput = $process->getErrorOutput();
+                Log::error('TTS chunks Python script failed', [
+                    'exit_code' => $process->getExitCode(),
+                    'error' => $errorOutput,
+                ]);
+
+                // Try to parse error output as JSON
+                $errorJson = json_decode($errorOutput, true);
+                if ($errorJson && isset($errorJson['error'])) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => $errorJson['error']
+                    ], 500);
+                }
+
+                return response()->json([
+                    'success' => false,
+                    'error' => 'خطا در پردازش متن'
+                ], 500);
+            }
+
+            $output = $process->getOutput();
+            $result = json_decode($output, true);
+
+            if (!$result) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'خطا در پردازش پاسخ از اسکریپت TTS chunks'
+                ], 500);
+            }
+
+            return response()->json($result);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'داده‌های ورودی نامعتبر است',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('TTS chunks error: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'خطا در پردازش متن'
+            ], 500);
+        }
+    }
+
+    /**
+     * Find Python command (python3 or python)
+     */
+    private function findPythonCommand(): ?string
+    {
+        $commands = ['python3', 'python'];
+        foreach ($commands as $cmd) {
+            $process = new Process([$cmd, '--version']);
+            $process->run();
+            if ($process->isSuccessful()) {
+                return $cmd;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Clean text for TTS - PHP implementation matching Python version
+     */
+    private function cleanTextForTTS(string $text): string
+    {
+        // If text contains HTML, clean it first
+        if (strpos($text, '<') !== false && strpos($text, '>') !== false) {
+            $text = $this->cleanHtmlForTTS($text);
+        }
+
+        // Remove HTML/XML tags
+        $text = preg_replace('/<[^>]+>/', '', $text);
+
+        // Remove markdown formatting
+        $text = preg_replace('/#{1,6}\s*/', '', $text); // headers
+        $text = preg_replace('/\*{1,3}([^*]+)\*{1,3}/', '$1', $text); // bold/italic
+        $text = preg_replace('/_{1,3}([^_]+)_{1,3}/', '$1', $text); // underline
+        $text = preg_replace('/`{1,3}[^`]*`{1,3}/', '', $text); // code blocks
+        $text = preg_replace('/\[([^\]]+)\]\([^\)]+\)/', '$1', $text); // links
+
+        // Remove bullet points and numbers
+        $text = preg_replace('/^[\s]*[-\*\+•▪▫◦‣⁃]\s+/m', '', $text);
+        $text = preg_replace('/^[\s]*\d+[\.\)]\s+/m', '', $text);
+        $text = preg_replace('/^[\s]*[a-zA-Z][\.\)]\s+/m', '', $text);
+
+        // Remove emoji and special characters
+        $text = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $text); // emoji
+        $text = preg_replace('/[\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', $text); // symbols
+
+        // Remove control characters
+        $text = preg_replace('/[\x00-\x1F\x7F-\x9F]/', '', $text);
+        $text = preg_replace('/[\x{200B}-\x{200D}\x{FEFF}]/u', '', $text); // zero-width
+        $text = preg_replace('/[\x{2000}-\x{200F}]/u', ' ', $text); // various spaces
+
+        // Remove ZWNJ
+        $text = str_replace("\xE2\x80\x8C", '', $text); // ZWNJ in UTF-8
+        $text = preg_replace('/\x{200C}/u', '', $text);
+
+        // Normalize Arabic to Persian
+        $arabicToPersian = [
+            'ك' => 'ک',
+            'ي' => 'ی',
+            'ى' => 'ی',
+            'ة' => 'ه',
+            'ؤ' => 'و',
+            'إ' => 'ا',
+            'أ' => 'ا',
+            'ء' => '',
+            'ئ' => 'ی'
+        ];
+        foreach ($arabicToPersian as $arabic => $persian) {
+            $text = str_replace($arabic, $persian, $text);
+        }
+
+        // Replace English punctuation with Persian equivalents
+        $text = str_replace(',', '،', $text);
+        $text = str_replace('?', '؟', $text);
+        $text = str_replace('!', '.', $text);
+        $text = str_replace(';', '،', $text);
+        $text = str_replace(':', '،', $text);
+
+        // Remove all other symbols except Persian letters, numbers, spaces, and basic punctuation
+        $text = preg_replace('/[^\x{0600}-\x{06FF}\x{06F0}-\x{06F9}\s\.،؟]/u', '', $text);
+
+        // Normalize multiple spaces to single space
+        $text = preg_replace('/\s+/', ' ', $text);
+
+        // Clean up punctuation spacing
+        $text = preg_replace('/([\.،؟])\s*/', '$1 ', $text);
+        $text = preg_replace('/\s+([\.،؟])/', '$1', $text);
+
+        // Remove multiple consecutive punctuation marks
+        $text = preg_replace('/([\.،؟]){2,}/', '$1', $text);
+
+        // Normalize line breaks to spaces
+        $text = preg_replace('/\n+/', ' ', $text);
+
+        // Final cleanup
+        $text = preg_replace('/\s+/', ' ', $text);
+        $text = trim($text);
+
+        return $text;
+    }
+
+    /**
+     * Clean HTML for TTS
+     */
+    private function cleanHtmlForTTS(string $htmlText): string
+    {
+        $text = preg_replace('/<[^>]+>/', ' ', $htmlText);
+        $text = preg_replace('/\s+/', ' ', $text);
+        return trim($text);
+    }
+
+    /**
+     * Split text into chunks for TTS - PHP implementation matching Python version
+     */
+    private function splitTextForTTS(string $text, int $maxLength = 350): array
+    {
+        // Clean text first
+        $text = $this->cleanTextForTTS($text);
+
+        if (mb_strlen($text) <= $maxLength) {
+            return [$text];
+        }
+
+        $chunks = [];
+        $currentChunk = '';
+
+        // Split by paragraphs first
+        $paragraphs = preg_split('/\n\n+|\n+/', $text);
+
+        foreach ($paragraphs as $paragraph) {
+            $paragraph = trim($paragraph);
+            if (empty($paragraph)) {
+                continue;
+            }
+
+            if (mb_strlen($paragraph) <= $maxLength) {
+                // Can add to current chunk
+                if (!empty($currentChunk) && mb_strlen($currentChunk) + mb_strlen($paragraph) + 2 <= $maxLength) {
+                    $currentChunk .= ' . ' . $paragraph;
+                } else {
+                    if (!empty($currentChunk)) {
+                        $chunks[] = trim($currentChunk);
+                    }
+                    $currentChunk = $paragraph;
+                }
+            } else {
+                // Paragraph too long, save current chunk
+                if (!empty($currentChunk)) {
+                    $chunks[] = trim($currentChunk);
+                    $currentChunk = '';
+                }
+
+                // Split by sentences
+                $sentences = preg_split('/(?<=[.!?؟])\s+/u', $paragraph);
+
+                foreach ($sentences as $sentence) {
+                    $sentence = trim($sentence);
+                    if (empty($sentence)) {
+                        continue;
+                    }
+
+                    if (mb_strlen($sentence) <= $maxLength) {
+                        if (!empty($currentChunk) && mb_strlen($currentChunk) + mb_strlen($sentence) + 1 <= $maxLength) {
+                            $currentChunk .= ' ' . $sentence;
+                        } else {
+                            if (!empty($currentChunk)) {
+                                $chunks[] = trim($currentChunk);
+                            }
+                            $currentChunk = $sentence;
+                        }
+                    } else {
+                        // Sentence too long, split by commas
+                        if (!empty($currentChunk)) {
+                            $chunks[] = trim($currentChunk);
+                            $currentChunk = '';
+                        }
+
+                        $parts = preg_split('/[،,؛;]\s*/u', $sentence);
+                        foreach ($parts as $i => $part) {
+                            $part = trim($part);
+                            if (empty($part)) {
+                                continue;
+                            }
+
+                            if ($i > 0) {
+                                $part = '، ' . $part;
+                            }
+
+                            if (mb_strlen($currentChunk) + mb_strlen($part) <= $maxLength) {
+                                $currentChunk .= $part;
+                            } else {
+                                if (!empty($currentChunk)) {
+                                    $chunks[] = trim($currentChunk);
+                                }
+                                $currentChunk = $part;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Don't forget the last chunk
+        if (!empty($currentChunk)) {
+            $chunks[] = trim($currentChunk);
+        }
+
+        // Filter out empty chunks
+        return array_filter($chunks, fn($chunk) => !empty(trim($chunk)));
     }
 }

@@ -16,6 +16,22 @@ class Conversation extends Model
     protected $fillable = ['user_id', 'title', 'status'];
     protected $casts = ['deleted_at' => 'datetime'];
 
+    /**
+     * Trim title when setting (to handle CHAR padding)
+     */
+    public function setTitleAttribute($value)
+    {
+        $this->attributes['title'] = $value ? trim($value) : $value;
+    }
+
+    /**
+     * Trim title when getting (to handle CHAR padding from DB)
+     */
+    public function getTitleAttribute($value)
+    {
+        return $value ? trim($value) : $value;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

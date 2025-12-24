@@ -110,6 +110,17 @@ Route::prefix('v1')
 
             return response()->json(['data' => $media]);
         });
+
+        // Text-to-Speech endpoints
+        Route::post('text-to-speech', [ConversationController::class, 'textToSpeech']);
+        Route::post('text-to-speech/chunks', [ConversationController::class, 'textToSpeechChunks']);
+        
+        // User Profile endpoints
+        Route::get('user/profile', [\App\Http\Controllers\UserProfileController::class, 'show']);
+        Route::put('user/profile', [\App\Http\Controllers\UserProfileController::class, 'update']);
+        Route::put('user/profile/password', [\App\Http\Controllers\UserProfileController::class, 'updatePassword']);
+        Route::post('user/profile/avatar', [\App\Http\Controllers\UserProfileController::class, 'uploadAvatar']);
+        Route::delete('user/profile/avatar', [\App\Http\Controllers\UserProfileController::class, 'deleteAvatar']);
     });
 
 // مسیرهای auth (ثبت‌نام/لاگین/OTP) بیرون از auth:jwt بمانند:

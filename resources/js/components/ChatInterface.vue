@@ -7,51 +7,51 @@
         @submit="handleHandoffSubmit"
     />
 
-    <div class="chat-app" dir="rtl">
-        <!-- نوار بالا -->
-        <header class="chat-header">
-            <div class="header-content">
-                <div class="header-left">
+    <div class="chat-app" :dir="direction">
+        <!-- Unified Header -->
+        <header class="app-header">
+            <div class="header-inner">
+                <div class="header-brand">
                     <button
                         v-if="isMobile"
-                        class="mobile-sidebar-toggle"
+                        class="mobile-menu-btn"
                         type="button"
                         @click="toggleSidebar"
-                        aria-label="باز کردن لیست گفتگوها"
                     >
-                        ☰
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
                     </button>
-                    <div class="chat-logo">
-                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(255,255,255,0.3)"/>
-                            <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(255,255,255,0.2)"/>
-                            <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(255,255,255,0.4)"/>
-                            <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
-                            <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
+                    <div class="brand-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         </svg>
                     </div>
-                    <h1>{{ activeChat?.title || 'چت با هوش مصنوعی' }}</h1>
+                    <span class="brand-text">{{ activeChat?.title || $t('chat.title') }}</span>
                 </div>
-                <div class="header-actions">
+                <nav class="header-nav">
+                    <select :value="locale" class="lang-select" @change="onLanguageChange">
+                        <option value="fa">فارسی</option>
+                        <option value="en">EN</option>
+                        <option value="ar">ع</option>
+                    </select>
                     <button
-                        class="nav-btn ghost"
+                        class="nav-link"
                         type="button"
                         :disabled="!activeChatId"
                         @click="toggleReferralPanel"
                     >
-                        <span class="nav-btn__dot" v-if="hasPublicReferralResponses"></span>
-                        ارجاع‌ها
+                        <span class="nav-dot" v-if="hasPublicReferralResponses"></span>
+                        {{ $t('nav.referrals') }}
                     </button>
-                    <button @click="goToTickets" class="nav-btn" type="button">تیکت‌ها</button>
-                    <button
-                        class="nav-btn danger"
-                        type="button"
-                        @click="logout"
-                        :disabled="loggingOut"
-                    >
-                        {{ loggingOut ? 'در حال خروج…' : 'خروج' }}
+                    <button @click="goToTickets" class="nav-link">{{ $t('nav.tickets') }}</button>
+                    <button @click="goToProfile" class="nav-link">{{ $t('nav.profile') }}</button>
+                    <button @click="logout" class="nav-link danger" :disabled="loggingOut">
+                        {{ loggingOut ? '...' : $t('nav.logout') }}
                     </button>
-                </div>
+                </nav>
             </div>
         </header>
 
@@ -59,7 +59,7 @@
             <!-- سایدبار چت‌ها -->
             <aside class="sidebar" :class="{ 'is-mobile': isMobile, 'is-open': isSidebarOpen }">
                 <div class="new-chat-btn" @click="startNewChat">
-                    + چت جدید
+                    {{ $t('chat.newChat') }}
                 </div>
                 <div class="chat-list">
                     <div
@@ -73,7 +73,7 @@
                         <button
                             class="chat-menu-btn"
                             type="button"
-                            aria-label="تنظیمات چت"
+                            :aria-label="$t('chat.chatSettings')"
                             @click.stop="toggleChatMenu(chat.id)"
                         >
                             <svg viewBox="0 0 24 24" aria-hidden="true" class="chat-menu-icon">
@@ -83,14 +83,14 @@
                             </svg>
                         </button>
                         <div v-if="chatMenuOpenId === chat.id" class="chat-menu">
-                            <button type="button" @click.stop="openRenameModal(chat)">تغییر عنوان</button>
+                            <button type="button" @click.stop="openRenameModal(chat)">{{ $t('chat.renameChat') }}</button>
                             <button
                                 type="button"
                                 class="danger"
                                 :disabled="deletingChatId === chat.id"
                                 @click.stop="deleteChat(chat.id)"
                             >
-                                حذف چت
+                                {{ $t('chat.deleteChat') }}
                             </button>
                         </div>
                     </div>
@@ -116,17 +116,28 @@
 
                             <!-- بات: متن + دکمه‌های پخش -->
                             <template v-if="message.sender === 'bot' && message.text">
-                                <AiAnswer :text="message.text" lang="fa-IR"/>
+                                <AiAnswer :text="message.text" :lang="locale"/>
                             </template>
 
-                            <!-- کاربر: اگر متن دارد همان را، وگرنه اگر voice است یک برچسب نشان بده -->
+                            <!-- کاربر: پیام صوتی با ترنسکریپت -->
                             <template v-else>
-                                <span v-if="message.text && message.text.trim()">{{ message.text }}</span>
-                                <span v-else-if="message.voiceUrl">🎤 پیام صوتی</span>
-                                <span v-else>‌</span>
+                                <!-- نمایش وضعیت ارسال -->
+                                <div v-if="message.isSending" class="sending-indicator">
+                                    <span class="sending-dot"></span>
+                                    {{ $t('chat.sendingVoice') }}
+                                </div>
+
+                                <!-- ترنسکریپت متن صوتی -->
+                                <div v-if="message.text && message.text.trim()" class="voice-transcript">
+                                    <span class="transcript-label">{{ $t('chat.transcript') }}:</span>
+                                    <span class="transcript-text">{{ message.text }}</span>
+                                </div>
+
+                                <!-- اگر نه ویس داره نه متن -->
+                                <span v-else-if="!message.voiceUrl">‌</span>
                             </template>
 
-                            <!-- پخش صدا (همان قبلی) -->
+                            <!-- پخش صدا -->
                             <div v-if="message.voiceUrl" class="voice-player" @click.stop="playVoice(message.id)">
                                 <audio :ref="el => registerAudioRef(message.id, el)" :src="message.voiceUrl"
                                        preload="none" controls></audio>
@@ -138,10 +149,10 @@
                                     <button
                                         class="msg-action copy"
                                         @click="copyText(message.text)"
-                                        aria-label="کپی متن"
-                                        title="کپی متن"
+                                        :aria-label="$t('chat.copyText')"
+                                        :title="$t('chat.copyText')"
                                     >
-                                        <!-- آیکن کپی -->
+                                        <!-- Copy Icon -->
                                         <svg viewBox="0 0 24 24" class="icon">
                                             <path
                                                 d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
@@ -151,8 +162,8 @@
                                     <button
                                         class="msg-action handoff"
                                         @click="showHandoffModal(message)"
-                                        aria-label="ارجاع به پشتیبانی"
-                                        title="ارجاع به پشتیبانی"
+                                        :aria-label="$t('chat.handoff')"
+                                        :title="$t('chat.handoff')"
                                     >
                                         <!-- آیکن ارجاع/ارسال -->
                                         <svg viewBox="0 0 24 24" class="icon">
@@ -176,7 +187,7 @@
                     v-if="showScrollButton"
                     class="scroll-bottom-btn"
                     type="button"
-                    aria-label="رفتن به آخرین پیام"
+                    :aria-label="$t('chat.scrollToBottom')"
                     @click="scrollToBottom"
                 >
                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -205,14 +216,25 @@
                         ref="msgInput"
                         v-model="inputMessage"
                         class="chat-input"
-                        placeholder="پیام خود را بنویسید…"
+                        :placeholder="$t('chat.inputPlaceholder')"
                         rows="1"
                         @input="autoGrow"
                         @keydown="onKeydown"
                     />
                         <div class="input-actions">
-                            <button type="button" @click="startRecording" class="mic-btn" :disabled="loading">🎤</button>
-                            <button type="submit" class="btn btn-primary" :disabled="loading">ارسال</button>
+                            <button type="button" @click="startRecording" class="mic-btn" :disabled="loading" :title="$t('chat.recordVoice')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                    <line x1="12" y1="19" x2="12" y2="23"/>
+                                    <line x1="8" y1="23" x2="16" y2="23"/>
+                                </svg>
+                            </button>
+                            <button type="submit" class="send-btn" :disabled="loading || !inputMessage.trim()" :title="$t('chat.send')">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -232,8 +254,8 @@
 
             <main v-else class="chat-main empty-state">
                 <div class="empty-content">
-                    <h2>چت جدیدی شروع کنید</h2>
-                    <p>برای شروع گفت‌وگو، روی «چت جدید» کلیک کنید.</p>
+                    <h2>{{ $t('chat.startNewChat') }}</h2>
+                    <p>{{ $t('chat.startNewChatDesc') }}</p>
                 </div>
             </main>
         </div>
@@ -250,12 +272,12 @@
                 v-if="referralPanelOpen"
                 class="referral-panel"
                 :class="{ 'is-mobile': isMobile }"
-                aria-label="پاسخ‌های ارجاع شده"
+                :aria-label="$t('referral.title')"
             >
                 <div class="referral-panel__header">
                     <div>
-                        <p class="referral-panel__eyebrow">ارجاعات فعال</p>
-                        <h3>{{ activeChat?.title || 'چت جاری' }}</h3>
+                        <p class="referral-panel__eyebrow">{{ $t('referral.title') }}</p>
+                        <h3>{{ activeChat?.title || $t('referral.currentChat') }}</h3>
                     </div>
                     <div class="panel-actions">
                         <button
@@ -263,11 +285,11 @@
                             type="button"
                             :disabled="referralsLoading"
                             @click="refreshCurrentReferrals"
-                            aria-label="به‌روزرسانی ارجاعات"
+                            :aria-label="$t('referral.refresh')"
                         >
                             ↻
                         </button>
-                        <button class="panel-icon-btn" type="button" @click="closeReferralPanel" aria-label="بستن پنل">
+                        <button class="panel-icon-btn" type="button" @click="closeReferralPanel" :aria-label="$t('referral.closePanel')">
                             ✕
                         </button>
                     </div>
@@ -275,22 +297,22 @@
                 <div class="referral-panel__body">
                     <div v-if="referralsLoading" class="referral-panel__placeholder">
                         <div class="spinner"></div>
-                        <p>در حال بارگذاری ارجاعات…</p>
+                        <p>{{ $t('referral.loading') }}</p>
                     </div>
                     <div v-else-if="referralsError" class="referral-panel__placeholder error">
                         <p>{{ referralsError }}</p>
-                        <button type="button" class="panel-retry" @click="refreshCurrentReferrals">تلاش مجدد</button>
+                        <button type="button" class="panel-retry" @click="refreshCurrentReferrals">{{ $t('common.retry') }}</button>
                     </div>
                     <div v-else-if="!currentReferrals.length" class="referral-panel__placeholder">
-                        <p>هنوز ارجاعی برای نمایش وجود ندارد.</p>
-                        <small class="text-muted">می‌توانید پیام موردنظر را به پشتیبان ارجاع دهید.</small>
+                        <p>{{ $t('referral.noReferrals') }}</p>
+                        <small class="text-muted">{{ $t('referral.noReferralsHint') }}</small>
                     </div>
                     <div v-else class="referral-card-list">
                         <article v-for="referral in currentReferrals" :key="referral.id" class="referral-card">
                             <div class="referral-card__header">
                                 <div>
-                                    <p class="referral-card__eyebrow">ارجاع به {{ referral.assigned_role || 'پشتیبان' }}</p>
-                                    <h4>{{ activeChat?.title || 'چت جاری' }}</h4>
+                                    <p class="referral-card__eyebrow">{{ $t('referral.referTo') }} {{ referral.assigned_role || $t('referral.support') }}</p>
+                                    <h4>{{ activeChat?.title || $t('referral.currentChat') }}</h4>
                                 </div>
                                 <span class="referral-status" :class="'referral-status--' + referral.status">
                                     {{ referralStatusLabel(referral.status) }}
@@ -298,12 +320,12 @@
                             </div>
 
                             <div class="referral-card__section">
-                                <div class="section-title">پیام ارجاع‌شده</div>
+                                <div class="section-title">{{ $t('referral.referredMessage') }}</div>
                                 <p class="section-body" v-if="referral.trigger_message?.content">
                                     {{ referral.trigger_message.content }}
                                 </p>
                                 <p class="section-body muted" v-else>
-                                    این پیام شامل ویس یا فایل است.
+                                    {{ $t('referral.messageVoiceOrFile') }}
                                 </p>
                                 <div class="section-footer">
                                     <span>{{ formatDate(referral.trigger_message?.created_at) }}</span>
@@ -312,18 +334,18 @@
                                         class="section-link"
                                         @click="scrollToReferredMessage(referral.trigger_message_id)"
                                     >
-                                        مشاهده در گفتگو
+                                        {{ $t('referral.viewInChat') }}
                                     </button>
                                 </div>
                             </div>
 
                             <div v-if="referral.description" class="referral-card__section">
-                                <div class="section-title">توضیح شما</div>
+                                <div class="section-title">{{ $t('referral.yourNote') }}</div>
                                 <p class="section-body">{{ referral.description }}</p>
                             </div>
 
                             <div v-if="referral.response" class="referral-card__section response">
-                                <div class="section-title">پاسخ پشتیبان</div>
+                                <div class="section-title">{{ $t('referral.supportResponse') }}</div>
                                 <p class="section-body">{{ referral.response.text }}</p>
                                 <div class="section-footer">
                                     <span>{{ formatDate(referral.response.created_at) }}</span>
@@ -338,13 +360,13 @@
                                         class="file-chip file-chip-link"
                                     >
                                         <span>{{ getFileEmoji(file.mime) }}</span>
-                                        <span class="truncate">{{ file.name || 'فایل' }}</span>
+                                        <span class="truncate">{{ file.name || $t('common.file') }}</span>
                                     </a>
                                 </div>
                             </div>
                             <div v-else class="referral-card__section muted">
-                                <div class="section-title">پاسخ پشتیبان</div>
-                                <p class="section-body">پاسخی برای نمایش ثبت نشده است.</p>
+                                <div class="section-title">{{ $t('referral.supportResponse') }}</div>
+                                <p class="section-body">{{ $t('referral.noResponse') }}</p>
                             </div>
                         </article>
                     </div>
@@ -355,23 +377,23 @@
         <transition name="fade">
             <div v-if="renameModal.open" class="modal-backdrop" @click.self="closeRenameModal">
                 <form class="rename-modal" @submit.prevent="submitRename">
-                    <h3>تغییر عنوان گفتگو</h3>
-                    <p class="modal-desc">برای مدیریت بهتر گفتگوها، عنوانی انتخاب کنید که محتوا را توصیف کند.</p>
+                    <h3>{{ $t('chat.renameChatTitle') }}</h3>
+                    <p class="modal-desc">{{ $t('chat.renameChatDesc') }}</p>
                     <input
                         type="text"
                         ref="renameInputRef"
                         v-model="renameModal.title"
                         class="rename-input"
                         maxlength="100"
-                        placeholder="عنوان جدید"
+                        :placeholder="$t('chat.newTitlePlaceholder')"
                         :disabled="renameModal.loading"
                     />
                     <div class="modal-actions">
                         <button type="button" class="modal-btn ghost" @click="closeRenameModal" :disabled="renameModal.loading">
-                            انصراف
+                            {{ $t('common.cancel') }}
                         </button>
                         <button type="submit" class="modal-btn primary" :disabled="renameModal.loading">
-                            {{ renameModal.loading ? 'در حال ذخیره…' : 'ذخیره عنوان' }}
+                            {{ renameModal.loading ? $t('chat.savingTitle') : $t('chat.saveTitle') }}
                         </button>
                     </div>
                 </form>
@@ -387,6 +409,10 @@ import HandoffModal from './HandoffModal.vue';
 import AiAnswer from './AiAnswer.vue'
 import {useToast} from 'vue-toast-notification'
 import {apiFetch} from '../lib/http';
+import { useLanguage } from '../i18n';
+
+// i18n setup - CSP-safe, no vue-i18n
+const { locale, setLocale, direction, isRtl, initLocale, t } = useLanguage();
 
 const toast = useToast();
 const logoutUrl = window?.AppConfig?.logoutUrl || '/logout';
@@ -414,7 +440,7 @@ const logout = async () => {
         window.location.href = '/login';
     } catch (error) {
         console.error('logout failed', error);
-        toast.error('خروج با خطا مواجه شد. لطفاً دوباره تلاش کنید.');
+        toast.error(t('auth.logoutError'));
     } finally {
         loggingOut.value = false;
     }
@@ -455,7 +481,10 @@ const fetchDepartments = async () => {  // ← این تابع رو کامل ا�
 const formatDate = (isoString) => {
     if (!isoString) return '';
     const date = new Date(isoString);
-    return date.toLocaleString('fa-IR', {
+    // Use locale for date formatting
+    const localeMap = { 'fa': 'fa-IR', 'en': 'en-US', 'ar': 'ar-SA' };
+    const dateLocale = localeMap[locale.value] || 'fa-IR';
+    return date.toLocaleString(dateLocale, {
         hour: '2-digit',
         minute: '2-digit',
         day: '2-digit',
@@ -464,18 +493,10 @@ const formatDate = (isoString) => {
     });
 };
 const referralStatusLabel = (status) => {
-    switch (status) {
-        case 'pending':
-            return 'در انتظار';
-        case 'assigned':
-            return 'در حال بررسی';
-        case 'responded':
-            return 'پاسخ داده شد';
-        case 'closed':
-            return 'بسته شده';
-        default:
-            return status || '-';
-    }
+    const key = `referral.status.${status}`;
+    const translated = t(key);
+    // If translation exists, return it; otherwise return the status itself
+    return translated !== key ? translated : (status || '-');
 };
 const getFileEmoji = (mimeOrType = '') => {
     const type = String(mimeOrType || '').toLowerCase();
@@ -502,6 +523,7 @@ const isMobile = ref(false);
 const isSidebarOpen = ref(true);
 const referralPanelOpen = ref(false);
 const referralStore = reactive({});
+// Language is managed by useLanguage() composable
 
 const currentReferrals = computed(() => {
     const chatId = activeChatId.value;
@@ -568,7 +590,7 @@ async function loadReferrals(chatId, {force = false} = {}) {
         state.loaded = true;
     } catch (err) {
         console.error('Failed to load referrals', err);
-        state.error = 'خطا در بارگذاری ارجاع‌ها. دوباره تلاش کنید.';
+        state.error = t('referral.loadError');
     } finally {
         state.loading = false;
     }
@@ -642,17 +664,17 @@ const submitRename = async () => {
     const newTitle = (renameModal.title || '').trim();
     if (!chatId) return;
     if (!newTitle) {
-        toast.error('عنوان نمی‌تواند خالی باشد.');
+        toast.error(t('chat.titleEmpty'));
         return;
     }
     renameModal.loading = true;
     try {
         await renameChat(chatId, newTitle);
         closeRenameModal();
-        toast.success('عنوان چت به‌روزرسانی شد.');
+        toast.success(t('chat.titleUpdated'));
     } catch (e) {
         console.error('rename failed', e);
-        toast.error('خطا در تغییر عنوان.');
+        toast.error(t('chat.titleError'));
     } finally {
         renameModal.loading = false;
     }
@@ -771,8 +793,25 @@ const uploadVoice = async (blob) => {
     const chat = chats.value.find(c => c.id === activeChatId.value);
     if (!chat) return;
 
+    // ایجاد URL موقت برای پخش فوری صدا
+    const tempVoiceUrl = URL.createObjectURL(blob);
+    const tempMsgId = 'voice-temp-' + Date.now();
+
+    // 1) فوری: پیام صوتی کاربر را نمایش بده (قبل از ارسال)
+    chat.messages.push({
+        id: tempMsgId,
+        sender: 'user',
+        text: '',
+        voiceUrl: tempVoiceUrl,
+        isSending: true,  // نشان می‌دهد در حال ارسال است
+        created_at: new Date().toISOString()
+    });
+
+    await nextTick();
+    scrollToBottom();
+
     try {
-        // 1) آپلود فایل
+        // 2) آپلود فایل
         const formData = new FormData();
         formData.append('file', blob, 'recording.webm');
         formData.append('collection', 'message_voices');
@@ -781,48 +820,63 @@ const uploadVoice = async (blob) => {
         if (!uploadRes.ok) throw new Error('آپلود فایل شکست خورد');
         const { file_id } = await uploadRes.json();
 
-        // 2) ارسال پیام ویسی به گفتگو
-        //    ⚠️ بک‌اند شما { user_message, ai_message, conversation } برمی‌گردونه
+        // 3) ارسال پیام ویسی به گفتگو
         const messageRes = await fetch(`/api/v1/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ content: '', media_ids: [file_id], media_kind: 'voice' })
+            body: JSON.stringify({
+                content: '',
+                media_ids: [file_id],
+                media_kind: 'voice',
+                lang: locale.value
+            })
         });
         if (!messageRes.ok) {
-            const t = await messageRes.text().catch(() => '');
-            console.error('send voice failed', messageRes.status, t);
+            const errText = await messageRes.text().catch(() => '');
+            console.error('send voice failed', messageRes.status, errText);
             throw new Error('ارسال پیام شکست خورد');
         }
 
         const { user_message, ai_message, conversation } = await messageRes.json();
 
-        // 3) اگر عنوان گفتگو آپدیت شده بود
+        // 4) اگر عنوان گفتگو آپدیت شده بود
         if (conversation?.title && conversation.title !== chat.title) {
             chat.title = conversation.title;
         }
 
-        // 4) پیام کاربر (ویس) را به UI اضافه کن
-        chat.messages.push({
-            id: user_message.id,
-            sender: 'user',
-            text: user_message.content || '',
-            created_at: user_message.created_at
-        });
+        // 5) پیام موقت را با پیام واقعی جایگزین کن
+        const tempMsgIndex = chat.messages.findIndex(m => m.id === tempMsgId);
+        if (tempMsgIndex !== -1) {
+            // متن transcript را از پاسخ بگیر (اگر وجود داشت)
+            const transcriptText = user_message.content || '';
 
-        // مدیای پیام کاربر را بگیر تا voiceUrl ست شود
-        try {
-            const r = await fetch(`/api/v1/messages/${user_message.id}/media`, { headers: { 'Accept': 'application/json' }});
-            if (r.ok) {
-                const { data: media } = await r.json();
-                const voice = (media || []).find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
-                if (voice) {
-                    const msg = chat.messages.find(m => m.id === user_message.id);
-                    if (msg) msg.voiceUrl = voice.url;
+            chat.messages[tempMsgIndex] = {
+                id: user_message.id,
+                sender: 'user',
+                text: transcriptText,  // متن ترنسکریپت
+                voiceUrl: tempVoiceUrl,  // فعلاً همان URL موقت
+                isSending: false,
+                created_at: user_message.created_at
+            };
+
+            // آپدیت voiceUrl از سرور
+            try {
+                const r = await fetch(`/api/v1/messages/${user_message.id}/media`, { headers: { 'Accept': 'application/json' }});
+                if (r.ok) {
+                    const { data: media } = await r.json();
+                    const voice = (media || []).find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
+                    if (voice) {
+                        const msg = chat.messages.find(m => m.id === user_message.id);
+                        if (msg) {
+                            msg.voiceUrl = voice.url;
+                            URL.revokeObjectURL(tempVoiceUrl); // آزاد کردن حافظه
+                        }
+                    }
                 }
-            }
-        } catch (_) {}
+            } catch (_) {}
+        }
 
-        // 5) پیام AI را هم (متن + احتمالاً ویس) به UI اضافه کن
+        // 6) پیام AI را هم (متن + احتمالاً ویس) به UI اضافه کن
         if (ai_message) {
             chat.messages.push({
                 id: ai_message.id,
@@ -857,7 +911,15 @@ const uploadVoice = async (blob) => {
         scrollToBottom();
     } catch (error) {
         console.error('Upload voice error:', error);
-        toast.error('خطا در ارسال/دریافت ویس');
+
+        // حذف پیام موقت در صورت خطا
+        const tempMsgIndex = chat.messages.findIndex(m => m.id === tempMsgId);
+        if (tempMsgIndex !== -1) {
+            chat.messages.splice(tempMsgIndex, 1);
+        }
+        URL.revokeObjectURL(tempVoiceUrl);
+
+        toast.error(t('chat.uploadVoiceError'));
     }
 };
 
@@ -1080,7 +1142,10 @@ const sendMessage = async () => {
         const res = await apiFetch(`/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({content: userMsg.text})
+            body: JSON.stringify({
+                content: userMsg.text,
+                lang: locale.value
+            })
         });
 
         if (res.ok) {
@@ -1190,21 +1255,24 @@ const deleteChat = async (chatId) => {
                 activeChatId.value = null;
             }
         }
-        toast.success('گفتگو حذف شد.');
+        toast.success(t('chat.chatDeleted'));
     } catch (e) {
         console.error('delete chat failed', e);
-        toast.error('حذف چت ناموفق بود.');
+        toast.error(t('chat.deleteError'));
     } finally {
         deletingChatId.value = null;
     }
 };
 const copyText = (text) => {
     navigator.clipboard.writeText(text).then(() => {
-        toast.info('متن کپی شد')
+        toast.info(t('chat.textCopied'))
     });
 };
 const goToTickets = () => {
     window.location.href = '/ticket';
+};
+const goToProfile = () => {
+    window.location.href = '/user/profile';
 };
 const showHandoffModal = (message) => {
     selectedMessageForHandoff.value = message;
@@ -1213,7 +1281,7 @@ const showHandoffModal = (message) => {
 const handleHandoffSubmit = async (data) => {
     try {
         if (!selectedMessageForHandoff.value?.id) {
-            toast.error('پیام انتخاب‌شده نامعتبر است.');
+            toast.error(t('chat.handoffError'));
             return
         }
 
@@ -1234,11 +1302,11 @@ const handleHandoffSubmit = async (data) => {
             toast.error(msg);
             return
         }
-        toast.success('ارجاع با موفقیت ثبت شد.');
+        toast.success(t('chat.handoffSuccess'));
         isHandoffModalOpen.value = false
         selectedMessageForHandoff.value = null
     } catch (e) {
-        toast.error('خطا در ارجاع: ' + (e?.message || 'نامشخص'), 'error');
+        toast.error(t('chat.handoffError') + ': ' + (e?.message || ''));
     }
 }
 const audioRefs = ref({});
@@ -1318,9 +1386,23 @@ const onBubbleClick = async (message) => {
     }
 };
 
+const onLanguageChange = (event) => {
+    // Update language using the i18n system
+    const newLocale = event.target.value;
+    setLocale(newLocale);
+};
 
 // --- Lifecycle ---
 onMounted(() => {
+    // Initialize i18n and apply direction to document
+    initLocale();
+
+    // Load voices for browser TTS (if used)
+    if (typeof speechSynthesis !== 'undefined') {
+        loadVoices();
+        speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
     loadChats();
     fetchDepartments();
     if (typeof window !== 'undefined') {
@@ -1331,6 +1413,7 @@ onMounted(() => {
         document.addEventListener('click', handleMenuClickOutside);
     }
 });
+
 
 watch(() => messagesContainer.value, (el, prev) => {
     if (prev) {
@@ -1354,12 +1437,7 @@ let voices = [];
 const loadVoices = () => {
     voices = synth.getVoices();
 };
-onMounted(() => {
-    loadVoices();
-    if (typeof speechSynthesis !== 'undefined') {
-        speechSynthesis.onvoiceschanged = loadVoices; // کروم صداها رو async لود می‌کنه
-    }
-});
+// loadVoices is called in the main onMounted hook above
 
 // انتخاب بهترین صدای فارسی موجود
 const pickFaVoice = () => {
@@ -1442,22 +1520,211 @@ function handleMenuClickOutside(event) {
 }
 
 .chat-app {
-    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
-    background-color: #f9fafb;
-    min-height: 100vh;
+    font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
+    background: #f8fafc;
     height: 100vh;
+    height: 100dvh; /* برای موبایل - dynamic viewport height */
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    padding-top: 56px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
-.chat-header {
-    background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+/* Unified Header Styles */
+.app-header {
+    background: #0e7490;
     color: white;
-    padding: 16px 24px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 0 24px;
+    height: 56px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
 }
 
+.header-inner {
+    max-width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.mobile-menu-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.brand-icon {
+    width: 28px;
+    height: 28px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.brand-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.brand-text {
+    font-weight: 600;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.lang-select {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.lang-select option {
+    background: #0e7490;
+    color: white;
+}
+
+.nav-link {
+    position: relative;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.85);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.nav-link:hover {
+    background: rgba(255,255,255,0.15);
+    color: white;
+}
+
+.nav-link.danger {
+    color: #fecaca;
+}
+
+.nav-link.danger:hover {
+    background: rgba(239,68,68,0.2);
+}
+
+.nav-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    background: #f87171;
+    border-radius: 50%;
+}
+
+/* Header Responsive */
+@media (max-width: 640px) {
+    .app-header {
+        padding: 0 12px;
+        height: 52px;
+    }
+
+    .header-inner {
+        gap: 8px;
+    }
+
+    .brand-text {
+        display: none;
+    }
+
+    .brand-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .header-nav {
+        gap: 4px;
+    }
+
+    .lang-select {
+        padding: 4px 6px;
+        font-size: 0.75rem;
+    }
+
+    .nav-link {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        height: 48px;
+        padding: 0 10px;
+    }
+
+    .mobile-menu-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .brand-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .nav-link {
+        padding: 4px 6px;
+        font-size: 0.7rem;
+    }
+
+    .lang-select {
+        padding: 4px 5px;
+        font-size: 0.7rem;
+    }
+}
+
+/* Legacy header styles for compatibility */
 .chat-header h1 {
     font-size: 1.3rem;
     font-weight: 600;
@@ -1628,6 +1895,7 @@ function handleMenuClickOutside(event) {
     background-color: #ffffff;
     position: relative;
     min-height: 0;
+    overflow: hidden;
 }
 
 .empty-state {
@@ -1655,7 +1923,6 @@ function handleMenuClickOutside(event) {
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-    padding-bottom: 96px;
 }
 
 .message {
@@ -1668,7 +1935,19 @@ function handleMenuClickOutside(event) {
 }
 
 .message.bot-message {
+    justify-content: flex-start;
+}
+
+[dir="rtl"] .message.bot-message {
     justify-content: flex-end;
+}
+
+.message.user-message {
+    justify-content: flex-end;
+}
+
+[dir="rtl"] .message.user-message {
+    justify-content: flex-start;
 }
 
 .message-bubble {
@@ -1677,6 +1956,7 @@ function handleMenuClickOutside(event) {
     max-width: 80%;
     word-break: break-word;
     line-height: 1.5;
+    text-align: start;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     animation: fadeInUp 0.3s ease;
     transition: box-shadow .2s ease, transform .2s ease;
@@ -1695,17 +1975,27 @@ function handleMenuClickOutside(event) {
 
 
 .user-message .message-bubble {
-    /*background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);*/
     background-color: #f1f5f9;
     color: #333;
-    /*color: white;*/
     border-bottom-right-radius: 4px;
 }
 
-.bot-message .message-bubble {
-    background-color: #f1f5f9;
-    color: #333;
+[dir="rtl"] .user-message .message-bubble {
+    border-bottom-right-radius: 18px;
     border-bottom-left-radius: 4px;
+}
+
+.bot-message .message-bubble {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    color: #1e293b;
+    border-bottom-left-radius: 4px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+[dir="rtl"] .bot-message .message-bubble {
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 4px;
 }
 
 .loading {
@@ -1744,74 +2034,118 @@ function handleMenuClickOutside(event) {
 
 .input-form {
     display: flex;
-    padding: 16px;
+    padding: 12px 16px;
     background: white;
     border-top: 1px solid #eaeaea;
-    gap: 12px;
+    gap: 10px;
     flex-direction: column;
     position: sticky;
     bottom: 0;
-    z-index: 4;
-    box-shadow: 0 -6px 18px rgba(15, 23, 42, 0.08);
+    z-index: 10;
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08);
 }
+
 
 .text-input-area {
     display: flex;
-    gap: 12px;
-    align-items: flex-end;
+    gap: 8px;
+    align-items: center;
 }
 
 .text-input-area textarea {
     flex: 1;
-    padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 24px;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
     resize: none;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-family: inherit;
     outline: none;
-    max-height: 150px;
+    max-height: 120px;
+    min-height: 42px;
+    background: #f8fafc;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .input-form textarea:focus {
     border-color: #0891b2;
-    box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.2);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.15);
 }
 
 .input-actions button {
-    padding: 12px 20px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
     border: none;
-    border-radius: 24px;
+    border-radius: 50%;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .input-actions .mic-btn {
     background: #f1f5f9;
-    color: #4b5563;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.input-actions .mic-btn:hover {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.input-actions .send-btn {
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    color: white;
+}
+
+.input-actions .send-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
 }
 
 .input-actions button:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
+}
+
+.input-actions button svg {
+    width: 20px;
+    height: 20px;
+}
+
+.input-actions .mic-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.input-actions .send-btn svg {
+    width: 20px;
+    height: 20px;
+    margin-inline-start: 2px;
 }
 
 .scroll-bottom-btn {
     position: absolute;
     inset-inline-end: 24px;
-    bottom: 110px;
-    width: 44px;
-    height: 44px;
+    bottom: 80px;
+    width: 40px;
+    height: 40px;
     border-radius: 999px;
     border: none;
     background: linear-gradient(135deg, #0e7490, #0891b2);
-    box-shadow: 0 10px 25px rgba(14, 116, 144, 0.35);
+    box-shadow: 0 6px 16px rgba(14, 116, 144, 0.3);
     color: #fff;
     cursor: pointer;
     display: inline-flex;
@@ -1944,6 +2278,59 @@ function handleMenuClickOutside(event) {
     opacity: 1;
 }
 
+/* --- Voice Message Styles --- */
+.sending-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 0.85rem;
+    padding: 4px 0;
+}
+
+.sending-dot {
+    width: 8px;
+    height: 8px;
+    background: #0ea5e9;
+    border-radius: 50%;
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1); }
+}
+
+.voice-transcript {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 0;
+}
+
+.transcript-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.transcript-text {
+    font-size: 0.9rem;
+    color: #334155;
+    line-height: 1.5;
+}
+
+.voice-player {
+    margin-top: 8px;
+}
+
+.voice-player audio {
+    width: 100%;
+    max-width: 280px;
+    height: 36px;
+    border-radius: 18px;
+}
 
 /* --- حالت ضبط صدا --- */
 .recording-ui {
@@ -2003,9 +2390,26 @@ function handleMenuClickOutside(event) {
     color: #64748b;
 }
 
+/* Bot avatar - displayed as a small badge */
+.bot-message .message-bubble {
+    position: relative;
+}
+
 .bot-message .message-bubble::before {
     content: "🤖";
-    margin-left: 6px;
+    position: absolute;
+    top: -8px;
+    inset-inline-start: -8px;
+    font-size: 1rem;
+    background: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
 }
 
 .header-content {
@@ -2054,16 +2458,6 @@ function handleMenuClickOutside(event) {
     cursor: not-allowed;
 }
 
-.nav-btn.danger {
-    background: rgba(248, 113, 113, 0.2);
-    border-color: rgba(248, 113, 113, 0.55);
-    color: #fee2e2;
-}
-
-.nav-btn.danger:hover {
-    background: rgba(248, 113, 113, 0.35);
-}
-
 .nav-btn__dot {
     position: absolute;
     inset-inline-start: 12px;
@@ -2079,6 +2473,61 @@ function handleMenuClickOutside(event) {
 .nav-btn:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
+}
+
+.nav-btn.danger {
+    background: rgba(248, 113, 113, 0.2);
+    border-color: rgba(248, 113, 113, 0.55);
+    color: #fee2e2;
+}
+
+.nav-btn.danger:hover {
+    background: rgba(248, 113, 113, 0.35);
+}
+
+.lang-selector {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 32px 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-inline-start: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    min-width: 100px;
+}
+
+[dir="ltr"] .lang-selector {
+    padding: 8px 32px 8px 14px;
+    background-position: right 10px center;
+}
+
+[dir="rtl"] .lang-selector {
+    padding: 8px 14px 8px 32px;
+    background-position: left 10px center;
+}
+
+.lang-selector:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.lang-selector:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.lang-selector option {
+    background: #0e7490;
+    color: white;
+    padding: 8px;
 }
 
 
@@ -2165,9 +2614,12 @@ function handleMenuClickOutside(event) {
 
 .referral-panel-backdrop {
     position: fixed;
-    inset: 0;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(15, 23, 42, 0.45);
-    z-index: 60;
+    z-index: 75;
 }
 
 .modal-backdrop {
@@ -2254,18 +2706,27 @@ function handleMenuClickOutside(event) {
 
 .referral-panel {
     position: fixed;
-    top: 0;
+    top: 56px;
     bottom: 0;
     right: 0;
     width: min(420px, 92vw);
     background: #fff;
     box-shadow: -10px 0 35px rgba(15, 23, 42, 0.25);
     border-top-left-radius: 18px;
-    border-bottom-left-radius: 18px;
-    z-index: 70;
+    border-bottom-left-radius: 0;
+    z-index: 80;
     display: flex;
     flex-direction: column;
     padding: 20px;
+    overflow-y: auto;
+}
+
+[dir="ltr"] .referral-panel {
+    right: auto;
+    left: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 18px;
+    box-shadow: 10px 0 35px rgba(15, 23, 42, 0.25);
 }
 
 .referral-panel.is-mobile {
@@ -2273,6 +2734,7 @@ function handleMenuClickOutside(event) {
     right: 0;
     left: 0;
     border-radius: 0;
+    top: 56px;
 }
 
 .referral-panel.is-mobile.slide-panel-enter-from,
@@ -2557,16 +3019,34 @@ function handleMenuClickOutside(event) {
         justify-content: center;
     }
 
-    .chat-container {
-        position: relative;
-        overflow: visible;
-        flex-direction: column;
+    .chat-app {
+        padding-top: 52px;
     }
 
-    /* سایدبار به صورت drawer ثابت از راست */
+    .app-header {
+        height: 52px;
+    }
+
+    .chat-container {
+        position: relative;
+        overflow: hidden;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .chat-main {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* سایدبار به صورت drawer ثابت از راست - زیر navbar */
     .sidebar.is-mobile {
         position: fixed;
-        top: 0;
+        top: 52px;
         bottom: 0;
         left: auto;
         right: 0;
@@ -2574,11 +3054,11 @@ function handleMenuClickOutside(event) {
         transform: translateX(110%);
         border: none;
         box-shadow: -8px 0 24px rgba(15, 23, 42, 0.25);
-        z-index: 40;
+        z-index: 90;
         background: #fff;
-        max-height: 100vh;
         display: flex;
         flex-direction: column;
+        transition: transform 0.3s ease;
     }
 
     .sidebar.is-mobile.is-open {
@@ -2588,9 +3068,23 @@ function handleMenuClickOutside(event) {
     .sidebar-overlay {
         display: block;
         position: fixed;
-        inset: 0;
+        top: 52px;
+        left: 0;
+        right: 0;
+        bottom: 0;
         background: rgba(15, 23, 42, 0.45);
-        z-index: 30;
+        z-index: 85;
+    }
+
+    /* chat list باید تمام فضای موجود رو بگیره */
+    .sidebar.is-mobile .chat-list {
+        flex: 1;
+        overflow-y: auto;
+        max-height: none;
+    }
+
+    .sidebar.is-mobile .new-chat-btn {
+        flex-shrink: 0;
     }
 
     .messages-container {
@@ -2601,22 +3095,30 @@ function handleMenuClickOutside(event) {
         max-width: 100%;
     }
 
+    /* input form - یک ردیف در موبایل */
     .input-form {
-        padding: 12px;
+        padding: 10px 12px;
     }
 
     .text-input-area {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .text-input-area textarea {
+        min-height: 40px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
     }
 
     .input-actions {
-        width: 100%;
-        justify-content: space-between;
+        gap: 6px;
     }
 
     .input-actions button {
-        flex: 1;
+        width: 38px;
+        height: 38px;
     }
 
     .nav-btn {
@@ -2638,7 +3140,116 @@ function handleMenuClickOutside(event) {
 
     .scroll-bottom-btn {
         inset-inline-end: 12px;
-        bottom: 95px;
+        bottom: 70px;
+        width: 36px;
+        height: 36px;
+    }
+
+    .referral-panel {
+        width: 100%;
+        border-radius: 0;
+        top: 52px;
+    }
+
+    .referral-panel-backdrop {
+        top: 52px;
+    }
+
+    .modal-backdrop {
+        padding: 10px;
+    }
+
+    .rename-modal {
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .voice-player audio {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        height: 48px;
+    }
+
+    .chat-app {
+        padding-top: 48px;
+    }
+
+    .sidebar.is-mobile,
+    .sidebar-overlay,
+    .referral-panel,
+    .referral-panel-backdrop {
+        top: 48px;
+    }
+
+    .messages-container {
+        padding: 12px 8px;
+    }
+
+    .message-bubble {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+
+    .input-form {
+        padding: 8px 10px;
+    }
+
+    .text-input-area textarea {
+        min-height: 36px;
+        padding: 7px 10px;
+        font-size: 0.85rem;
+    }
+
+    .input-actions button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .input-actions button svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .scroll-bottom-btn {
+        width: 32px;
+        height: 32px;
+        bottom: 70px;
+    }
+
+    .scroll-bottom-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .new-chat-btn {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        margin: 10px;
+    }
+
+    .chat-item {
+        padding: 10px 14px;
+        font-size: 0.9rem;
+    }
+
+    .empty-content h2 {
+        font-size: 1.1rem;
+    }
+
+    .empty-content p {
+        font-size: 0.85rem;
+    }
+
+    .referral-panel {
+        padding: 14px;
+    }
+
+    .referral-card {
+        padding: 12px;
     }
 }
 

@@ -1,5 +1,5 @@
 <template>
-    <div class="ticket-app" dir="rtl">
+    <div class="ticket-app" :dir="direction">
         <!-- Toast Container -->
         <!--        <div class="toast-container">
                     <div
@@ -25,44 +25,39 @@
                     </div>
                 </div>-->
 
-        <!-- Header -->
-        <header class="ticket-header">
-            <div class="header-content">
-                <div class="header-left">
-                    <div class="ticket-logo">
-                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(255,255,255,0.3)"/>
-                            <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(255,255,255,0.2)"/>
-                            <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(255,255,255,0.4)"/>
-                            <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
-                            <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
+        <!-- Unified Header -->
+        <header class="app-header">
+            <div class="header-inner">
+                <div class="header-brand">
+                    <div class="brand-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
-                    <h1>تیکت‌های پشتیبانی</h1>
+                    <span class="brand-text">{{ $t('ticket.title') }}</span>
                 </div>
-                <div class="header-actions">
-                    <button @click="goToChat" class="nav-btn ghost" type="button">
-                        چت
+                <nav class="header-nav">
+                    <select :value="locale" class="lang-select" @change="onLanguageChange">
+                        <option value="fa">فارسی</option>
+                        <option value="en">EN</option>
+                        <option value="ar">ع</option>
+                    </select>
+                    <button @click="goToChat" class="nav-link">{{ $t('nav.chat') }}</button>
+                    <button @click="goToProfile" class="nav-link">{{ $t('nav.profile') }}</button>
+                    <button @click="showNewTicketForm = true" class="nav-link primary">
+                        + {{ $t('ticket.newTicket') }}
                     </button>
-                    <button @click="showNewTicketForm = true" class="nav-btn" type="button">
-                        تیکت جدید
+                    <button @click="logout" class="nav-link danger" :disabled="loggingOut">
+                        {{ loggingOut ? '...' : $t('nav.logout') }}
                     </button>
-                    <button
-                        class="nav-btn danger"
-                        type="button"
-                        @click="logout"
-                        :disabled="loggingOut"
-                    >
-                        {{ loggingOut ? 'در حال خروج…' : 'خروج' }}
-                    </button>
-                </div>
+                </nav>
             </div>
         </header>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
-                <!-- کل تیکت‌ها -->
+                <!-- Total Tickets -->
                 <div class="stat glossy p-4">
                     <div class="stat-row">
                         <div class="stat-icon bg-sky-100">
@@ -71,13 +66,13 @@
                             </svg>
                         </div>
                         <div class="stat-body">
-                            <div class="stat-label">کل تیکت‌ها</div>
+                            <div class="stat-label">{{ $t('ticket.myTickets') }}</div>
                             <div class="stat-value">{{ tickets.length }}</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- در انتظار پاسخ -->
+                <!-- Pending -->
                 <div class="stat glossy p-4">
                     <div class="stat-row">
                         <div class="stat-icon bg-amber-100">
@@ -86,13 +81,13 @@
                             </svg>
                         </div>
                         <div class="stat-body">
-                            <div class="stat-label">در انتظار پاسخ</div>
+                            <div class="stat-label">{{ $t('ticket.statuses.pending') }}</div>
                             <div class="stat-value">{{ pendingTickets }}</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- پاسخ داده شده -->
+                <!-- Answered -->
                 <div class="stat glossy p-4">
                     <div class="stat-row">
                         <div class="stat-icon bg-emerald-100">
@@ -101,13 +96,13 @@
                             </svg>
                         </div>
                         <div class="stat-body">
-                            <div class="stat-label">پاسخ داده شده</div>
+                            <div class="stat-label">{{ $t('ticket.statuses.answered') }}</div>
                             <div class="stat-value">{{ answeredTickets }}</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- بسته شده -->
+                <!-- Closed -->
                 <div class="stat glossy p-4">
                     <div class="stat-row">
                         <div class="stat-icon bg-rose-100">
@@ -116,7 +111,7 @@
                             </svg>
                         </div>
                         <div class="stat-body">
-                            <div class="stat-label">بسته شده</div>
+                            <div class="stat-label">{{ $t('ticket.statuses.closed') }}</div>
                             <div class="stat-value">{{ closedTickets }}</div>
                         </div>
                     </div>
@@ -128,31 +123,31 @@
             <div class="glossy p-6 mb-4">
                 <div class="flex flex-wrap gap-4 items-center">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">فیلتر بر اساس وضعیت</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('ticket.filterByStatus') }}</label>
                         <select v-model="statusFilter"
                                 class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">همه</option>
-                            <option value="pending">در انتظار پاسخ</option>
-                            <option value="answered">پاسخ داده شده</option>
-                            <option value="closed">بسته شده</option>
+                            <option value="">{{ $t('common.all') }}</option>
+                            <option value="pending">{{ $t('ticket.statuses.pending') }}</option>
+                            <option value="answered">{{ $t('ticket.statuses.answered') }}</option>
+                            <option value="closed">{{ $t('ticket.statuses.closed') }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">فیلتر بر اساس بخش</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('ticket.filterByDepartment') }}</label>
                         <select v-model="departmentFilter"
                                 class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">همه بخش‌ها</option>
+                            <option value="">{{ $t('ticket.allDepartments') }}</option>
                             <option v-for="dept in departments" :key="dept.id" :value="dept.id">
                                 {{ dept.name }}
                             </option>
                         </select>
                     </div>
                     <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">جستجو</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('common.search') }}</label>
                         <input
                             type="text"
                             v-model="searchQuery"
-                            placeholder="جستجو در عنوان یا متن تیکت..."
+                            :placeholder="$t('ticket.searchPlaceholder')"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
                     </div>
@@ -163,7 +158,7 @@
             <div class="space-y-6">
                 <div v-if="loading" class="py-16 flex flex-col items-center">
                     <div class="w-14 h-14 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin"></div>
-                    <p class="mt-4 text-gray-500">در حال بارگذاری…</p>
+                    <p class="mt-4 text-gray-500">{{ $t('common.loading') }}</p>
 
                     <div class="mt-8 w-full max-w-4xl space-y-4">
                         <div class="h-24 rounded-xl bg-white shadow-sm relative overflow-hidden">
@@ -181,8 +176,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">هیچ تیکتی یافت نشد</h3>
-                    <p class="text-gray-500">تیکت جدیدی ایجاد کنید یا فیلترها را تغییر دهید</p>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ $t('ticket.noTickets') }}</h3>
+                    <p class="text-gray-500">{{ $t('ticket.createFirst') }}</p>
                 </div>
 
                 <div
@@ -232,7 +227,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                     </svg>
-                    <span>نمایش گفتگو</span>
+                    <span>{{ $t('ticket.viewConversation') }}</span>
                   </span>
                                 </button>
                             </div>
@@ -245,7 +240,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                             </svg>
-                            {{ ticket.attachments_count }} فایل پیوست
+                            {{ ticket.attachments_count }} {{ $t('ticket.attachFile') }}
                         </div>
                     </div>
                 </div>
@@ -277,7 +272,7 @@
                             </svg>
                         </button>
                         <h2 class="text-lg md:text-xl font-extrabold text-gray-900 text-center">
-                            گفتگوی تیکت: {{ selectedThread.title }}
+                            {{ $t('ticket.conversation') }}: {{ selectedThread.title }}
                         </h2>
                     </div>
 
@@ -295,7 +290,7 @@
                                     class="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
                                     :class="isSupport(msg.sender_type) ? 'bg-emerald-500 order-1' : 'bg-blue-500 order-2'"
                                 >
-                                    {{ isSupport(msg.sender_type) ? 'پشتیبان' : 'شما' }}
+                                    {{ isSupport(msg.sender_type) ? $t('ticket.support') : $t('ticket.you') }}
                                 </div>
 
                                 <!-- حباب پیام -->
@@ -316,7 +311,7 @@
                                         <template v-for="att in (msg.showAllAtt ? msg.attachments : msg.attachments.slice(0,6))" :key="att.id">
                                             <a :href="att.url" target="_blank" class="file-chip file-chip-link" :title="att.name">
                                                 <span class="mr-1">{{ getFileEmoji(att.mime) }}</span>
-                                                <span class="truncate max-w-[140px] inline-block align-middle">{{ att.name || 'فایل' }}</span>
+                                                <span class="truncate max-w-[140px] inline-block align-middle">{{ att.name || $t('common.file') }}</span>
                                             </a>
                                         </template>
                                         <button
@@ -324,7 +319,7 @@
                                             class="file-chip file-chip-muted"
                                             @click="msg.showAllAtt = !msg.showAllAtt"
                                         >
-                                            {{ msg.showAllAtt ? 'کمتر' : `+${msg.attachments.length - 6} بیشتر` }}
+                                            {{ msg.showAllAtt ? $t('common.less') : `+${msg.attachments.length - 6} ${$t('common.more')}` }}
                                         </button>
                                     </div>
                                 </div>
@@ -344,12 +339,12 @@
                     <div v-if="canReplyToThread" class="border-t bg-white p-4 md:p-6">
                         <form @submit.prevent="submitThreadReply" class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">پاسخ شما</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('ticket.reply') }}</label>
                                 <textarea
                                     v-model="threadReplyMessage"
                                     rows="3"
                                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="پاسخ خود را بنویسید..."
+                                    :placeholder="$t('ticket.replyPlaceholder')"
                                     @keydown.ctrl.enter.prevent="submitThreadReply"
                                     required
                                 ></textarea>
@@ -358,7 +353,7 @@
 
                             <!-- Dropzone -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">📎 فایل‌های پیوست</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">📎 {{ $t('ticket.attachFile') }}</label>
                                 <div
                                     class="file-drop-zone dropzone-fancy w-full p-4 rounded-lg text-center cursor-pointer border-2 border-dashed border-gray-300"
                                     :class="{'dragging': isDragOverReply}"
@@ -367,8 +362,8 @@
                                     @drop.prevent="handleFileDropReply"
                                     @click="$refs.replyFileInput.click()"
                                 >
-                                    <p class="text-gray-600">فایل‌ها را اینجا بکشید یا کلیک کنید</p>
-                                    <p class="text-xs text-gray-400 mt-1">حداکثر 10 فایل، هر کدام تا 5 مگابایت</p>
+                                    <p class="text-gray-600">{{ $t('ticket.dragFiles') }}</p>
+                                    <p class="text-xs text-gray-400 mt-1">{{ $t('ticket.maxFiles') }}</p>
                                 </div>
                                 <input
                                     type="file"
@@ -391,14 +386,14 @@
                                 </template>
                                 <span v-if="replyFilesMoreCount > 0" class="file-chip file-chip-muted cursor-pointer"
                                       @click="showAllReplyFiles = !showAllReplyFiles">
-              +{{ replyFilesMoreCount }} فایل دیگر
+              +{{ replyFilesMoreCount }} {{ $t('ticket.moreFiles') }}
             </span>
                             </div>
 
                             <div class="flex justify-end gap-3">
                                 <button type="button" class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
                                         @click="threadReplyMessage=''; replyFiles=[];">
-                                    پاک‌سازی
+                                    {{ $t('common.clear') }}
                                 </button>
                                 <button
                                     type="submit"
@@ -406,7 +401,7 @@
                                     class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
                      text-white px-5 py-2 rounded-lg font-medium disabled:opacity-50"
                                 >
-                                    {{ isSubmittingReply ? 'در حال ارسال...' : 'ارسال پاسخ' }}
+                                    {{ isSubmittingReply ? $t('common.sending') : $t('ticket.sendReply') }}
                                 </button>
                             </div>
                         </form>
@@ -428,7 +423,7 @@
                 >
                     <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
                         <div class="flex justify-between items-center">
-                            <h2 class="text-xl font-bold text-gray-900">ثبت تیکت جدید</h2>
+                            <h2 class="text-xl font-bold text-gray-900">{{ $t('ticket.newTicket') }}</h2>
                             <button
                                 @click="closeNewTicketForm"
                                 class="absolute top-4 left-4 text-red-500 hover:text-red-700 transition-transform transform hover:scale-110 close-btn"
@@ -445,41 +440,41 @@
                     <div class="max-h-[75vh] overflow-y-auto">
                         <form @submit.prevent="submitNewTicket" class="p-6 space-y-6">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">🏢 بخش پشتیبانی</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">🏢 {{ $t('ticket.department') }}</label>
                                 <select
                                     v-model="newTicket.department"
                                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
                                     required
                                 >
-                                    <option value="">انتخاب بخش...</option>
+                                    <option value="">{{ $t('ticket.selectDepartment') }}</option>
                                     <option v-for="dept in departments" :key="dept.id" :value="dept.id">
                                         {{ dept.name }}
                                     </option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">📝 عنوان تیکت</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">📝 {{ $t('ticket.subject') }}</label>
                                 <input
                                     type="text"
                                     v-model="newTicket.title"
                                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-                                    placeholder="عنوان مشکل یا درخواست خود را وارد کنید..."
+                                    :placeholder="$t('ticket.subjectPlaceholder')"
                                     required
                                 >
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">💬 توضیحات</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">💬 {{ $t('ticket.description') }}</label>
                                 <textarea
                                     v-model="newTicket.message"
                                     rows="6"
                                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors resize-none"
-                                    placeholder="توضیحات کاملی از مشکل یا درخواست خود ارائه دهید..."
+                                    :placeholder="$t('ticket.descriptionPlaceholder')"
                                     required
                                 ></textarea>
                             </div>
                             <!-- File Upload -->
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">📎 فایل‌های پیوست</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">📎 {{ $t('ticket.attachFile') }}</label>
                                 <div
                                     class="file-drop-zone dropzone-fancy w-full p-8 rounded-lg text-center cursor-pointer border-2 border-dashed border-gray-300"
                                     :class="{'dragging': isDragOver}"
@@ -493,7 +488,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                               d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"/>
                                     </svg>
-                                    <p class="text-lg font-medium text-gray-600">فایل‌ها را اینجا بکشید یا کلیک کنید</p>
+                                    <p class="text-lg font-medium text-gray-600">{{ $t('ticket.dragFiles') }}</p>
                                     <p class="text-sm text-gray-500 mt-1">حداکثر 10 فایل، هر کدام تا 5 مگابایت</p>
                                 </div>
                                 <input
@@ -559,6 +554,10 @@
 <script setup>
 import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
 import axios from 'axios';
+import { useLanguage } from '../i18n';
+
+// --- i18n - CSP-safe, no vue-i18n ---
+const { locale, setLocale, direction, initLocale, t } = useLanguage();
 
 // --- State ---
 import {useToast} from 'vue-toast-notification'
@@ -941,8 +940,7 @@ const getDepartmentName = (deptId) => {
 };
 
 const getStatusLabel = (status) => {
-    const labels = {pending: 'در انتظار پاسخ', answered: 'پاسخ داده شده', closed: 'بسته شده'};
-    return labels[status] || status;
+    return t(`ticket.statuses.${status}`) || status;
 };
 
 const getStatusClass = (status) => {
@@ -955,8 +953,7 @@ const getStatusClass = (status) => {
 };
 
 const getPriorityLabel = (priority) => {
-    const labels = {low: 'کم', normal: 'معمولی', high: 'بالا', urgent: 'فوری'};
-    return labels[priority] || priority;
+    return t(`ticket.priorities.${priority}`) || priority;
 };
 
 const getPriorityClass = (priority) => {
@@ -973,7 +970,9 @@ const getPriorityClass = (priority) => {
 const isSupport = (t) => String(t || '').toLowerCase() === 'admin';
 const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fa-IR', {
+    const localeMap = { 'fa': 'fa-IR', 'en': 'en-US', 'ar': 'ar-SA' };
+    const dateLocale = localeMap[locale.value] || 'fa-IR';
+    return date.toLocaleDateString(dateLocale, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -1008,8 +1007,21 @@ const goToChat = () => {
     window.location.href = '/chat';
 };
 
+const goToProfile = () => {
+    window.location.href = '/user/profile';
+};
+
+// --- Language ---
+const onLanguageChange = (event) => {
+    const newLocale = event.target.value;
+    setLocale(newLocale);
+};
+
 // --- Lifecycle ---
 onMounted(() => {
+    // Initialize i18n
+    initLocale();
+
     fetchDepartments();
     fetchTickets();
 });
@@ -1017,10 +1029,8 @@ onMounted(() => {
 
 <style scoped>
 .ticket-app {
-    font-family: 'Vazirmatn', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    background: radial-gradient(1200px 800px at 100% -200px, rgba(59, 130, 246, 0.06), transparent 60%),
-    radial-gradient(1000px 600px at -200px 100%, rgba(99, 102, 241, 0.06), transparent 60%),
-    #f7fafc;
+    font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
+    background: #f8fafc;
     min-height: 100vh;
 }
 @keyframes shimmer-move { 100% { transform: translateX(100%); } }
@@ -1241,99 +1251,230 @@ onMounted(() => {
     color: #64748b;
 }
 
-/* ---------- Header ---------- */
-.ticket-header {
-    background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+/* ---------- Unified Header ---------- */
+.app-header {
+    background: #0e7490;
     color: white;
-    padding: 16px 24px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 0 24px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-.ticket-header h1 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: white;
-    margin: 0;
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 100%;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: space-between;
+    gap: 10px;
 }
 
-.ticket-logo {
-    width: 36px;
-    height: 36px;
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.brand-icon {
+    width: 28px;
+    height: 28px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
 
-.ticket-logo svg {
-    width: 100%;
-    height: 100%;
+.brand-icon svg {
+    width: 18px;
+    height: 18px;
 }
 
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.nav-btn {
-    padding: 0.625rem 1.25rem;
-    border-radius: 8px;
+.brand-text {
     font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    display: inline-flex;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-nav {
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.2);
+    gap: 6px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.lang-select {
+    background: rgba(255,255,255,0.15);
+    border: none;
     color: white;
-    border-color: rgba(255, 255, 255, 0.3);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
 }
 
-.nav-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+.lang-select option {
+    background: #0e7490;
+    color: white;
 }
 
-.nav-btn.ghost {
+.nav-link {
     background: transparent;
-    border-color: rgba(255, 255, 255, 0.4);
+    border: none;
+    color: rgba(255,255,255,0.85);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
 }
 
-.nav-btn.ghost:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.6);
+.nav-link:hover {
+    background: rgba(255,255,255,0.15);
+    color: white;
 }
 
-.nav-btn.danger {
-    background: rgba(248, 113, 113, 0.2);
-    border-color: rgba(248, 113, 113, 0.55);
-    color: #fee2e2;
+.nav-link.primary {
+    background: rgba(255,255,255,0.2);
+    color: white;
 }
 
-.nav-btn.danger:hover {
-    background: rgba(248, 113, 113, 0.35);
+.nav-link.primary:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.nav-link.danger {
+    color: #fecaca;
+}
+
+.nav-link.danger:hover {
+    background: rgba(239,68,68,0.2);
+}
+
+/* Header Responsive */
+@media (max-width: 768px) {
+    .app-header {
+        padding: 0 16px;
+        height: 52px;
+    }
+
+    .header-inner {
+        gap: 8px;
+    }
+
+    .brand-text {
+        font-size: 0.9rem;
+        max-width: 140px;
+    }
+
+    .header-nav {
+        gap: 4px;
+    }
+
+    .lang-select {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+    }
+
+    .nav-link {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .app-header {
+        padding: 0 12px;
+        height: 48px;
+    }
+
+    .brand-icon {
+        width: 26px;
+        height: 26px;
+    }
+
+    .brand-text {
+        display: none;
+    }
+
+    .header-nav {
+        gap: 3px;
+    }
+
+    .nav-link {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+
+    .lang-select {
+        padding: 4px 6px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-link {
+        padding: 4px 6px;
+        font-size: 0.7rem;
+    }
+}
+
+/* Language Selector */
+.lang-selector {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 32px 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-inline-start: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    min-width: 100px;
+}
+
+[dir="ltr"] .lang-selector {
+    padding: 8px 32px 8px 14px;
+    background-position: right 10px center;
+}
+
+[dir="rtl"] .lang-selector {
+    padding: 8px 14px 8px 32px;
+    background-position: left 10px center;
+}
+
+.lang-selector:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.lang-selector:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.lang-selector option {
+    background: #0e7490;
+    color: white;
+    padding: 8px;
 }
 
 .close-btn {
@@ -1405,9 +1546,160 @@ onMounted(() => {
 .stat-row { display:flex; align-items:center; gap:12px; }
 .stat-icon {
     width: 44px; height: 44px; border-radius: 12px; display:flex; align-items:center; justify-content:center;
+    flex-shrink: 0;
 }
 .stat-body { display:flex; align-items:baseline; gap:8px; flex-wrap:nowrap; }
 .stat-label { font-size:.95rem; color:#475569; font-weight:600; white-space:nowrap; }
 .stat-value { font-size:1.5rem; font-weight:800; color:#0f172a; line-height:1; white-space:nowrap; }
+
+/* Stats Responsive */
+@media (max-width: 768px) {
+    .stat {
+        padding: 12px !important;
+    }
+
+    .stat-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-row {
+        gap: 8px;
+    }
+
+    .stat-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .stat-value {
+        font-size: 1.1rem;
+    }
+}
+
+/* ============================================
+   DIRECTION-AWARE STYLES (LTR/RTL)
+   ============================================ */
+
+/* General text alignment based on direction */
+[dir="ltr"] .ticket-app {
+    text-align: left;
+}
+
+[dir="rtl"] .ticket-app {
+    text-align: right;
+}
+
+/* Fix flex direction for LTR */
+[dir="ltr"] .stat-row {
+    flex-direction: row;
+}
+
+[dir="ltr"] .header-content {
+    flex-direction: row;
+}
+
+[dir="ltr"] .header-left {
+    flex-direction: row;
+}
+
+[dir="ltr"] .header-actions {
+    flex-direction: row;
+}
+
+/* Thread message alignment */
+[dir="ltr"] .thread-msg.support-msg {
+    justify-content: flex-start;
+}
+
+[dir="ltr"] .thread-msg.user-msg {
+    justify-content: flex-end;
+}
+
+[dir="rtl"] .thread-msg.support-msg {
+    justify-content: flex-end;
+}
+
+[dir="rtl"] .thread-msg.user-msg {
+    justify-content: flex-start;
+}
+
+/* Message bubble text alignment */
+[dir="ltr"] .thread-bubble {
+    text-align: left;
+}
+
+[dir="rtl"] .thread-bubble {
+    text-align: right;
+}
+
+/* ============================================
+   CONTENT RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+    .max-w-7xl {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    .glossy.p-6 {
+        padding: 16px !important;
+    }
+
+    .ticket-card .p-4 {
+        padding: 14px !important;
+    }
+
+    .ticket-card h3 {
+        font-size: 1rem;
+    }
+
+    .ticket-card .text-sm {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .max-w-7xl {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+    .stat {
+        padding: 10px !important;
+    }
+
+    .glossy.p-6 {
+        padding: 12px !important;
+        border-radius: 12px !important;
+    }
+
+    .ticket-card .p-4 {
+        padding: 12px !important;
+    }
+
+    .ticket-card h3 {
+        font-size: 0.9rem;
+    }
+
+    .badge {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+    }
+}
 
 </style>

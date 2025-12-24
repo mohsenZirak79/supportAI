@@ -6,6 +6,7 @@ use App\Domains\Auth\Controllers\WebController;
 use App\Domains\Shared\Models\User;
 use App\Domains\Shared\Controllers\UserController;
 use App\Domains\AdminPanel\Controllers\ProfileController;
+use App\Http\Controllers\UserProfileController;
 use App\Http\Middleware\CheckPermissionForRoute;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -28,6 +29,7 @@ Route::post('/landing/register', [\App\Domains\Auth\Controllers\LandingControlle
 
 Route::get('/chat', fn() => View::make('chat.index'))->name('chat')->middleware('ensure.jwt.cookie');
 Route::get('/ticket', fn() => View::make('tickets.index'))->middleware('ensure.jwt.cookie');
+Route::get('/user/profile', [UserProfileController::class, 'index'])->name('user.profile')->middleware('ensure.jwt.cookie');
 
 //    dd($user = User::first());
 //    dd(auth()->user());
