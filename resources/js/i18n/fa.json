@@ -153,6 +153,11 @@
   },
   "ticket": {
     "title": "تیکت‌ها",
+    "welcomeEyebrow": "پنل پشتیبانی",
+    "welcomeTitle": "همین حالا زمان شروع پیگیری است",
+    "welcomeBody": "برای ثبت تیکت جدید یا دیدن پاسخ‌های قدیمی کافی‌ست گوشه‌ی بالا سمت راست دکمه‌اش را بزنید.",
+    "welcomePrimary": "ثبت تیکت",
+    "welcomeSecondary": "بعداً",
     "newTicket": "تیکت جدید",
     "myTickets": "تیکت‌های من",
     "subject": "عنوان تیکت",

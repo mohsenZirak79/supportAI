@@ -151,6 +151,7 @@
 
         .admin-notifications {
             position: relative;
+            padding-right: 30px;
         }
 
         .admin-notifications__trigger {
@@ -193,6 +194,7 @@
         .admin-notifications__dropdown {
             position: absolute;
             top: 56px;
+            right: 0px;
             inset-inline-end: 0;
             width: min(360px, 92vw);
             background: var(--admin-surface);

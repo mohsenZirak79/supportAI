@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleNotificationSelect = (notification) => {
         if (!notification) return;
         if (notification.category === 'ticket' && notification.ticket_id) {
-            window.location.href = `/admin/tickets/${notification.ticket_id}`;
+            window.location.href = `/admin/tickets?ticket=${notification.ticket_id}`;
             return;
         }
         if (notification.category === 'referral' && notification.conversation_id) {

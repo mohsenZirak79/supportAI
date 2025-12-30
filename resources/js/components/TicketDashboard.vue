@@ -3,12 +3,12 @@
         <transition name="fade">
             <div v-if="ticketWelcomeVisible" class="ticket-welcome-overlay">
                 <div class="ticket-welcome-card">
-                    <p class="ticket-welcome-eyebrow">پنل پشتیبانی</p>
-                    <h2>همین حالا زمان شروع پیگیری است</h2>
-                    <p>برای ثبت تیکت جدید یا دیدن پاسخ‌های قدیمی کافی‌ست گوشه‌ی بالا سمت راست دکمه‌اش را بزنید.</p>
+                    <p class="ticket-welcome-eyebrow">{{ $t('ticket.welcomeEyebrow') }}</p>
+                    <h2>{{ $t('ticket.welcomeTitle') }}</h2>
+                    <p>{{ $t('ticket.welcomeBody') }}</p>
                     <div class="ticket-welcome-actions">
-                        <button type="button" class="primary" @click="closeTicketWelcome">ثبت تیکت</button>
-                        <button type="button" class="ghost" @click="closeTicketWelcome">بعداً</button>
+                        <button type="button" class="primary" @click="closeTicketWelcome">{{ $t('ticket.welcomePrimary') }}</button>
+                        <button type="button" class="ghost" @click="closeTicketWelcome">{{ $t('ticket.welcomeSecondary') }}</button>
                     </div>
                 </div>
             </div>
@@ -579,10 +579,19 @@ import {useToast} from 'vue-toast-notification'
 
 const toast = useToast();
 const ticketWelcomeVisible = ref(false);
-const TICKET_WELCOME_KEY = 'supportAI:ticket-welcome-seen';
+const WELCOME_STORAGE_KEY = 'supportAI:welcome-session';
+const getWelcomeStorage = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+        return window.sessionStorage;
+    } catch {
+        return window.localStorage;
+    }
+};
 const checkTicketWelcome = () => {
     if (typeof window === 'undefined') return;
-    if (!localStorage.getItem(TICKET_WELCOME_KEY)) {
+    const storage = getWelcomeStorage();
+    if (!storage?.getItem(WELCOME_STORAGE_KEY)) {
         ticketWelcomeVisible.value = true;
     }
 };
@@ -590,7 +599,8 @@ const checkTicketWelcome = () => {
 const closeTicketWelcome = () => {
     ticketWelcomeVisible.value = false;
     if (typeof window === 'undefined') return;
-    localStorage.setItem(TICKET_WELCOME_KEY, String(Date.now()));
+    const storage = getWelcomeStorage();
+    storage?.setItem(WELCOME_STORAGE_KEY, String(Date.now()));
 };
 const logoutUrl = window?.AppConfig?.logoutUrl || '/logout';
 const csrfToken = window?.AppConfig?.csrfToken
@@ -614,6 +624,8 @@ const logout = async () => {
         if (!response.ok) {
             throw new Error('Logout failed');
         }
+        const storage = getWelcomeStorage();
+        storage?.removeItem(WELCOME_STORAGE_KEY);
         window.location.href = '/login';
     } catch (error) {
         console.error('logout failed', error);

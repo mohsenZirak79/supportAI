@@ -16,7 +16,7 @@ class ReferralAssigned extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast']; // Reverb سازگار
+        return ['database'];
     }
 
     public function toArray($notifiable)

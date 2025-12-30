@@ -2,6 +2,7 @@
 
 namespace App\Domains\AdminPanel\Controllers;
 
+use App\Domains\Role\Models\Role;
 use App\Domains\Shared\Models\Referral;
 use App\Domains\Shared\Models\User;
 use App\Http\Controllers\Controller;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use App\Notifications\ReferralRespondedNotification;
+use App\Domains\Shared\Services\RoundRobinAssigner;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ConversationController extends Controller
@@ -407,12 +409,23 @@ class ConversationController extends Controller
                 'message' => 'برای این پیام قبلاً ارجاع باز وجود دارد.'
             ], 422);
         }
+        $targetRole = $validated['target_role'];
+        if (ctype_digit($targetRole)) {
+            $roleModel = Role::query()->find((int) $targetRole);
+            if (!$roleModel) {
+                return response()->json(['message' => 'نقش نامعتبر است.'], 422);
+            }
+            $targetRole = $roleModel->name;
+        }
+
+        $assignedAgentId = app(RoundRobinAssigner::class)
+            ->pickActiveUserIdForRole($targetRole);
         $referral = Referral::create([
             'conversation_id' => $message->conversation_id,
             'trigger_message_id' => $message->id,
             'user_id' => $user->id,
-            'assigned_role' => $validated['target_role'],
-            'assigned_agent_id' => null,
+            'assigned_role' => $targetRole,
+            'assigned_agent_id' => $assignedAgentId,
             'description' => $validated['reason'] ?? '',
             'status' => 'pending',
         ]);

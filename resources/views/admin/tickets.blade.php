@@ -40,9 +40,47 @@
                 btn.addEventListener('click', ()=> openTicket(btn));
             });
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const preselectId = urlParams.get('ticket');
+            if (preselectId) {
+                const btn = document.querySelector(`.btn-view-ticket[data-id="${preselectId}"]`);
+                if (btn) {
+                    openTicket(btn);
+                } else {
+                    openTicketById(preselectId);
+                }
+                const modalEl = document.getElementById('ticketModal');
+                if (modalEl && window.bootstrap?.Modal) {
+                    const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                }
+            }
+
             async function openTicket(btn){
                 const url = btn.getAttribute('data-url');
                 currentTicketId = btn.getAttribute('data-id');
+
+                tkMeta.innerHTML = '';
+                tkMsgList.innerHTML = '<div class="text-center text-muted py-2">در حال بارگذاری…</div>';
+                replyBox.style.display = 'none';
+
+                try{
+                    const res = await fetch(url, { headers: { 'Accept':'application/json' }});
+                    if(!res.ok){
+                        window.toast?.error('خطا در بارگذاری جزئیات');
+                        tkMsgList.innerHTML = '<div class="text-danger">خطا در بارگذاری.</div>';
+                        return;
+                    }
+                    const data = await res.json();
+                    renderDetails(data);
+                }catch(e){
+                    tkMsgList.innerHTML = '<div class="text-danger">خطا در بارگذاری.</div>';
+                }
+            }
+
+            async function openTicketById(ticketId){
+                const url = `/admin/tickets/${ticketId}`;
+                currentTicketId = ticketId;
 
                 tkMeta.innerHTML = '';
                 tkMsgList.innerHTML = '<div class="text-center text-muted py-2">در حال بارگذاری…</div>';

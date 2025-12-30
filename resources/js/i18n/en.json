@@ -153,6 +153,11 @@
   },
   "ticket": {
     "title": "Tickets",
+    "welcomeEyebrow": "Support Panel",
+    "welcomeTitle": "It is time to start tracking",
+    "welcomeBody": "To create a new ticket or view past replies, use the button in the top-right corner.",
+    "welcomePrimary": "Create Ticket",
+    "welcomeSecondary": "Later",
     "newTicket": "New Ticket",
     "myTickets": "My Tickets",
     "subject": "Ticket Title",

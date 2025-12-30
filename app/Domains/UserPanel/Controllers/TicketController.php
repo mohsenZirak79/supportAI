@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Domains\Shared\Models\Ticket;
 use App\Http\Resources\TicketResource;
 use App\Notifications\TicketAssignedNotification;
+use App\Domains\Shared\Services\RoundRobinAssigner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -132,6 +133,8 @@ class TicketController extends Controller
         $id = (string) Str::uuid(); // ✅ یکبار بساز
         $departmentRole = Role::where('id', $validated['department'])->firstOrFail();
         $department = $departmentRole->name;
+        $assignedAgentId = app(RoundRobinAssigner::class)
+            ->pickActiveUserIdForRole($departmentRole->name);
         $ticket = Ticket::create([
             'id'          => $id,
             'root_id'     => $id,                 // ✅ مهم: ریشه = خودش
@@ -141,7 +144,8 @@ class TicketController extends Controller
             'sender_id'   => auth()->id(),
             'department'  => $department,
             'department_role_id'  => (int)$validated['department'],
-            'priority'    => $validated['priority'] ?? 'normal'
+            'priority'    => $validated['priority'] ?? 'normal',
+            'assigned_agent_id' => $assignedAgentId,
         ]);
 
         // فایل‌ها
@@ -157,9 +161,11 @@ class TicketController extends Controller
             $q->where('collection_name', 'ticket-attachments')
         ])->load('media');
 
-        $assignedUsers = $departmentRole->users()->get();
-        if ($assignedUsers->isNotEmpty()) {
-            Notification::send($assignedUsers, new TicketAssignedNotification($ticket));
+        if ($assignedAgentId) {
+            $assignedUser = $departmentRole->users()->where('users.id', $assignedAgentId)->first();
+            if ($assignedUser) {
+                Notification::send($assignedUser, new TicketAssignedNotification($ticket));
+            }
         }
 
         return new TicketResource($ticket);

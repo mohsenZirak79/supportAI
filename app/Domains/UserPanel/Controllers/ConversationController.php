@@ -2,6 +2,7 @@
 
 namespace App\Domains\UserPanel\Controllers;
 
+use App\Domains\Role\Models\Role;
 use App\Domains\Shared\Models\Referral;
 use App\Domains\Shared\Models\User;
 use App\Http\Controllers\Controller;
@@ -17,6 +18,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Symfony\Component\Process\Process;
 use App\Notifications\ReferralRespondedNotification;
+use App\Domains\Shared\Services\RoundRobinAssigner;
 
 class ConversationController extends Controller
 {
@@ -214,7 +216,7 @@ class ConversationController extends Controller
                         $fileName = $tmpWav ? 'audio.wav' : basename($srcPath);
 
                         $lang = $validated['lang'] ?? 'fa'; // Default to Persian
-                        
+
                         // Get user's name for personalized response
                         $userName = null;
                         if ($user) {
@@ -223,7 +225,7 @@ class ConversationController extends Controller
                                 $userName = $user->phone ?? null;
                             }
                         }
-                        
+
                         $resp1 = Http::asMultipart()
                             ->timeout(60)
                             ->attach('file', fopen($filePath, 'r'), $fileName)
@@ -238,7 +240,7 @@ class ConversationController extends Controller
                             $json = $resp1->json();
                             $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                             $aiVoiceDataUrl= $json['audio_data'] ?? $json['voice_base64'] ?? null;
-                            
+
                             // Handle suggested title for voice messages too
                             $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
                             if (!empty($suggestedTitle)
@@ -267,7 +269,7 @@ class ConversationController extends Controller
                                 $json = $resp2->json();
                                 $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                                 $aiVoiceDataUrl= $json['audio_data'] ?? $json['voice_base64'] ?? null;
-                                
+
                                 // Handle suggested title for voice messages too
                                 $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
                                 if (!empty($suggestedTitle)
@@ -294,7 +296,7 @@ class ConversationController extends Controller
             } else {
                 // متن
                 $lang = $validated['lang'] ?? 'fa'; // Default to Persian
-                
+
                 // Get user's name for personalized response
                 $userName = null;
                 if ($user) {
@@ -303,7 +305,7 @@ class ConversationController extends Controller
                         $userName = $user->phone ?? null;
                     }
                 }
-                
+
                 // Log the request being sent
                 $messagesCountNow = $conversation->messages()->count();
                 \Log::info('Sending to AI API', [
@@ -314,7 +316,7 @@ class ConversationController extends Controller
                     'user_name' => $userName,
                     'lang' => $lang,
                 ]);
-                
+
                 $resp = Http::timeout(45)->post('https://ai.mokhtal.xyz/api/ask', [
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
@@ -346,19 +348,19 @@ class ConversationController extends Controller
                         'debug_first_message_from_python' => $debugFirstMsg,
                         'is_first_message_from_laravel' => $isFirstMessage,
                     ]);
-                    
+
                     if (!empty($suggestedTitle)) {
                         // Trim and clean the suggested title
                         $cleanTitle = trim($suggestedTitle);
                         $currentTitle = trim($conversation->title ?? '');
-                        
+
                         \Log::info('Title comparison', [
                             'suggested_raw' => $suggestedTitle,
                             'suggested_clean' => $cleanTitle,
                             'suggested_length' => strlen($cleanTitle),
                             'current_title' => $currentTitle,
                         ]);
-                        
+
                         if (!empty($cleanTitle) && (empty($currentTitle) || $currentTitle === 'چت جدید')) {
                             $conversation->update(['title' => $cleanTitle]);
                             $conversation->refresh();
@@ -665,12 +667,23 @@ class ConversationController extends Controller
                 'message' => 'برای این پیام قبلاً ارجاع باز وجود دارد.'
             ], 422);
         }
+        $targetRole = $validated['target_role'];
+        if (ctype_digit($targetRole)) {
+            $roleModel = Role::query()->find((int) $targetRole);
+            if (!$roleModel) {
+                return response()->json(['message' => 'نقش نامعتبر است.'], 422);
+            }
+            $targetRole = $roleModel->name;
+        }
+
+        $assignedAgentId = app(RoundRobinAssigner::class)
+            ->pickActiveUserIdForRole($targetRole);
         $referral = Referral::create([
             'conversation_id' => $message->conversation_id,
             'trigger_message_id' => $message->id,
             'user_id' => $user->id,
-            'assigned_role' => $validated['target_role'],
-            'assigned_agent_id' => null,
+            'assigned_role' => $targetRole,
+            'assigned_agent_id' => $assignedAgentId,
             'description' => $validated['reason'] ?? '',
             'status' => 'pending',
         ]);
@@ -679,7 +692,7 @@ class ConversationController extends Controller
         } catch (\Throwable $e) {
             \Log::warning('Failed to update conversation status after handoff', ['id' => $conversation->id]);
         }
-        //event(new \App\Domains\Shared\Events\ReferralCreated($referral));
+        event(new \App\Domains\Shared\Events\ReferralCreated($referral));
 
         return response()->json(
             $referral->load(['conversation']),
@@ -712,7 +725,7 @@ class ConversationController extends Controller
 
             // Get the path to the Python script
             $scriptPath = base_path('scripts/tts.py');
-            
+
             if (!file_exists($scriptPath)) {
                 return response()->json([
                     'success' => false,
@@ -722,7 +735,7 @@ class ConversationController extends Controller
 
             // Get language parameter (default to Persian)
             $lang = $validated['lang'] ?? 'fa';
-            
+
             // Prepare input data
             $inputData = json_encode([
                 'text' => $text,
@@ -751,7 +764,7 @@ class ConversationController extends Controller
             if (!$process->isSuccessful()) {
                 $errorOutput = $process->getErrorOutput();
                 $standardOutput = $process->getOutput();
-                
+
                 Log::error('TTS Python script failed', [
                     'exit_code' => $process->getExitCode(),
                     'error_output' => $errorOutput,
@@ -782,7 +795,7 @@ class ConversationController extends Controller
                 if ($errorOutput) {
                     $errorMessage .= ' (' . mb_substr(strip_tags($errorOutput), 0, 100) . ')';
                 }
-                
+
                 return response()->json([
                     'success' => false,
                     'error' => $errorMessage,
@@ -794,14 +807,14 @@ class ConversationController extends Controller
             }
 
             $output = $process->getOutput();
-            
+
             // If output is empty, check error output
             if (empty($output)) {
                 $errorOutput = $process->getErrorOutput();
                 Log::warning('TTS Python script returned empty output', [
                     'error_output' => $errorOutput,
                 ]);
-                
+
                 $errorJson = json_decode($errorOutput, true);
                 if ($errorJson && isset($errorJson['error'])) {
                     return response()->json([
@@ -809,20 +822,20 @@ class ConversationController extends Controller
                         'error' => $errorJson['error']
                     ], 500);
                 }
-                
+
                 return response()->json([
                     'success' => false,
                     'error' => 'اسکریپت TTS خروجی نداشت'
                 ], 500);
             }
-            
+
             $result = json_decode($output, true);
 
             if (!$result) {
                 Log::error('TTS Python script output is not valid JSON', [
                     'output' => mb_substr($output, 0, 500),
                 ]);
-                
+
                 return response()->json([
                     'success' => false,
                     'error' => 'خطا در پردازش پاسخ از اسکریپت TTS',
@@ -842,7 +855,7 @@ class ConversationController extends Controller
                         $mimeType = $matches[1];
                         $base64Data = $matches[2];
                         $audioBytes = base64_decode($base64Data);
-                        
+
                         // Determine file extension from MIME type
                         $extension = 'webm'; // default
                         if (str_contains($mimeType, 'webm')) {
@@ -852,11 +865,11 @@ class ConversationController extends Controller
                         } elseif (str_contains($mimeType, 'ogg')) {
                             $extension = 'ogg';
                         }
-                        
+
                         // Create temporary file
                         $tempFile = tempnam(sys_get_temp_dir(), 'tts_') . '.' . $extension;
                         file_put_contents($tempFile, $audioBytes);
-                        
+
                         // Store temp file path in session or return it
                         // For now, let's return the data URL as-is but ensure it's correct
                         // Actually, let's keep the data URL approach but ensure MIME type is correct
@@ -911,7 +924,7 @@ class ConversationController extends Controller
 
             // Get the path to the Python script
             $scriptPath = base_path('scripts/tts_chunks.py');
-            
+
             if (!file_exists($scriptPath)) {
                 return response()->json([
                     'success' => false,

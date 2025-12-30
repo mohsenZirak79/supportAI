@@ -469,7 +469,7 @@ const renameModal = reactive({
     loading: false
 });
 const renameInputRef = ref(null);
-const WELCOME_STORAGE_KEY = 'supportAI:chat-welcome-session';
+const WELCOME_STORAGE_KEY = 'supportAI:welcome-session';
 const fetchDepartments = async () => {  // ← این تابع رو کامل اضافه کن
     try {
         const response = await apiFetch('/support-roles');

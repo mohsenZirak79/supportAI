@@ -3,15 +3,22 @@
 use App\Domains\Shared\Events\ReferralCreated;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\ReferralAssigned;
+use App\Domains\Shared\Models\User;
 
 class NotifySupportRoleOnReferral
 {
     public function handle(ReferralCreated $event): void
     {
-        $role = $event->referral->assigned_role;
-        $users = \App\Domains\Shared\Models\User::role($role)->get();
-        if ($users->isEmpty()) return;
+        $assignedAgentId = $event->referral->assigned_agent_id;
+        if (!$assignedAgentId) {
+            return;
+        }
 
-        Notification::send($users, new ReferralAssigned($event->referral));
+        $user = User::find($assignedAgentId);
+        if (!$user) {
+            return;
+        }
+
+        Notification::send($user, new ReferralAssigned($event->referral));
     }
 }

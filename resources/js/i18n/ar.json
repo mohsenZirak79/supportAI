@@ -153,6 +153,11 @@
   },
   "ticket": {
     "title": "التذاكر",
+    "welcomeEyebrow": "لوحة الدعم",
+    "welcomeTitle": "حان الوقت للبدء بالمتابعة",
+    "welcomeBody": "لإنشاء تذكرة جديدة أو عرض الردود السابقة، استخدم الزر في أعلى اليمين.",
+    "welcomePrimary": "إنشاء تذكرة",
+    "welcomeSecondary": "لاحقًا",
     "newTicket": "تذكرة جديدة",
     "myTickets": "تذاكري",
     "subject": "عنوان التذكرة",
