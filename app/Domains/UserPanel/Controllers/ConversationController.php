@@ -241,11 +241,12 @@ class ConversationController extends Controller
                             $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                             $aiVoiceDataUrl= $json['audio_data'] ?? $json['voice_base64'] ?? null;
 
-                            // Handle suggested title for voice messages too
-                            $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
-                            if (!empty($suggestedTitle)
+                            // Handle chat_topic from AI for voice messages (max 4 words)
+                            $chatTopic = $json['chat_topic'] ?? $json['title'] ?? $json['suggested_title'] ?? null;
+                            if (!empty($chatTopic)
                                 && (!$conversation->title || $conversation->title === 'چت جدید')) {
-                                $conversation->update(['title' => $suggestedTitle]);
+                                $conversation->update(['title' => $chatTopic]);
+                                \Log::info('Voice message: Updated conversation title from chat_topic', ['chat_topic' => $chatTopic]);
                             }
                         } else {
                             $logHttpError('multipart', $resp1);
@@ -270,11 +271,12 @@ class ConversationController extends Controller
                                 $aiReplyText   = $json['answer'] ?? $json['reply'] ?? $json['text'] ?? '';
                                 $aiVoiceDataUrl= $json['audio_data'] ?? $json['voice_base64'] ?? null;
 
-                                // Handle suggested title for voice messages too
-                                $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
-                                if (!empty($suggestedTitle)
+                                // Handle chat_topic from AI for voice messages (max 4 words)
+                                $chatTopic = $json['chat_topic'] ?? $json['title'] ?? $json['suggested_title'] ?? null;
+                                if (!empty($chatTopic)
                                     && (!$conversation->title || $conversation->title === 'چت جدید')) {
-                                    $conversation->update(['title' => $suggestedTitle]);
+                                    $conversation->update(['title' => $chatTopic]);
+                                    \Log::info('Voice message (fallback): Updated conversation title from chat_topic', ['chat_topic' => $chatTopic]);
                                 }
                             } else {
                                 $logHttpError('json_base64', $resp2);
@@ -334,37 +336,40 @@ class ConversationController extends Controller
                     \Log::info('AI Response received', [
                         'first_message_sent' => $isFirstMessage,
                         'first_message_received_by_python' => $json['_debug_first_message'] ?? 'N/A',
+                        'has_chat_topic' => isset($json['chat_topic']),
+                        'chat_topic' => $json['chat_topic'] ?? null,
                         'has_title' => isset($json['title']),
                         'title' => $json['title'] ?? null,
                         'current_conversation_title' => $conversation->title,
                         'full_response_keys' => array_keys($json),
                     ]);
 
-                    // اگر عنوان پیشنهاد داد (هم title و هم suggested_title را چک کن)
-                    $suggestedTitle = $json['title'] ?? $json['suggested_title'] ?? null;
+                    // اگر chat_topic پیشنهاد داد (حداکثر ۴ کلمه از AI)
+                    // اولویت: chat_topic > title > suggested_title
+                    $chatTopic = $json['chat_topic'] ?? $json['title'] ?? $json['suggested_title'] ?? null;
                     $debugFirstMsg = $json['_debug_first_message'] ?? 'not_set';
-                    \Log::info('Title debug', [
-                        'suggested_title' => $suggestedTitle,
+                    \Log::info('Chat topic debug', [
+                        'chat_topic' => $chatTopic,
                         'debug_first_message_from_python' => $debugFirstMsg,
                         'is_first_message_from_laravel' => $isFirstMessage,
                     ]);
 
-                    if (!empty($suggestedTitle)) {
-                        // Trim and clean the suggested title
-                        $cleanTitle = trim($suggestedTitle);
+                    if (!empty($chatTopic)) {
+                        // Trim and clean the chat topic
+                        $cleanTitle = trim($chatTopic);
                         $currentTitle = trim($conversation->title ?? '');
 
-                        \Log::info('Title comparison', [
-                            'suggested_raw' => $suggestedTitle,
-                            'suggested_clean' => $cleanTitle,
-                            'suggested_length' => strlen($cleanTitle),
+                        \Log::info('Chat topic comparison', [
+                            'chat_topic_raw' => $chatTopic,
+                            'chat_topic_clean' => $cleanTitle,
+                            'chat_topic_length' => strlen($cleanTitle),
                             'current_title' => $currentTitle,
                         ]);
 
                         if (!empty($cleanTitle) && (empty($currentTitle) || $currentTitle === 'چت جدید')) {
                             $conversation->update(['title' => $cleanTitle]);
                             $conversation->refresh();
-                            \Log::info('Conversation title updated', ['new_title' => $cleanTitle]);
+                            \Log::info('Conversation title updated from chat_topic', ['new_title' => $cleanTitle]);
                         }
                     }
                 } else {
