@@ -8,6 +8,25 @@
     />
 
     <div class="chat-app" :dir="direction">
+        <!-- Animated Background -->
+        <div class="animated-bg" aria-hidden="true">
+            <div class="bg-orb bg-orb--1"></div>
+            <div class="bg-orb bg-orb--2"></div>
+            <div class="bg-orb bg-orb--3"></div>
+            <div class="bg-orb bg-orb--4"></div>
+            <div class="bg-grid"></div>
+            <div class="bg-sparkles">
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+            </div>
+        </div>
+
         <!-- Unified Header -->
         <header class="app-header">
             <div class="header-inner">
@@ -1657,12 +1676,9 @@ function handleMenuClickOutside(event) {
     --border-soft: rgba(148, 163, 184, 0.25);
     --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.12);
     --shadow-strong: 0 20px 45px rgba(15, 23, 42, 0.18);
-    background: radial-gradient(circle at 15% 10%, rgba(14, 165, 233, 0.25), transparent 40%),
-        radial-gradient(circle at 85% 20%, rgba(34, 211, 238, 0.2), transparent 38%),
-        radial-gradient(circle at 60% 80%, rgba(99, 102, 241, 0.12), transparent 45%),
-        #edf2f7;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #f0fdf4 50%, #ecfeff 75%, #faf5ff 100%);
     height: 100vh;
-    height: 100dvh; /* برای موبایل - dynamic viewport height */
+    height: 100dvh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -1674,10 +1690,192 @@ function handleMenuClickOutside(event) {
     bottom: 0;
 }
 
+/* Animated Background - Gradient Mesh */
+.chat-app::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(ellipse 80% 50% at 20% 40%, rgba(14, 165, 233, 0.12), transparent),
+        radial-gradient(ellipse 60% 60% at 80% 20%, rgba(168, 85, 247, 0.08), transparent),
+        radial-gradient(ellipse 70% 40% at 10% 80%, rgba(16, 185, 129, 0.1), transparent),
+        radial-gradient(ellipse 50% 70% at 90% 70%, rgba(251, 146, 60, 0.06), transparent);
+    animation: meshPulse 8s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes meshPulse {
+    0% {
+        opacity: 0.6;
+        filter: blur(60px);
+    }
+    100% {
+        opacity: 1;
+        filter: blur(80px);
+    }
+}
+
+/* Animated Background Layer */
+.animated-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Floating Orbs */
+.bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.5;
+    animation: floatOrb 15s ease-in-out infinite;
+}
+
+.bg-orb--1 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.4), rgba(34, 211, 238, 0.2));
+    top: 10%;
+    left: 5%;
+    animation-delay: 0s;
+    animation-duration: 18s;
+}
+
+.bg-orb--2 {
+    width: 350px;
+    height: 350px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(139, 92, 246, 0.2));
+    top: 60%;
+    right: 10%;
+    animation-delay: -5s;
+    animation-duration: 22s;
+}
+
+.bg-orb--3 {
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(52, 211, 153, 0.2));
+    bottom: 20%;
+    left: 30%;
+    animation-delay: -10s;
+    animation-duration: 20s;
+}
+
+.bg-orb--4 {
+    width: 250px;
+    height: 250px;
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.25), rgba(251, 191, 36, 0.15));
+    top: 30%;
+    right: 30%;
+    animation-delay: -7s;
+    animation-duration: 16s;
+}
+
+@keyframes floatOrb {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        transform: translate(30px, -40px) scale(1.05);
+    }
+    50% {
+        transform: translate(-20px, 30px) scale(0.95);
+    }
+    75% {
+        transform: translate(40px, 20px) scale(1.02);
+    }
+}
+
+/* Subtle Grid Pattern Overlay */
+.bg-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: gridShift 30s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes gridShift {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(50px, 50px);
+    }
+}
+
+/* Sparkle particles */
+.bg-sparkles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.sparkle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.6);
+    animation: sparkle 4s ease-in-out infinite;
+}
+
+.sparkle:nth-child(1) { top: 15%; left: 25%; animation-delay: 0s; }
+.sparkle:nth-child(2) { top: 45%; left: 75%; animation-delay: 1s; }
+.sparkle:nth-child(3) { top: 70%; left: 15%; animation-delay: 2s; }
+.sparkle:nth-child(4) { top: 25%; left: 85%; animation-delay: 0.5s; }
+.sparkle:nth-child(5) { top: 80%; left: 55%; animation-delay: 1.5s; }
+.sparkle:nth-child(6) { top: 35%; left: 45%; animation-delay: 2.5s; }
+.sparkle:nth-child(7) { top: 55%; left: 35%; animation-delay: 3s; }
+.sparkle:nth-child(8) { top: 10%; left: 60%; animation-delay: 3.5s; }
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .chat-app::before,
+    .bg-orb,
+    .bg-grid,
+    .sparkle {
+        animation: none;
+    }
+}
+
 
 /* Unified Header Styles */
 .app-header {
     background: linear-gradient(120deg, #0f766e 0%, #0ea5e9 50%, #22d3ee 100%);
+    background-size: 200% 200%;
+    animation: headerGradient 8s ease infinite;
     color: white;
     padding: 0 24px;
     height: 56px;
@@ -1686,6 +1884,16 @@ function handleMenuClickOutside(event) {
     left: 0;
     right: 0;
     z-index: 100;
+    box-shadow: 0 4px 20px rgba(15, 118, 110, 0.3);
+}
+
+@keyframes headerGradient {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
 }
 
 .header-inner {
@@ -1905,18 +2113,22 @@ function handleMenuClickOutside(event) {
     flex: 1;
     overflow: hidden;
     min-height: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .sidebar {
     width: 260px;
-    background-color: rgba(255, 255, 255, 0.92);
-    border-left: 1px solid rgba(226, 232, 240, 0.9);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.92) 100%);
+    border-left: 1px solid rgba(226, 232, 240, 0.6);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     transition: transform .3s ease, box-shadow .3s ease;
-    backdrop-filter: blur(14px);
+    backdrop-filter: blur(20px);
     box-shadow: var(--shadow-soft);
+    position: relative;
+    z-index: 2;
 }
 
 .new-chat-btn {
@@ -2044,9 +2256,10 @@ function handleMenuClickOutside(event) {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: var(--surface-0);
+    background-color: transparent;
     position: relative;
     min-height: 0;
+    z-index: 1;
     overflow: hidden;
 }
 
@@ -2067,16 +2280,44 @@ function handleMenuClickOutside(event) {
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: #666;
+    color: #475569;
+    padding: 24px;
+}
+
+.empty-content {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px);
+    padding: 40px 48px;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.1);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    animation: floatIn 0.5s ease-out;
+}
+
+@keyframes floatIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .empty-content h2 {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     margin-bottom: 12px;
+    background: linear-gradient(135deg, #0f766e, #0ea5e9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .empty-content p {
-    color: #888;
+    color: #64748b;
+    font-size: 0.95rem;
 }
 
 .messages-container {
@@ -2085,6 +2326,12 @@ function handleMenuClickOutside(event) {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.4) 0%, 
+        rgba(255, 255, 255, 0.6) 50%,
+        rgba(255, 255, 255, 0.4) 100%);
+    backdrop-filter: blur(8px);
+    position: relative;
     gap: 16px;
     min-height: 0;
     position: relative;
@@ -2123,9 +2370,19 @@ function handleMenuClickOutside(event) {
     word-break: break-word;
     line-height: 1.5;
     text-align: start;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
     animation: fadeInUp 0.3s ease;
     transition: box-shadow .2s ease, transform .2s ease;
+    backdrop-filter: blur(12px);
+}
+
+.message-bubble:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.user-message .message-bubble:hover {
+    box-shadow: 0 12px 32px rgba(14, 165, 233, 0.2);
 }
 
 @keyframes fadeInUp {
@@ -2141,10 +2398,11 @@ function handleMenuClickOutside(event) {
 
 
 .user-message .message-bubble {
-    background: linear-gradient(140deg, rgba(14, 165, 233, 0.14), rgba(34, 211, 238, 0.22));
+    background: linear-gradient(140deg, rgba(14, 165, 233, 0.25), rgba(34, 211, 238, 0.35));
     color: var(--ink-900);
-    border: 1px solid rgba(14, 116, 144, 0.15);
+    border: 1px solid rgba(14, 116, 144, 0.2);
     border-bottom-right-radius: 4px;
+    box-shadow: 0 8px 24px rgba(14, 165, 233, 0.15);
 }
 
 [dir="rtl"] .user-message .message-bubble {
@@ -2153,11 +2411,11 @@ function handleMenuClickOutside(event) {
 }
 
 .bot-message .message-bubble {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
     color: var(--ink-900);
     border-bottom-left-radius: 4px;
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
 [dir="rtl"] .bot-message .message-bubble {
@@ -2202,14 +2460,15 @@ function handleMenuClickOutside(event) {
 .input-form {
     display: flex;
     padding: 12px 16px;
-    background: white;
-    border-top: 1px solid #eaeaea;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.98) 100%);
+    border-top: 1px solid rgba(226, 232, 240, 0.6);
     gap: 10px;
     flex-direction: column;
     position: sticky;
     bottom: 0;
     z-index: 10;
-    box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 -12px 35px rgba(15, 23, 42, 0.1);
+    backdrop-filter: blur(16px);
 }
 
 
