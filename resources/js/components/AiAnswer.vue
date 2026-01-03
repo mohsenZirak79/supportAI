@@ -54,7 +54,8 @@ const props = defineProps({
     text:  { type: String, default: '' },
     rate:  { type: Number, default: 0.95 }, // کمی آهسته‌تر برای فارسی
     pitch: { type: Number, default: 1 },
-    lang:  { type: String, default: 'fa' } // Language code: fa, en, ar
+    lang:  { type: String, default: 'fa' }, // Language code: fa, en, ar
+    gender: { type: String, default: 'female' } // Voice gender: male, female
 });
 
 const textTrim = computed(() => (props.text || '').trim());
@@ -155,7 +156,7 @@ async function play() {
         loading.value = true;
         error.value = '';
 
-        // Call backend TTS API with language parameter
+        // Call backend TTS API with language and gender parameters
         const response = await apiFetch('/text-to-speech', {
             method: 'POST',
             headers: {
@@ -164,7 +165,8 @@ async function play() {
             body: JSON.stringify({
                 text: textTrim.value,
                 chunk_index: 0,
-                lang: props.lang || 'fa'
+                lang: props.lang || 'fa',
+                gender: props.gender || 'female'
             })
         });
 

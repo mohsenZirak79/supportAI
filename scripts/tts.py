@@ -112,32 +112,74 @@ def split_text_for_tts(text, max_length=350, lang_code='fa'):
     return processed_chunks
 
 
-def get_language_config(lang_code):
-    """Get language configuration by code. Returns Persian if not found."""
-    lang_code = (lang_code or 'fa').lower().strip()
+def get_language_config(lang_code, gender='female'):
+    """
+    Get language configuration by code and gender.
+    Returns Persian female voice if not found.
     
+    Args:
+        lang_code: Language code ('fa', 'en', 'ar')
+        gender: Voice gender ('male' or 'female')
+    """
+    lang_code = (lang_code or 'fa').lower().strip()
+    gender = (gender or 'female').lower().strip()
+    
+    # Voice configurations for each language and gender
     SUPPORTED_LANGUAGES = {
         "fa": {
             "name": "فارسی",
             "name_en": "Persian",
-            "tts_voice": "fa-IR-DilaraNeural",
-            "tts_voice_fallback": "fa-IR-FaridNeural"
+            "voices": {
+                "female": {
+                    "primary": "fa-IR-DilaraNeural",
+                    "fallback": "fa-IR-DilaraNeural"
+                },
+                "male": {
+                    "primary": "fa-IR-FaridNeural",
+                    "fallback": "fa-IR-FaridNeural"
+                }
+            }
         },
         "en": {
             "name": "English",
-            "name_en": "English", 
-            "tts_voice": "en-US-JennyNeural",
-            "tts_voice_fallback": "en-US-GuyNeural"
+            "name_en": "English",
+            "voices": {
+                "female": {
+                    "primary": "en-US-JennyNeural",
+                    "fallback": "en-US-AriaNeural"
+                },
+                "male": {
+                    "primary": "en-US-GuyNeural",
+                    "fallback": "en-US-ChristopherNeural"
+                }
+            }
         },
         "ar": {
             "name": "العربية",
             "name_en": "Arabic",
-            "tts_voice": "ar-SA-ZariyahNeural",
-            "tts_voice_fallback": "ar-SA-HamedNeural"
+            "voices": {
+                "female": {
+                    "primary": "ar-SA-ZariyahNeural",
+                    "fallback": "ar-EG-SalmaNeural"
+                },
+                "male": {
+                    "primary": "ar-SA-HamedNeural",
+                    "fallback": "ar-EG-ShakirNeural"
+                }
+            }
         }
     }
     
-    return SUPPORTED_LANGUAGES.get(lang_code, SUPPORTED_LANGUAGES["fa"])
+    lang_config = SUPPORTED_LANGUAGES.get(lang_code, SUPPORTED_LANGUAGES["fa"])
+    voice_config = lang_config["voices"].get(gender, lang_config["voices"]["female"])
+    
+    return {
+        "name": lang_config["name"],
+        "name_en": lang_config["name_en"],
+        "tts_voice": voice_config["primary"],
+        "tts_voice_fallback": voice_config["fallback"],
+        "gender": gender
+    }
 
 
 def clean_text_for_tts_by_lang(text, lang_code='fa'):
@@ -255,6 +297,7 @@ def main():
         text = input_data.get('text', '')
         chunk_index = input_data.get('chunk_index', 0)
         lang_code = input_data.get('lang', 'fa')  # Default to Persian
+        gender = input_data.get('gender', 'female')  # Default to female voice
         
         if not text:
             print(json.dumps({
@@ -263,8 +306,8 @@ def main():
             }))
             sys.exit(1)
         
-        # Get language configuration
-        lang_config = get_language_config(lang_code)
+        # Get language configuration with gender preference
+        lang_config = get_language_config(lang_code, gender)
         
         # Clean the text based on language
         text = clean_text_for_tts_by_lang(text, lang_code)
@@ -326,7 +369,8 @@ def main():
                     "success": True,
                     "audio": f"data:audio/webm;base64,{audio_base64}",
                     "chunk_index": chunk_index,
-                    "lang": lang_code
+                    "lang": lang_code,
+                    "gender": gender
                 }))
             else:
                 print(json.dumps({

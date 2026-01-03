@@ -117,7 +117,7 @@
 
                             <!-- بات: متن + دکمه‌های پخش -->
                             <template v-if="message.sender === 'bot' && message.text">
-                                <AiAnswer :text="message.text" :lang="locale"/>
+                                <AiAnswer :text="message.text" :lang="locale" :gender="userVoiceGender"/>
                             </template>
 
                             <!-- کاربر: پیام صوتی با ترنسکریپت -->
@@ -492,14 +492,35 @@ const getDisplayName = (user) => {
     return parts.join(' ').trim();
 };
 
+// Store user's voice preference globally
+const userVoiceGender = ref('female');
+
 const fetchCurrentUserName = async () => {
     try {
         const res = await apiFetch('/user/profile');
         if (!res.ok) return '';
         const payload = await res.json();
+        // Also store voice preference
+        if (payload?.user?.voice_gender) {
+            userVoiceGender.value = payload.user.voice_gender;
+        }
         return getDisplayName(payload?.user);
     } catch (error) {
         return '';
+    }
+};
+
+// Fetch user preferences on mount
+const fetchUserPreferences = async () => {
+    try {
+        const res = await apiFetch('/user/profile');
+        if (!res.ok) return;
+        const payload = await res.json();
+        if (payload?.user?.voice_gender) {
+            userVoiceGender.value = payload.user.voice_gender;
+        }
+    } catch (error) {
+        console.debug('Failed to fetch user preferences', error);
     }
 };
 
@@ -1505,6 +1526,7 @@ onMounted(() => {
 
     loadChats();
     fetchDepartments();
+    fetchUserPreferences(); // Load user's voice preference
     nextTick(() => {
         showWelcomeToast();
     });

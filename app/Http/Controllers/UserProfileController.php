@@ -38,6 +38,7 @@ class UserProfileController extends Controller
                 'birth_date' => $user->birth_date,
                 'address' => $user->address,
                 'avatar' => $user->avatar ? Storage::url($user->avatar) : null,
+                'voice_gender' => $user->voice_gender ?? 'female',
                 'created_at' => $user->created_at->format('Y-m-d'),
             ]
         ]);
@@ -64,6 +65,7 @@ class UserProfileController extends Controller
             'postal_code' => 'nullable|string|max:20',
             'birth_date' => 'nullable|date',
             'address' => 'nullable|string|max:500',
+            'voice_gender' => 'nullable|in:male,female',
         ]);
 
         $user->update($validated);
@@ -82,6 +84,7 @@ class UserProfileController extends Controller
                 'birth_date' => $user->birth_date,
                 'address' => $user->address,
                 'avatar' => $user->avatar ? Storage::url($user->avatar) : null,
+                'voice_gender' => $user->voice_gender ?? 'female',
             ]
         ]);
     }

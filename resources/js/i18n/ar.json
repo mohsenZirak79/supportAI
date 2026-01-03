@@ -276,7 +276,16 @@
     "avatarSuccess": "تم تحديث صورة الملف الشخصي بنجاح",
     "avatarError": "فشل في تحميل الصورة",
     "avatarDeleted": "تم حذف صورة الملف الشخصي",
-    "avatarDeleteError": "فشل في حذف الصورة"
+    "avatarDeleteError": "فشل في حذف الصورة",
+    "voiceSettings": "إعدادات الصوت",
+    "voiceSettingsDesc": "اختر صوتك المفضل للردود الصوتية من الذكاء الاصطناعي. سيتم تطبيق هذا الإعداد على جميع الردود الصوتية في المنصة.",
+    "voiceFemale": "صوت أنثوي",
+    "voiceFemaleDesc": "صوت ناعم وهادئ",
+    "voiceMale": "صوت ذكوري",
+    "voiceMaleDesc": "صوت واضح وقوي",
+    "saveVoice": "حفظ إعدادات الصوت",
+    "voiceUpdateSuccess": "تم حفظ إعدادات الصوت بنجاح",
+    "voiceUpdateError": "فشل في حفظ إعدادات الصوت"
   },
   "language": {
     "select": "اختر اللغة",

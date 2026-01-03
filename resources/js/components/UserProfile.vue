@@ -185,6 +185,100 @@
                                 </div>
                             </form>
                         </div>
+
+                        <!-- Voice Settings Card -->
+                        <div class="form-card">
+                            <div class="card-header">
+                                <div class="header-icon voice-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                        <line x1="12" y1="19" x2="12" y2="23"/>
+                                        <line x1="8" y1="23" x2="16" y2="23"/>
+                                    </svg>
+                                </div>
+                                <h3>{{ t('profile.voiceSettings') }}</h3>
+                            </div>
+                            <div class="voice-settings-content">
+                                <p class="settings-description">{{ t('profile.voiceSettingsDesc') }}</p>
+                                
+                                <div class="voice-options">
+                                    <!-- Female Voice Option -->
+                                    <label 
+                                        class="voice-option"
+                                        :class="{ 'selected': form.voice_gender === 'female' }"
+                                    >
+                                        <input 
+                                            type="radio" 
+                                            v-model="form.voice_gender" 
+                                            value="female"
+                                            class="voice-radio"
+                                        />
+                                        <div class="voice-option-content">
+                                            <div class="voice-icon-wrapper female">
+                                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                    <circle cx="12" cy="8" r="5"/>
+                                                    <path d="M20 21a8 8 0 0 0-16 0"/>
+                                                    <circle cx="12" cy="8" r="2" fill="currentColor" opacity="0.3"/>
+                                                </svg>
+                                            </div>
+                                            <div class="voice-option-text">
+                                                <span class="voice-label">{{ t('profile.voiceFemale') }}</span>
+                                                <span class="voice-desc">{{ t('profile.voiceFemaleDesc') }}</span>
+                                            </div>
+                                            <div class="voice-check" v-if="form.voice_gender === 'female'">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                                    <polyline points="20 6 9 17 4 12"/>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Male Voice Option -->
+                                    <label 
+                                        class="voice-option"
+                                        :class="{ 'selected': form.voice_gender === 'male' }"
+                                    >
+                                        <input 
+                                            type="radio" 
+                                            v-model="form.voice_gender" 
+                                            value="male"
+                                            class="voice-radio"
+                                        />
+                                        <div class="voice-option-content">
+                                            <div class="voice-icon-wrapper male">
+                                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                    <circle cx="12" cy="8" r="5"/>
+                                                    <path d="M20 21a8 8 0 0 0-16 0"/>
+                                                    <rect x="10" y="6" width="4" height="4" rx="0.5" fill="currentColor" opacity="0.3"/>
+                                                </svg>
+                                            </div>
+                                            <div class="voice-option-text">
+                                                <span class="voice-label">{{ t('profile.voiceMale') }}</span>
+                                                <span class="voice-desc">{{ t('profile.voiceMaleDesc') }}</span>
+                                            </div>
+                                            <div class="voice-check" v-if="form.voice_gender === 'male'">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                                    <polyline points="20 6 9 17 4 12"/>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button 
+                                        type="button" 
+                                        class="btn-primary" 
+                                        :disabled="savingVoice"
+                                        @click="updateVoiceGender"
+                                    >
+                                        <span v-if="savingVoice" class="btn-spinner"></span>
+                                        {{ savingVoice ? t('common.saving') : t('profile.saveVoice') }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -205,6 +299,7 @@ const { locale, direction, setLocale, t } = useLanguage();
 const loading = ref(true);
 const loggingOut = ref(false);
 const savingProfile = ref(false);
+const savingVoice = ref(false);
 
 // User data
 const user = reactive({
@@ -218,6 +313,7 @@ const user = reactive({
     birth_date: '',
     address: '',
     avatar: null,
+    voice_gender: 'female',
     created_at: '',
 });
 
@@ -231,6 +327,7 @@ const form = reactive({
     postal_code: '',
     birth_date: '',
     address: '',
+    voice_gender: 'female',
 });
 
 // Computed
@@ -260,6 +357,7 @@ const fetchProfile = async () => {
                 postal_code: user.postal_code,
                 birth_date: user.birth_date,
                 address: user.address,
+                voice_gender: user.voice_gender || 'female',
             });
         }
     } catch (error) {
@@ -284,6 +382,26 @@ const updateProfile = async () => {
         toast.error(message);
     } finally {
         savingProfile.value = false;
+    }
+};
+
+const updateVoiceGender = async () => {
+    try {
+        savingVoice.value = true;
+        const response = await axios.put('/api/v1/user/profile', {
+            ...form,
+            voice_gender: form.voice_gender
+        });
+        if (response.data.success) {
+            user.voice_gender = form.voice_gender;
+            toast.success(t('profile.voiceUpdateSuccess'));
+        }
+    } catch (error) {
+        console.error('Failed to update voice preference:', error);
+        const message = error.response?.data?.message || t('profile.voiceUpdateError');
+        toast.error(message);
+    } finally {
+        savingVoice.value = false;
     }
 };
 
@@ -912,5 +1030,154 @@ onMounted(() => {
 
 [dir="rtl"] .app-container {
     text-align: right;
+}
+
+/* ============================================
+   VOICE SETTINGS STYLES
+   ============================================ */
+.voice-icon {
+    background: #fef3c7 !important;
+    color: #d97706 !important;
+}
+
+.voice-settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.settings-description {
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.voice-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.voice-option {
+    display: block;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.voice-radio {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.voice-option-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.voice-option:hover .voice-option-content {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+
+.voice-option.selected .voice-option-content {
+    border-color: #0e7490;
+    background: #ecfeff;
+    box-shadow: 0 0 0 4px rgba(14, 116, 144, 0.1);
+}
+
+.voice-icon-wrapper {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.voice-icon-wrapper.female {
+    background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+    color: #be185d;
+}
+
+.voice-icon-wrapper.male {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: #1d4ed8;
+}
+
+.voice-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.voice-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.voice-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.voice-check {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #0e7490;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    animation: checkPop 0.2s ease;
+}
+
+@keyframes checkPop {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Responsive adjustments for voice settings */
+@media (max-width: 600px) {
+    .voice-option-content {
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .voice-icon-wrapper {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .voice-icon-wrapper svg {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .voice-label {
+        font-size: 0.9rem;
+    }
+    
+    .voice-desc {
+        font-size: 0.8rem;
+    }
+    
+    .voice-check {
+        width: 28px;
+        height: 28px;
+    }
 }
 </style>

@@ -276,7 +276,16 @@
     "avatarSuccess": "تصویر پروفایل با موفقیت بروزرسانی شد",
     "avatarError": "خطا در آپلود تصویر",
     "avatarDeleted": "تصویر پروفایل حذف شد",
-    "avatarDeleteError": "خطا در حذف تصویر"
+    "avatarDeleteError": "خطا در حذف تصویر",
+    "voiceSettings": "تنظیمات صدا",
+    "voiceSettingsDesc": "صدای مورد علاقه خود را برای پاسخ‌های صوتی هوش مصنوعی انتخاب کنید. این تنظیم روی تمام پاسخ‌های صوتی سیستم اعمال می‌شود.",
+    "voiceFemale": "صدای زنانه",
+    "voiceFemaleDesc": "صدایی ملایم و آرام",
+    "voiceMale": "صدای مردانه",
+    "voiceMaleDesc": "صدایی رسا و محکم",
+    "saveVoice": "ذخیره تنظیمات صدا",
+    "voiceUpdateSuccess": "تنظیمات صدا با موفقیت ذخیره شد",
+    "voiceUpdateError": "خطا در ذخیره تنظیمات صدا"
   },
   "language": {
     "select": "انتخاب زبان",

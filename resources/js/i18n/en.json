@@ -276,7 +276,16 @@
     "avatarSuccess": "Profile picture updated successfully",
     "avatarError": "Failed to upload image",
     "avatarDeleted": "Profile picture deleted",
-    "avatarDeleteError": "Failed to delete image"
+    "avatarDeleteError": "Failed to delete image",
+    "voiceSettings": "Voice Settings",
+    "voiceSettingsDesc": "Choose your preferred voice for AI audio responses. This setting will apply to all voice responses across the platform.",
+    "voiceFemale": "Female Voice",
+    "voiceFemaleDesc": "Soft and calm voice",
+    "voiceMale": "Male Voice",
+    "voiceMaleDesc": "Clear and strong voice",
+    "saveVoice": "Save Voice Settings",
+    "voiceUpdateSuccess": "Voice settings saved successfully",
+    "voiceUpdateError": "Failed to save voice settings"
   },
   "language": {
     "select": "Select Language",

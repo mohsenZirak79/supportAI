@@ -711,6 +711,7 @@ class ConversationController extends Controller
                 'text' => 'required|string',
                 'chunk_index' => 'nullable|integer|min:0',
                 'lang' => 'nullable|string|in:fa,en,ar', // Language code
+                'gender' => 'nullable|string|in:male,female', // Voice gender
             ]);
 
             $text = $validated['text'];
@@ -735,12 +736,16 @@ class ConversationController extends Controller
 
             // Get language parameter (default to Persian)
             $lang = $validated['lang'] ?? 'fa';
+            
+            // Get voice gender from request or user preference
+            $gender = $validated['gender'] ?? ($request->user()->voice_gender ?? 'female');
 
             // Prepare input data
             $inputData = json_encode([
                 'text' => $text,
                 'chunk_index' => $chunkIndex,
                 'lang' => $lang,
+                'gender' => $gender,
             ], JSON_UNESCAPED_UNICODE);
 
             // Execute Python script - try python3 first, fallback to python
