@@ -106,6 +106,7 @@ Route::prefix('role')->name('roles.')->group(function () {
 
 //Route::view('/register', 'auth.register')->name('register');
 Route::post('/login', [AuthController::class, 'verifyLoginOtp'])->name('login.verify');
+Route::post('/login/request-otp', [AuthController::class, 'login'])->name('login.request-otp');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 //Route::post('/login', [AuthController::class, 'register'])->name('register');
 Route::post('/activate', [AuthController::class, 'activate'])->name('activate');

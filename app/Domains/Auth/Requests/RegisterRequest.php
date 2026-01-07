@@ -23,6 +23,7 @@ class RegisterRequest extends FormRequest
             'email' => 'required|email|unique:users,email|max:255',
 //            'phone' => 'required|regex:/^(\+98|0)?9\d{9}$/|unique:users,phone|max:11',
             'password' => 'required|string|min:8|confirmed',
+            'captcha' => 'required|captcha',
         ];
     }
 
@@ -68,6 +69,9 @@ class RegisterRequest extends FormRequest
             'password.string' => 'رمز عبور باید از نوع رشته باشد.',
             'password.min' => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
             'password.confirmed' => 'تأیید رمز عبور با رمز عبور وارد شده مطابقت ندارد.',
+
+            'captcha.required' => 'کد کپچا الزامی است.',
+            'captcha.captcha' => 'کد کپچا نادرست است.',
         ];
     }
 

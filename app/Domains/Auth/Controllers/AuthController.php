@@ -174,9 +174,18 @@ class AuthController
     public function login(Request $request)
     {
         // 1. ولیدیشن
-        $request->validate([
-            'phone' => ['required', 'regex:/^(\+98|0)?9\d{9}$/'],
-        ]);
+        $request->validate(
+            [
+                'phone' => ['required', 'regex:/^(\+98|0)?9\d{9}$/'],
+                'captcha' => ['required', 'captcha'],
+            ],
+            [
+                'phone.required' => 'شماره تلفن الزامی است.',
+                'phone.regex' => 'فرمت شماره تلفن نادرست است.',
+                'captcha.required' => 'کد کپچا الزامی است.',
+                'captcha.captcha' => 'کد کپچا نادرست است.',
+            ]
+        );
 
         // 2. جلوگیری از حملات brute-force
         $rateKey = 'login_' . $request->ip();

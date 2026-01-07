@@ -268,6 +268,48 @@
             resize: vertical;
         }
 
+        .captcha-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .captcha-image img {
+            height: 44px;
+            border-radius: 8px;
+        }
+
+        .captcha-refresh {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .captcha-refresh svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .captcha-refresh:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.24);
+            transform: translateY(-1px);
+        }
+
         html[dir="ltr"] .form-input,
         html[dir="ltr"] .form-textarea {
             direction: ltr;
@@ -612,12 +654,12 @@
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.firstName">نام</label>
                     <input type="text" class="form-input" name="name"
-                           data-i18n-placeholder="auth.firstName" placeholder="نام" required>
+                           data-i18n-placeholder="auth.firstName" placeholder="نام" value="{{ old('name') }}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.lastName">نام خانوادگی</label>
                     <input type="text" class="form-input" name="family"
-                           data-i18n-placeholder="auth.lastName" placeholder="نام خانوادگی" required>
+                           data-i18n-placeholder="auth.lastName" placeholder="نام خانوادگی" value="{{ old('family') }}" required>
                                     </div>
                                     </div>
 
@@ -625,12 +667,12 @@
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.email">ایمیل</label>
                     <input type="email" class="form-input" name="email"
-                           data-i18n-placeholder="auth.emailPlaceholder" placeholder="ایمیل" required>
+                           data-i18n-placeholder="auth.emailPlaceholder" placeholder="ایمیل" value="{{ old('email') }}" required>
                                     </div>
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.phone">شماره تلفن</label>
                     <input type="tel" class="form-input" name="phone"
-                           data-i18n-placeholder="auth.phonePlaceholder" placeholder="شماره تلفن (...09)" required>
+                           data-i18n-placeholder="auth.phonePlaceholder" placeholder="شماره تلفن (...09)" value="{{ old('phone') }}" required>
                                     </div>
                                     </div>
 
@@ -651,12 +693,12 @@
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.nationalId">کد ملی</label>
                     <input type="text" class="form-input" name="national_id"
-                           data-i18n-placeholder="auth.nationalId" placeholder="کد ملی">
+                           data-i18n-placeholder="auth.nationalId" placeholder="کد ملی" value="{{ old('national_id') }}">
                                     </div>
                 <div class="form-group">
                     <label class="form-label" data-i18n="auth.postalCode">کد پستی</label>
                     <input type="text" class="form-input" name="postal_code"
-                           data-i18n-placeholder="auth.postalCode" placeholder="کد پستی">
+                           data-i18n-placeholder="auth.postalCode" placeholder="کد پستی" value="{{ old('postal_code') }}">
                                     </div>
                                     </div>
 
@@ -664,6 +706,7 @@
                 <label class="form-label" data-i18n="auth.birthDate">تاریخ تولد (شمسی)</label>
                 <input id="birth_date" name="birth_date" type="text" class="form-input"
                        data-i18n-placeholder="auth.birthDatePlaceholder" placeholder="مثلاً 1404/07/18"
+                       value="{{ old('birth_date') }}"
                        autocomplete="off" dir="ltr"
                        data-jdp data-jdp-only-date="true"
                        data-jdp-config='{"selector":"#birth_date","dateFormat":"YYYY/MM/DD","autoShow":true}'>
@@ -672,7 +715,25 @@
             <div class="form-group">
                 <label class="form-label" data-i18n="auth.address">آدرس</label>
                 <textarea class="form-input form-textarea" name="address"
-                          data-i18n-placeholder="auth.address" placeholder="آدرس"></textarea>
+                          data-i18n-placeholder="auth.address" placeholder="آدرس">{{ old('address') }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" data-i18n="auth.captcha">کد کپچا</label>
+                <div class="captcha-row">
+                    @if (function_exists('captcha_img'))
+                        <div class="captcha-image">{!! captcha_img() !!}</div>
+                        <button type="button" class="captcha-refresh" aria-label="Refresh captcha">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+                                <path d="M21 3v6h-6"/>
+                            </svg>
+                        </button>
+                    @endif
+                </div>
+                <input type="text" class="form-input" name="captcha"
+                       data-i18n-placeholder="auth.captchaPlaceholder" placeholder="کد کپچا"
+                       value="{{ old('captcha') }}" required>
             </div>
 
             <button type="submit" class="submit-btn" data-i18n="nav.register">
@@ -712,6 +773,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'auth.birthDate': 'تاریخ تولد (شمسی)',
             'auth.birthDatePlaceholder': 'مثلاً 1404/07/18',
             'auth.address': 'آدرس',
+            'auth.captcha': 'کد کپچا',
+            'auth.captchaPlaceholder': 'کد کپچا',
             'auth.hasAccount': 'قبلاً حساب کاربری دارید؟',
             'nav.register': 'ثبت‌نام',
             'nav.login': 'ورود'
@@ -733,6 +796,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'auth.birthDate': 'Birth Date (Solar)',
             'auth.birthDatePlaceholder': 'e.g. 1404/07/18',
             'auth.address': 'Address',
+            'auth.captcha': 'Captcha Code',
+            'auth.captchaPlaceholder': 'Enter captcha',
             'auth.hasAccount': 'Already have an account?',
             'nav.register': 'Register',
             'nav.login': 'Login'
@@ -754,6 +819,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'auth.birthDate': 'تاريخ الميلاد (شمسي)',
             'auth.birthDatePlaceholder': 'مثال: 1404/07/18',
             'auth.address': 'العنوان',
+            'auth.captcha': 'رمز التحقق',
+            'auth.captchaPlaceholder': 'أدخل رمز التحقق',
             'auth.hasAccount': 'لديك حساب بالفعل؟',
             'nav.register': 'إنشاء حساب',
             'nav.login': 'تسجيل الدخول'
@@ -874,6 +941,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    function refreshCaptcha(container = document) {
+        const img = container.querySelector('.captcha-image img');
+        if (!img) return;
+        const baseSrc = img.getAttribute('src').split('?')[0];
+        img.setAttribute('src', `${baseSrc}?${Date.now()}`);
+    }
+
+    document.querySelectorAll('.captcha-refresh').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const row = btn.closest('.captcha-row') || document;
+            refreshCaptcha(row);
+        });
+    });
 
     // Initialize language
     const currentLocale = getStoredLocale();

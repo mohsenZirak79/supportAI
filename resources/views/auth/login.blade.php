@@ -514,6 +514,48 @@
             box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.2);
         }
 
+        .captcha-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .captcha-image img {
+            height: 44px;
+            border-radius: 8px;
+        }
+
+        .captcha-refresh {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .captcha-refresh svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .captcha-refresh:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.24);
+            transform: translateY(-1px);
+        }
+
         html[dir="ltr"] .form-input {
             direction: ltr;
         }
@@ -705,6 +747,23 @@
                        data-i18n-placeholder="auth.phonePlaceholder"
                                                placeholder="شماره تلفن (مانند 09123456789)" required>
                                     </div>
+            <div class="form-group">
+                <label class="form-label" data-i18n="auth.captcha">کد کپچا</label>
+                <div class="captcha-row">
+                    @if (function_exists('captcha_img'))
+                        <div class="captcha-image">{!! captcha_img() !!}</div>
+                        <button type="button" class="captcha-refresh" aria-label="Refresh captcha">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+                                <path d="M21 3v6h-6"/>
+                            </svg>
+                        </button>
+                    @endif
+                </div>
+                <input type="text" class="form-input" name="captcha"
+                       data-i18n-placeholder="auth.captchaPlaceholder" placeholder="کد کپچا"
+                       value="{{ old('captcha') }}" required>
+            </div>
             <button type="submit" class="submit-btn" data-i18n="auth.sendOtp">
                                         ارسال کد تایید
                                     </button>
@@ -752,6 +811,8 @@
             'auth.otpPlaceholder': 'کد تایید',
             'auth.verifyOtp': 'تایید کد',
             'auth.noAccount': 'حساب کاربری ندارید؟',
+            'auth.captcha': 'کد کپچا',
+            'auth.captchaPlaceholder': 'کد کپچا',
             'auth.phoneError': 'خطا در ارسال شماره',
             'auth.otpError': 'خطا در تأیید کد',
             'auth.phoneNotRegistered': 'شماره تلفن یافت نشد.',
@@ -772,6 +833,8 @@
             'auth.otpPlaceholder': 'Verification Code',
             'auth.verifyOtp': 'Verify Code',
             'auth.noAccount': "Don't have an account?",
+            'auth.captcha': 'Captcha Code',
+            'auth.captchaPlaceholder': 'Enter captcha',
             'auth.phoneError': 'Error sending phone number',
             'auth.otpError': 'Error verifying code',
             'auth.phoneNotRegistered': 'Phone number not found.',
@@ -792,6 +855,8 @@
             'auth.otpPlaceholder': 'رمز التحقق',
             'auth.verifyOtp': 'تأكيد الرمز',
             'auth.noAccount': 'ليس لديك حساب؟',
+            'auth.captcha': 'رمز التحقق',
+            'auth.captchaPlaceholder': 'أدخل رمز التحقق',
             'auth.phoneError': 'خطأ في إرسال رقم الهاتف',
             'auth.otpError': 'خطأ في التحقق من الرمز',
             'auth.phoneNotRegistered': 'رقم الهاتف غير موجود.',
@@ -882,6 +947,7 @@
         };
 
         const phoneInput = document.querySelector('#loginForm input[name="phone"]');
+        const captchaInput = document.querySelector('#loginForm input[name="captcha"]');
         const otpInput = document.querySelector('#otpForm input[name="otp"]');
     const loginForm = document.getElementById('loginForm');
     const otpForm = document.getElementById('otpForm');
@@ -933,6 +999,27 @@
         return message;
     }
 
+    function getValidationError(err) {
+        const errors = err?.response?.data?.errors;
+        if (!errors) return null;
+        const firstKey = Object.keys(errors)[0];
+        return errors[firstKey]?.[0] || null;
+    }
+
+    function refreshCaptcha(container = document) {
+        const img = container.querySelector('.captcha-image img');
+        if (!img) return;
+        const baseSrc = img.getAttribute('src').split('?')[0];
+        img.setAttribute('src', `${baseSrc}?${Date.now()}`);
+    }
+
+    document.querySelectorAll('.captcha-refresh').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const row = btn.closest('.captcha-row') || document;
+            refreshCaptcha(row);
+        });
+    });
+
     // Phone form submit
     loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -941,12 +1028,15 @@
             const phone = normalizeDigits(phoneInput.value.trim());
             phoneInput.value = phone;
             if (!phone) return;
+        const captcha = captchaInput ? normalizeDigits(captchaInput.value.trim()) : '';
+        if (captchaInput) captchaInput.value = captcha;
+        if (captchaInput && !captcha) return;
 
         const btn = loginForm.querySelector('.submit-btn');
         btn.disabled = true;
 
             try {
-                const res = await axios.post('/api/v1/auth/login', { phone });
+                const res = await axios.post('/login/request-otp', { phone, captcha });
 
             // Transition to OTP form
             loginForm.classList.add('fade-out');
@@ -960,7 +1050,8 @@
 
                 if (res.data.otp) alert('Test OTP: ' + res.data.otp);
             } catch (err) {
-            const apiMsg = err?.response?.data?.message;
+            const validationMsg = getValidationError(err);
+            const apiMsg = validationMsg || err?.response?.data?.message;
             showError(apiMsg ? translateApiError(apiMsg) : getErrorText('auth.phoneError'));
         } finally {
             btn.disabled = false;
@@ -983,7 +1074,8 @@
                 const res = await axios.post('/login', { phone, otp });
                 window.location.href = res.data.redirect_url;
             } catch (err) {
-            const apiMsg = err?.response?.data?.error?.message || err?.response?.data?.message;
+            const validationMsg = getValidationError(err);
+            const apiMsg = validationMsg || err?.response?.data?.error?.message || err?.response?.data?.message;
             showError(apiMsg ? translateApiError(apiMsg) : getErrorText('auth.otpError'));
         } finally {
             btn.disabled = false;

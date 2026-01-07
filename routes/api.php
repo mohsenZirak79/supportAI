@@ -131,7 +131,7 @@ Route::prefix('v1')
 Route::prefix('v1')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/activate', [AuthController::class, 'activate']);
-    Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/login', [AuthController::class, 'login'])->middleware('web');
     // verifyLoginOtp در web.php فرم ارسال می‌شود؛ اگر API هم می‌خواهی، اینجا هم بگذار.
 });
 Route::post('broadcasting/auth', function (\Illuminate\Http\Request $request) {
