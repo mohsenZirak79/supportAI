@@ -1,215 +1,279 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('پنل مدیریت'))</title>
 
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
-
-    <!-- Manifest -->
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#0e7490">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
 
     @vite(['resources/css/admin.css', 'resources/js/admin.js', 'resources/js/register.js'])
     @stack('styles')
     <style>
+        /* ─── فاز ۱: رنگ‌های پروژه (بدون تغییر primary/accent) ─── */
         :root {
             --admin-primary: rgba(15, 23, 42, 0.92);
             --admin-primary-contrast: #f8fafc;
             --admin-accent: #22d3ee;
             --admin-accent-soft: rgba(34, 211, 238, 0.18);
-            --admin-muted: #cbd5f5;
+            --admin-muted: #94a3b8;
             --admin-bg: #f4f6fb;
-            --admin-bg-gradient: radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.35), transparent 45%) fixed;
+            --admin-bg-gradient: radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.12), transparent 45%) fixed;
             --admin-surface: #ffffff;
             --admin-border: rgba(15, 23, 42, 0.08);
             --admin-text: #0f172a;
             --admin-muted-text: #475569;
             --admin-shadow: 0 18px 35px rgba(15, 23, 42, 0.18);
+            --admin-shadow-soft: 0 2px 8px rgba(15, 23, 42, 0.08);
+            --admin-sidebar-width: 256px;
         }
 
         body {
             margin: 0;
-            font-family: 'IRANSans', 'Vazirmatn', sans-serif;
+            font-family: 'Vazirmatn', 'Vazir', sans-serif;
             background-color: var(--admin-bg);
             background-image: var(--admin-bg-gradient);
             background-attachment: fixed;
             color: var(--admin-text);
-            transition: background-color .3s ease, color .3s ease;
+            min-height: 100vh;
         }
 
-        body::after {
-            content: '';
+        /* Overlay موبایل هنگام باز بودن سایدبار */
+        .admin-overlay {
+            display: none;
             position: fixed;
             inset: 0;
-            pointer-events: none;
-            background: linear-gradient(120deg, transparent 15%, rgba(255, 255, 255, 0.08), transparent 85%);
-            opacity: .4;
+            background: rgba(15, 23, 42, 0.4);
+            z-index: 35;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .admin-overlay.is-open {
+            display: block;
+            opacity: 1;
+        }
+        @media (min-width: 993px) {
+            .admin-overlay { display: none !important; }
         }
 
-        .admin-layout {
+        /* سایدبار ثابت سمت راست */
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: var(--admin-sidebar-width);
             min-height: 100vh;
+            z-index: 40;
             display: flex;
             flex-direction: column;
-            position: relative;
-            z-index: 1;
+            background: linear-gradient(to bottom, #f8fafc, #fff 30%, rgba(34, 211, 238, 0.04));
+            border-left: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease;
+        }
+        @media (max-width: 992px) {
+            .admin-sidebar {
+                transform: translateX(100%);
+            }
+            .admin-sidebar.is-open {
+                transform: translateX(0);
+            }
         }
 
-        .admin-navbar {
-            position: sticky;
-            top: 0;
-            z-index: 50;
+        .admin-sidebar__brand {
+            padding: 1.25rem 1.25rem;
+            border-bottom: 1px solid var(--admin-border);
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            gap: 1.25rem;
-            padding: 1rem 1.75rem;
-            background: var(--admin-primary);
-            color: var(--admin-primary-contrast);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-bottom-left-radius: 18px;
-            border-bottom-right-radius: 18px;
-            box-shadow: var(--admin-shadow);
-            backdrop-filter: blur(14px);
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 0 0 0 1rem;
         }
-
-        .admin-navbar__brand {
-            display: flex;
-            align-items: center;
-            gap: .8rem;
-            color: inherit;
-            text-decoration: none;
-            position: relative;
-        }
-
-        .admin-navbar__logo {
+        .admin-sidebar__logo {
             width: 44px;
             height: 44px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--admin-accent), rgba(255, 255, 255, 0.65));
-            color: #020617;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--admin-accent), rgba(255, 255, 255, 0.7));
+            color: #0f172a;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            letter-spacing: .05em;
-            box-shadow: 0 12px 28px rgba(34, 211, 238, 0.45);
+            box-shadow: 0 8px 20px rgba(34, 211, 238, 0.35);
             overflow: hidden;
         }
+        .admin-sidebar__logo svg {
+            width: 24px;
+            height: 24px;
+        }
+        .admin-sidebar__title strong { display: block; font-size: 1rem; color: var(--admin-text); }
+        .admin-sidebar__title small { display: block; font-size: 0.75rem; color: var(--admin-muted-text); margin-top: 2px; }
 
-        .admin-navbar__logo img,
-        .admin-navbar__logo svg {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            padding: 8px;
+        .admin-sidebar__close {
+            display: none;
+            margin-right: auto;
+            padding: 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--admin-text);
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+        @media (max-width: 992px) {
+            .admin-sidebar__close { display: inline-flex; }
         }
 
-        .admin-navbar__title strong {
-            display: block;
-            font-size: 1rem;
+        .admin-sidebar__nav {
+            flex: 1;
+            padding: 0.75rem;
+            overflow-y: auto;
         }
-
-        .admin-navbar__title small {
-            display: block;
-            margin-top: -2px;
-            font-size: .75rem;
-            opacity: .85;
-        }
-
-        .admin-navbar__glow {
-            position: absolute;
-            inset: 0;
-            border-radius: 24px;
-            background: var(--admin-accent-soft);
-            opacity: 0;
-            filter: blur(18px);
-            transition: opacity .35s ease;
-            z-index: -1;
-        }
-
-        .admin-navbar__brand:hover .admin-navbar__glow,
-        .admin-navbar__brand:focus-visible .admin-navbar__glow {
-            opacity: 1;
-        }
-
-        .admin-navbar__actions {
+        .admin-sidebar__nav-item {
             display: flex;
             align-items: center;
-            gap: .65rem;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            margin-bottom: 0.25rem;
+            border-radius: 12px;
+            color: var(--admin-text);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .admin-sidebar__nav-item:hover {
+            background: var(--admin-accent-soft);
+            color: var(--admin-primary);
+        }
+        .admin-sidebar__nav-item.is-active {
+            background: var(--admin-primary);
+            color: var(--admin-primary-contrast);
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+        }
+        .admin-sidebar__nav-item svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .admin-sidebar__nav-item.is-active svg { opacity: 1; }
+
+        .admin-sidebar__footer {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--admin-border);
+            text-align: center;
+        }
+        .admin-sidebar__footer a {
+            font-size: 0.75rem;
+            color: var(--admin-muted-text);
+            text-decoration: none;
+        }
+        .admin-sidebar__footer a:hover { color: var(--admin-accent); }
+
+        /* ناحیه اصلی + هدر */
+        .admin-main {
+            min-height: 100vh;
+            margin-right: 0;
+            transition: margin-right 0.3s ease;
+        }
+        @media (min-width: 993px) {
+            .admin-main { margin-right: var(--admin-sidebar-width); }
         }
 
-        .admin-notifications {
-            position: relative;
-            padding-right: 30px;
+        .admin-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--admin-border);
+            box-shadow: 0 1px 12px rgba(0, 0, 0, 0.05);
+        }
+        @media (min-width: 768px) {
+            .admin-header { padding: 0.875rem 2rem; }
         }
 
+        .admin-header__menu-btn {
+            display: flex;
+            padding: 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--admin-text);
+            border-radius: 0.75rem;
+            cursor: pointer;
+        }
+        .admin-header__menu-btn:hover { background: var(--admin-accent-soft); }
+        @media (min-width: 993px) {
+            .admin-header__menu-btn { display: none; }
+        }
+
+        .admin-header__right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        @media (min-width: 768px) {
+            .admin-header__right { gap: 1rem; }
+        }
+
+        /* نوتیفیکیشن (همان ساختار قبلی برای admin.js) */
+        .admin-notifications { position: relative; }
         .admin-notifications__trigger {
             width: 42px;
             height: 42px;
             border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--admin-primary-contrast);
+            border: 1px solid var(--admin-border);
+            background: rgba(15, 23, 42, 0.04);
+            color: var(--admin-text);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.2s ease, background 0.2s ease;
-            position: relative;
+            transition: background 0.2s, transform 0.2s;
         }
-
         .admin-notifications__trigger:hover {
+            background: var(--admin-accent-soft);
             transform: translateY(-1px);
-            background: rgba(255, 255, 255, 0.16);
         }
-
         .admin-notifications__badge {
             position: absolute;
-            top: 6px;
-            inset-inline-end: 6px;
+            top: 4px;
+            right: 4px;
             min-width: 18px;
             height: 18px;
             padding: 0 4px;
             border-radius: 999px;
             background: #ef4444;
             color: #fff;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
         }
-
         .admin-notifications__dropdown {
             position: absolute;
-            top: 56px;
-            right: 0px;
-            inset-inline-end: 0;
+            top: calc(100% + 8px);
+            right: 0;
             width: min(360px, 92vw);
             background: var(--admin-surface);
-            border-radius: 16px;
+            border-radius: 1rem;
             box-shadow: var(--admin-shadow);
             border: 1px solid var(--admin-border);
             overflow: hidden;
             display: none;
             z-index: 60;
         }
-
-        .admin-notifications__dropdown.is-open {
-            display: block;
-        }
-
+        .admin-notifications__dropdown.is-open { display: block; }
         .admin-notifications__header {
             display: flex;
             align-items: center;
@@ -219,14 +283,9 @@
             font-weight: 600;
             color: var(--admin-text);
         }
-
-        .admin-notifications__actions {
-            display: inline-flex;
-            gap: 6px;
-        }
-
+        .admin-notifications__actions { display: inline-flex; gap: 6px; }
         .admin-notifications__action {
-            border: 1px solid rgba(15, 23, 42, 0.1);
+            border: 1px solid var(--admin-border);
             background: #fff;
             color: var(--admin-text);
             border-radius: 8px;
@@ -234,12 +293,7 @@
             cursor: pointer;
             font-size: 0.78rem;
         }
-
-        .admin-notifications__body {
-            max-height: 360px;
-            overflow-y: auto;
-        }
-
+        .admin-notifications__body { max-height: 360px; overflow-y: auto; }
         .admin-notifications__empty,
         .admin-notifications__loading {
             padding: 20px;
@@ -247,24 +301,12 @@
             color: var(--admin-muted-text);
             font-size: 0.9rem;
         }
-
-        .admin-notifications__list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .admin-notifications__item {
-            border-bottom: 1px solid var(--admin-border);
-        }
-
-        .admin-notifications__item:last-child {
-            border-bottom: none;
-        }
-
+        .admin-notifications__list { list-style: none; margin: 0; padding: 0; }
+        .admin-notifications__item { border-bottom: 1px solid var(--admin-border); }
+        .admin-notifications__item:last-child { border-bottom: none; }
         .admin-notifications__link {
             width: 100%;
-            text-align: start;
+            text-align: right;
             display: flex;
             justify-content: space-between;
             gap: 10px;
@@ -273,320 +315,341 @@
             border: none;
             cursor: pointer;
         }
-
         .admin-notifications__item.unread .admin-notifications__link {
-            background: rgba(14, 165, 233, 0.08);
+            background: var(--admin-accent-soft);
         }
+        .admin-notifications__content strong { display: block; color: var(--admin-text); font-size: 0.9rem; }
+        .admin-notifications__content p { margin: 4px 0 0; color: var(--admin-muted-text); font-size: 0.82rem; }
+        .admin-notifications__timestamp { font-size: 0.75rem; color: var(--admin-muted-text); white-space: nowrap; }
 
-        .admin-notifications__content strong {
-            display: block;
-            color: var(--admin-text);
-            font-size: 0.9rem;
-        }
-
-        .admin-notifications__content p {
-            margin: 4px 0 0;
-            color: var(--admin-muted-text);
-            font-size: 0.82rem;
-        }
-
-        .admin-notifications__timestamp {
-            font-size: 0.75rem;
-            color: var(--admin-muted-text);
-            white-space: nowrap;
-        }
-
-        .admin-navbar__toggle {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.35);
-            color: var(--admin-primary-contrast);
-            border-radius: 10px;
-            display: none;
-            cursor: pointer;
-            padding: .45rem .55rem;
-            transition: border-color .2s ease, background .2s ease;
-        }
-
-        .admin-navbar__toggle:hover {
-            border-color: rgba(255, 255, 255, 0.65);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .admin-navbar__toggle span,
-        .admin-navbar__toggle span::before,
-        .admin-navbar__toggle span::after {
-            display: block;
-            width: 1.45rem;
-            height: 2px;
-            background: currentColor;
-            border-radius: 999px;
+        /* کاربر + dropdown */
+        .admin-user {
             position: relative;
-            transition: transform .2s ease, opacity .2s ease;
-        }
-
-        .admin-navbar__toggle span::before,
-        .admin-navbar__toggle span::after {
-            content: '';
-            position: absolute;
-            inset-inline-start: 0;
-        }
-
-        .admin-navbar__toggle span::before {
-            transform: translateY(-6px);
-        }
-
-        .admin-navbar__toggle span::after {
-            transform: translateY(6px);
-        }
-
-        .admin-navbar__menu {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
-            margin-inline-start: auto;
-            margin-left: auto;
+            gap: 0.5rem;
+            padding: 0.35rem 0.5rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
         }
-
-        .admin-navbar__link {
-            color: var(--admin-muted);
-            text-decoration: none;
-            padding: 0.55rem 1rem;
-            border-radius: 999px;
-            font-size: 0.95rem;
-            transition: color .25s ease, background .25s ease;
-            display: inline-flex;
+        .admin-user:hover { background: var(--admin-accent-soft); }
+        .admin-user__avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--admin-accent-soft), rgba(34, 211, 238, 0.08));
+            display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
+            color: var(--admin-accent);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        @media (min-width: 768px) {
+            .admin-user__avatar { width: 40px; height: 40px; }
+        }
+        .admin-user__name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--admin-text);
+            max-width: 140px;
             overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-
-        .admin-navbar__link:hover,
-        .admin-navbar__link:focus-visible {
-            color: var(--admin-primary-contrast);
-            background: rgba(255, 255, 255, 0.12);
+        @media (max-width: 767px) {
+            .admin-user__name { display: none; }
         }
-
-        .admin-navbar__link--active {
-            color: var(--admin-primary);
-            background: var(--admin-primary-contrast);
-            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
-        }
-
-        .admin-navbar__link::after {
-            content: '';
+        .admin-user__dropdown {
             position: absolute;
-            inset-inline-start: -30%;
-            top: 0;
-            width: 220%;
-            height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-            opacity: 0;
-            transform: translateX(-25%);
-            transition: opacity .35s ease, transform .35s ease;
-        }
-
-        .admin-navbar__link:hover::after,
-        .admin-navbar__link:focus-visible::after {
-            opacity: 1;
-            transform: translateX(25%);
-        }
-
-        .admin-content {
-            flex: 1;
-            width: min(1200px, 100%);
-            margin: 1.75rem auto 2rem;
-            padding: 0 1rem 2rem;
-            transition: background-color .3s ease;
-        }
-
-        .admin-footer {
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 180px;
             background: var(--admin-surface);
+            border-radius: 1rem;
+            box-shadow: var(--admin-shadow);
+            border: 1px solid var(--admin-border);
+            padding: 0.5rem;
+            display: none;
+            z-index: 50;
+        }
+        .admin-user__dropdown.is-open { display: block; }
+        .admin-user__dropdown a,
+        .admin-user__dropdown button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border: none;
+            background: transparent;
+            color: var(--admin-text);
+            text-decoration: none;
+            font-size: 0.875rem;
+            text-align: right;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .admin-user__dropdown a:hover,
+        .admin-user__dropdown button:hover {
+            background: rgba(15, 23, 42, 0.06);
+        }
+        .admin-user__dropdown button.logout { color: #dc2626; }
+        .admin-user__dropdown button.logout:hover { background: rgba(220, 38, 38, 0.08); }
+        .admin-user__dropdown svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+        /* محتوای اصلی */
+        .admin-content {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 2rem;
+        }
+        @media (min-width: 768px) {
+            .admin-content { padding: 2rem; }
+        }
+
+        /* فوتر ساده یک‌خط */
+        .admin-footer {
+            padding: 0.75rem 1rem;
             border-top: 1px solid var(--admin-border);
-            padding: 1rem 1.5rem;
+            background: var(--admin-surface);
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            gap: 1rem;
+            gap: 0.5rem;
+            font-size: 0.8125rem;
             color: var(--admin-muted-text);
-            border-radius: 18px;
-            margin: 0 1rem 1.5rem;
-            box-shadow: var(--admin-shadow);
         }
-
         .admin-footer a {
             color: var(--admin-primary);
             text-decoration: none;
         }
-
-        @media (max-width: 992px) {
-            .admin-navbar {
-                flex-wrap: wrap;
-            }
-
-            .admin-navbar__actions {
-                order: 2;
-                width: 100%;
-                justify-content: space-between;
-                margin-inline-start: 0;
-            }
-
-            .admin-navbar__toggle {
-                display: block;
-            }
-
-            .admin-navbar__menu {
-                order: 3;
-                flex-basis: 100%;
-                position: fixed;
-                inset-inline-start: 0;
-                inset-inline-end: 0;
-                top: 70px;
-                background: var(--admin-primary);
-                flex-direction: column;
-                padding: 1rem;
-                gap: .25rem;
-                transform-origin: top center;
-                transform: scaleY(0);
-                opacity: 0;
-                pointer-events: none;
-                transition: transform 0.2s ease, opacity 0.2s ease;
-                margin-inline-start: 0;
-                backdrop-filter: blur(20px);
-            }
-
-            .admin-navbar__menu.is-open {
-                transform: scaleY(1);
-                opacity: 1;
-                pointer-events: auto;
-            }
-
-            .admin-navbar__link {
-                width: 100%;
-                justify-content: center;
-                border-radius: 0.85rem;
-            }
-
-            .admin-content {
-                margin-top: 1rem;
-            }
-        }
+        .admin-footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body class="admin-layout">
 @php
     $menuItems = [
-        ['label' => 'داشبورد', 'route' => 'admin.dashboard', 'matches' => ['admin.dashboard']],
-        ['label' => 'مدیریت کاربران', 'route' => 'admin.users', 'ability' => 'read-user', 'matches' => ['admin.users']],
-        ['label' => 'نقش‌ها', 'route' => 'admin.roles', 'ability' => 'read-role', 'matches' => ['admin.roles']],
-        ['label' => 'تیکت‌ها', 'route' => 'admin.tickets', 'ability' => 'read-ticket', 'matches' => ['admin.tickets', 'admin.tickets.*']],
-        ['label' => 'گفت‌وگوها', 'route' => 'admin.chats', 'ability' => 'read-chat', 'matches' => ['admin.chats', 'admin.chats.*']],
-        ['label' => 'پروفایل', 'route' => 'profile', 'matches' => ['profile', 'profile.*']],
+        ['label' => 'داشبورد', 'route' => 'admin.dashboard', 'matches' => ['admin.dashboard'], 'icon' => 'dashboard'],
+        ['label' => 'مدیریت کاربران', 'route' => 'admin.users', 'ability' => 'read-user', 'matches' => ['admin.users'], 'icon' => 'users'],
+        ['label' => 'نقش‌ها', 'route' => 'admin.roles', 'ability' => 'read-role', 'matches' => ['admin.roles'], 'icon' => 'roles'],
+        ['label' => 'تیکت‌ها', 'route' => 'admin.tickets', 'ability' => 'read-ticket', 'matches' => ['admin.tickets', 'admin.tickets.show'], 'icon' => 'ticket'],
+        ['label' => 'گفت‌وگوها', 'route' => 'admin.chats', 'ability' => 'read-chat', 'matches' => ['admin.chats', 'admin.chats.detail'], 'icon' => 'chats'],
+        ['label' => 'پروفایل', 'route' => 'profile', 'matches' => ['profile', 'profile.update'], 'icon' => 'profile'],
     ];
 @endphp
 
-<header class="admin-navbar">
-    <a href="{{ route('admin.dashboard') }}" class="admin-navbar__brand">
-        <span class="admin-navbar__glow"></span>
-        <span class="admin-navbar__logo">
-            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <!-- Wave pattern representing sea -->
-                <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(0,0,0,0.2)"/>
-                <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(0,0,0,0.15)"/>
-                <!-- Island shape -->
-                <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(0,0,0,0.25)"/>
-                <!-- Support symbol (chat bubble) -->
-                <circle cx="50" cy="35" r="12" fill="currentColor" opacity="0.9"/>
-                <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="currentColor" opacity="0.9"/>
-            </svg>
-        </span>
-        <span class="admin-navbar__title">
-            <strong>Support AI</strong>
-            <small>{{ __('پنل مدیریت') }}</small>
-        </span>
-    </a>
-    <div class="admin-navbar__actions">
-        <div class="admin-notifications" data-admin-notifications>
-            <button class="admin-notifications__trigger" type="button" data-admin-notifications-trigger aria-haspopup="true" aria-expanded="false">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M12 2a5 5 0 0 0-5 5v3.1c0 .58-.2 1.14-.57 1.58L5 14.4h14l-.43-2.72A2.5 2.5 0 0 1 18 10.1V7a5 5 0 0 0-5-5zm0 18a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 20z"/>
-                </svg>
-                <span class="admin-notifications__badge" data-admin-notifications-badge style="display:none;">0</span>
+    <!-- Overlay موبایل -->
+    <div class="admin-overlay" id="adminOverlay" aria-hidden="true"></div>
+
+    <!-- سایدبار -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="admin-sidebar__brand">
+            <a href="{{ route('admin.dashboard') }}" style="display:flex;align-items:center;gap:0.75rem;text-decoration:none;color:inherit;">
+                <span class="admin-sidebar__logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </span>
+                <span class="admin-sidebar__title">
+                    <strong>Support AI</strong>
+                    <small>{{ __('پنل مدیریت') }}</small>
+                </span>
+            </a>
+            <button type="button" class="admin-sidebar__close" id="adminSidebarClose" aria-label="بستن منو">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
-            <div class="admin-notifications__dropdown" data-admin-notifications-dropdown>
-                <div class="admin-notifications__header">
-                    <span data-admin-notifications-title>نوتیفیکیشن‌ها</span>
-                    <div class="admin-notifications__actions">
-                        <button type="button" class="admin-notifications__action" data-admin-notifications-refresh>⟳</button>
-                        <button type="button" class="admin-notifications__action" data-admin-notifications-mark-all>خوانده‌شده همه</button>
+        </div>
+        <nav class="admin-sidebar__nav">
+            @foreach($menuItems as $item)
+                @php
+                    $canView = empty($item['ability'] ?? null) || (auth()->user()?->can($item['ability']));
+                    $isActive = request()->routeIs($item['matches'] ?? $item['route']);
+                @endphp
+                @if($canView)
+                    <a href="{{ route($item['route']) }}" class="admin-sidebar__nav-item {{ $isActive ? 'is-active' : '' }}">
+                        @if(($item['icon'] ?? '') === 'dashboard')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        @elseif(($item['icon'] ?? '') === 'users')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        @elseif(($item['icon'] ?? '') === 'roles')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        @elseif(($item['icon'] ?? '') === 'ticket')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V9z"/><path d="M6 9h.01M18 9h.01M6 15h.01M18 15h.01"/></svg>
+                        @elseif(($item['icon'] ?? '') === 'chats')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        @else
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        @endif
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                @endif
+            @endforeach
+        </nav>
+        <div class="admin-sidebar__footer">
+            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">خروج</a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <button type="button" class="admin-header__menu-btn" id="adminMenuBtn" aria-label="باز کردن منو">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <div class="admin-header__right">
+                <div class="admin-notifications" data-admin-notifications>
+                    <button class="admin-notifications__trigger" type="button" data-admin-notifications-trigger aria-haspopup="true" aria-expanded="false">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 0 0-5 5v3.1c0 .58-.2 1.14-.57 1.58L5 14.4h14l-.43-2.72A2.5 2.5 0 0 1 18 10.1V7a5 5 0 0 0-5-5zm0 18a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 20z"/></svg>
+                        <span class="admin-notifications__badge" data-admin-notifications-badge style="display:none;">0</span>
+                    </button>
+                    <div class="admin-notifications__dropdown" data-admin-notifications-dropdown>
+                        <div class="admin-notifications__header">
+                            <span data-admin-notifications-title>نوتیفیکیشن‌ها</span>
+                            <div class="admin-notifications__actions">
+                                <button type="button" class="admin-notifications__action" data-admin-notifications-refresh>⟳</button>
+                                <button type="button" class="admin-notifications__action" data-admin-notifications-mark-all>خوانده‌شده همه</button>
+                            </div>
+                        </div>
+                        <div class="admin-notifications__body">
+                            <div class="admin-notifications__loading" data-admin-notifications-loading style="display:none;">در حال بارگذاری…</div>
+                            <div class="admin-notifications__empty" data-admin-notifications-empty style="display:none;">نوتیفیکیشنی ثبت نشده.</div>
+                            <ul class="admin-notifications__list" data-admin-notifications-list></ul>
+                        </div>
                     </div>
                 </div>
-                <div class="admin-notifications__body">
-                    <div class="admin-notifications__loading" data-admin-notifications-loading style="display:none;">در حال بارگذاری…</div>
-                    <div class="admin-notifications__empty" data-admin-notifications-empty style="display:none;">نوتیفیکیشنی ثبت نشده.</div>
-                    <ul class="admin-notifications__list" data-admin-notifications-list></ul>
+                <div class="admin-user" id="adminUserMenu" aria-label="منوی کاربر" aria-haspopup="true" aria-expanded="false">
+                    <div class="admin-user__avatar">{{ mb_substr(auth()->user()->name ?? 'ا', 0, 1) }}</div>
+                    <span class="admin-user__name">{{ auth()->user()->name ?? 'کاربر' }}</span>
+                    <div class="admin-user__dropdown" id="adminUserDropdown">
+                        <a href="{{ route('admin.dashboard') }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            داشبورد
+                        </a>
+                        <button type="button" class="logout" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            خروج از حساب کاربری
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-        <button class="admin-navbar__toggle" type="button" aria-label="{{ __('باز و بسته کردن منو') }}" data-menu-toggle>
-            <span></span>
-        </button>
-    </div>
-    <nav class="admin-navbar__menu" data-menu>
-        @foreach($menuItems as $item)
-            @php
-                $canView = empty($item['ability'] ?? null) || (auth()->user()?->can($item['ability']));
-                $isActive = request()->routeIs($item['matches'] ?? $item['route']);
-            @endphp
-            @if($canView)
-                <a href="{{ route($item['route']) }}"
-                   class="admin-navbar__link {{ $isActive ? 'admin-navbar__link--active' : '' }}">
-                    {{ $item['label'] }}
-                </a>
+        </header>
+
+        <div class="admin-content">
+            @if(session('success'))
+                <script>window.__adminFlash = { type: 'success', message: @json(session('success')) };</script>
+            @elseif(session('error'))
+                <script>window.__adminFlash = { type: 'error', message: @json(session('error')) };</script>
             @endif
-        @endforeach
-    </nav>
-</header>
+            @yield('content')
+        </div>
 
-<main class="admin-content">
-    @yield('content')
-</main>
+        <footer class="admin-footer">
+            <span>&copy; {{ now()->year }} Support AI</span>
+            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">{{ __('خروج از حساب کاربری') }}</a>
+        </footer>
+    </main>
 
-<footer class="admin-footer">
-    <span>&copy; {{ now()->year }} Support AI</span>
-    <div>
-        <a href="{{ route('logout') }}"
-           onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">
-            {{ __('خروج از حساب کاربری') }}
-        </a>
-        <form id="admin-logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
-            @csrf
-        </form>
-    </div>
-</footer>
+    <form id="admin-logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">@csrf</form>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const menu = document.querySelector('[data-menu]');
-        const toggles = document.querySelectorAll('[data-menu-toggle]');
+    @include('admin.partials.confirm-modal')
 
-        if (menu) {
-            toggles.forEach((toggle) => {
-                toggle.addEventListener('click', () => {
-                    menu.classList.toggle('is-open');
-                });
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var sidebar = document.getElementById('adminSidebar');
+        var overlay = document.getElementById('adminOverlay');
+        var menuBtn = document.getElementById('adminMenuBtn');
+        var sidebarClose = document.getElementById('adminSidebarClose');
+        var userMenu = document.getElementById('adminUserMenu');
+        var userDropdown = document.getElementById('adminUserDropdown');
+
+        function openSidebar() {
+            if (sidebar) sidebar.classList.add('is-open');
+            if (overlay) overlay.classList.add('is-open');
+        }
+        function closeSidebar() {
+            if (sidebar) sidebar.classList.remove('is-open');
+            if (overlay) overlay.classList.remove('is-open');
+        }
+
+        if (menuBtn) menuBtn.addEventListener('click', openSidebar);
+        if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
+
+        /* فاز ۷.۲: نمایش پیام موفقیت/خطای session با toast یکسان */
+        if (window.__adminFlash && window.toast) {
+            var f = window.__adminFlash;
+            if (f.type === 'success') window.toast.success(f.message);
+            else if (f.type === 'error') window.toast.error(f.message);
+            window.__adminFlash = null;
+        }
+
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 993) closeSidebar();
+        });
+
+        if (userMenu && userDropdown) {
+            userMenu.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var isOpen = userDropdown.classList.toggle('is-open');
+                userMenu.setAttribute('aria-expanded', isOpen);
             });
+            document.addEventListener('click', function () {
+                userDropdown.classList.remove('is-open');
+                userMenu.setAttribute('aria-expanded', 'false');
+            });
+            userDropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+        }
 
-            window.addEventListener('resize', () => {
-                if (window.innerWidth > 992) {
-                    menu.classList.remove('is-open');
+        /* فاز ۴: حالت loading برای فرم‌های معمولی (غیر AJAX) */
+        document.querySelectorAll('.admin-form').forEach(function (form) {
+            form.addEventListener('submit', function () {
+                if (form.dataset.ajaxForm === '1') return;
+                var btn = form.querySelector('button[type="submit"]');
+                if (btn && !btn.classList.contains('is-loading')) {
+                    btn.classList.add('is-loading');
+                    btn.dataset.originalText = btn.textContent.trim();
+                    btn.textContent = 'در حال ذخیره...';
                 }
+            });
+        });
+
+        /* فاز ۶.۲: مودال تأیید برای حذف */
+        var confirmModalEl = document.getElementById('adminConfirmModal');
+        var confirmBodyEl = document.getElementById('adminConfirmModalBody');
+        var confirmSubmitBtn = document.getElementById('adminConfirmModalSubmit');
+        var confirmCallback = null;
+
+        if (confirmModalEl && confirmBodyEl && confirmSubmitBtn && window.bootstrap) {
+            var confirmModal = new bootstrap.Modal(confirmModalEl);
+            document.addEventListener('click', function (e) {
+                var btn = e.target.closest('[data-confirm-form]');
+                if (!btn) return;
+                e.preventDefault();
+                var formId = btn.getAttribute('data-confirm-form');
+                var form = document.getElementById(formId) || document.querySelector(formId);
+                if (!form) return;
+                var body = btn.getAttribute('data-confirm-body') || 'آیا از انجام این عملیات مطمئن هستید؟';
+                var title = btn.getAttribute('data-confirm-title');
+                var btnText = btn.getAttribute('data-confirm-btn') || 'بله، حذف شود';
+                if (title) {
+                    var titleEl = confirmModalEl.querySelector('.modal-title');
+                    if (titleEl) titleEl.textContent = title;
+                }
+                confirmBodyEl.textContent = body;
+                confirmSubmitBtn.textContent = btnText;
+                confirmCallback = function () { form.submit(); };
+                confirmModal.show();
+            });
+            confirmSubmitBtn.addEventListener('click', function () {
+                if (typeof confirmCallback === 'function') confirmCallback();
+                confirmModal.hide();
+                confirmCallback = null;
             });
         }
     });
-</script>
-
-@stack('scripts')
+    </script>
+    @stack('scripts')
 </body>
 </html>

@@ -2,23 +2,7 @@
 
 @section('title', 'تیکت ها')
 
-@push('styles')
-    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-    <style>
-            .ticket-chip{display:inline-flex;align-items:center;gap:.35rem;max-width:230px;padding:.35rem .6rem;border-radius:9999px;font-size:.78rem;line-height:1;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}
-            .ticket-chip .truncate{display:inline-block;max-width:150px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-            .bubble{max-width:88%;border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px}
-            .bubble-user{background:#eff6ff;border-color:#bfdbfe;color:#1e40af}
-            .bubble-agent{background:#ecfdf5;border-color:#a7f3d0;color:#064e3b}
-            .msg-time{font-size:12px;color:#94a3b8}
-            .truncate-1{max-width:380px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-            .status-badge{display:inline-block;padding:.25rem .55rem;border-radius:9999px;font-weight:700;font-size:.75rem}
-            .st-pending{background:#fff7ed;color:#92400e;border:1px solid #fcd34d99}
-            .st-answered{background:#ecfdf5;color:#065f46;border:1px solid #34d39999}
-            .st-closed{background:#f1f5f9;color:#334155;border:1px solid #cbd5e199}
-        </style>
-@endpush
+{{-- استایل‌های جزئیات تیکت در admin.css (فاز ۵: detail-meta, detail-bubble, detail-attachment-link) --}}
 
 @push('scripts')
     <script>
@@ -38,6 +22,13 @@
 
             document.querySelectorAll('.btn-view-ticket').forEach(btn=>{
                 btn.addEventListener('click', ()=> openTicket(btn));
+            });
+            document.getElementById('ticketModal').addEventListener('click', function(e){
+                var retryBtn = e.target.closest('[data-retry-ticket]');
+                if (retryBtn && retryBtn.classList.contains('admin-retry-btn')) {
+                    var id = retryBtn.getAttribute('data-retry-ticket');
+                    if (id) openTicketById(id);
+                }
             });
 
             const urlParams = new URLSearchParams(window.location.search);
@@ -61,20 +52,20 @@
                 currentTicketId = btn.getAttribute('data-id');
 
                 tkMeta.innerHTML = '';
-                tkMsgList.innerHTML = '<div class="text-center text-muted py-2">در حال بارگذاری…</div>';
+                tkMsgList.innerHTML = '<div class="detail-messages__loading">در حال بارگذاری…</div>';
                 replyBox.style.display = 'none';
 
                 try{
                     const res = await fetch(url, { headers: { 'Accept':'application/json' }});
                     if(!res.ok){
                         window.toast?.error('خطا در بارگذاری جزئیات');
-                        tkMsgList.innerHTML = '<div class="text-danger">خطا در بارگذاری.</div>';
+                        showTicketError();
                         return;
                     }
                     const data = await res.json();
                     renderDetails(data);
                 }catch(e){
-                    tkMsgList.innerHTML = '<div class="text-danger">خطا در بارگذاری.</div>';
+                    showTicketError();
                 }
             }
 
@@ -83,33 +74,41 @@
                 currentTicketId = ticketId;
 
                 tkMeta.innerHTML = '';
-                tkMsgList.innerHTML = '<div class="text-center text-muted py-2">در حال بارگذاری…</div>';
+                tkMsgList.innerHTML = '<div class="detail-messages__loading">در حال بارگذاری…</div>';
                 replyBox.style.display = 'none';
 
                 try{
                     const res = await fetch(url, { headers: { 'Accept':'application/json' }});
                     if(!res.ok){
                         window.toast?.error('خطا در بارگذاری جزئیات');
-                        tkMsgList.innerHTML = '<div class="text-danger">خطا در بارگذاری.</div>';
+                        showTicketError();
                         return;
                     }
                     const data = await res.json();
                     renderDetails(data);
                 }catch(e){
-                    tkMsgList.innerHTML = '<div class="text-danger">خطا در بارگذاری.</div>';
+                    showTicketError();
                 }
             }
 
+            function showTicketError(){
+                tkMsgList.innerHTML = '<div class="admin-error-box"><span class="admin-error-box__msg">خطا در بارگذاری.</span><button type="button" class="admin-retry-btn" data-retry-ticket="' + (currentTicketId || '') + '">تلاش مجدد</button></div>';
+            }
+
             function renderDetails(data){
-                document.getElementById('ticketModalLabel').textContent = 'تیکت: ' + (data.ticket?.title || '-');
+                const title = data.ticket?.title || '-';
+                document.getElementById('ticketModalLabel').textContent = 'جزئیات تیکت';
 
                 const createdAt = toEnDate(data.ticket?.created_at);
                 const statusLbl = statusLabel(data.ticket?.status);
+                const statusClass = data.ticket?.status === 'pending' ? 'status-badge--pending' : (data.ticket?.status === 'answered' ? 'status-badge--answered' : 'status-badge--closed');
                 tkMeta.innerHTML = `
-                <div>ارسال‌کننده: <strong>${escapeHtml(data.ticket?.sender?.name || '-')}</strong></div>
-                <div>تاریخ ایجاد: <span>${createdAt}</span></div>
-                <div>وضعیت: <span>${statusLbl}</span></div>
-            `;
+                <div class="detail-meta">
+                    <h6 class="detail-meta__title">${escapeHtml(title)}</h6>
+                    <div class="detail-meta__row"><span class="detail-meta__label">ارسال‌کننده:</span><span class="detail-meta__value">${escapeHtml(data.ticket?.sender?.name || '-')}</span></div>
+                    <div class="detail-meta__row"><span class="detail-meta__label">تاریخ ایجاد:</span><span>${createdAt}</span></div>
+                    <div class="detail-meta__row"><span class="detail-meta__label">وضعیت:</span><span class="status-badge ${statusClass}">${statusLbl}</span></div>
+                </div>`;
 
                 tkMsgList.innerHTML = '';
                 (data.messages || []).forEach(m=>{
@@ -120,11 +119,11 @@
                     const box = document.createElement('div');
                     box.innerHTML = `
                   <div class="d-flex justify-content-${side}">
-                    <div class="bubble ${isSupport ? 'bubble-agent' : 'bubble-user'}" dir="rtl">
-                        <div class="small text-muted mb-1">${who}</div>
-                        <div class="mb-2" style="white-space:pre-wrap;word-break:break-word;">${escapeHtml(m.message || '')}</div>
+                    <div class="detail-bubble ${isSupport ? 'detail-bubble--agent' : 'detail-bubble--user'}" dir="rtl">
+                        <div class="detail-bubble__sender">${who}</div>
+                        <div style="white-space:pre-wrap;word-break:break-word;">${escapeHtml(m.message || '')}</div>
                         ${renderFiles(m.attachments||[])}
-                        <div class="mt-1 msg-time">${toEnDate(m.created_at)}</div>
+                        <div class="detail-bubble__time">${toEnDate(m.created_at)}</div>
                     </div>
                   </div>
                 `;
@@ -137,13 +136,9 @@
 
             function renderFiles(files){
                 if(!files.length) return '';
-                let html = '<div class="d-flex flex-wrap gap-2">';
+                let html = '<div class="detail-attachments">';
                 files.slice(0, 100).forEach(f=>{
-                    html += `
-                <a class="ticket-chip" href="${f.url}" target="_blank" title="${escapeHtml(f.name||'file')}">
-                  <span>📎</span>
-                  <span class="truncate">${escapeHtml(f.name||'file')}</span>
-                </a>`;
+                    html += `<a class="detail-attachment-link" href="${f.url}" target="_blank" rel="noopener" title="${escapeHtml(f.name||'file')}"><span>📎</span><span class="truncate">${escapeHtml(f.name||'file')}</span></a>`;
                 });
                 html += '</div>';
                 return html;
@@ -166,7 +161,6 @@
                         return;
                     }
                     window.toast?.success('پاسخ ثبت شد.');
-                    // رفرش دیتیل
                     const showUrl = document.querySelector(`.btn-view-ticket[data-id="${currentTicketId}"]`)?.getAttribute('data-url');
                     if(showUrl){
                         const r = await fetch(showUrl, { headers: { 'Accept':'application/json' }});
@@ -194,71 +188,68 @@
 @endpush
 
 @section('content')
-<section class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ">
-    <!-- Navbar -->
-    <!-- End Navbar -->
-    <div class="container-fluid py-4">
-        <div class="container-fluid py-4">
-            <div class="card">
-                <div class="card-header pb-0">
-                    <h6>لیست تیکت ها</h6>
-                </div>
-                <div class="card-body px-0 pt-0 pb-2">
-                    <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0 datatable" id="example">
-                            <thead>
-                            <tr>
-                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">عنوان</th>
-                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">نام ارسال‌کننده</th>
-                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">تاریخ ایجاد</th>
-                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">وضعیت</th>
-                                <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">عملیات</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @foreach($tickets as $t)
-                                <tr>
-                                    <td class="text-center">
-                                        <span class="truncate-1" title="{{ $t->title }}">{{ $t->title }}</span>
-                                    </td>
-                                    <td class="text-center">{{ $t->sender->name ?? '-' }}</td>
-                                    <td class="text-center">
-                                        {{ \Morilog\Jalali\Jalalian::fromDateTime($t->created_at)->format('Y/m/d') }}
-                                    </td>
-                                    <td class="text-center">
-                                        @php
-                                            $class = $t->status === 'pending' ? 'st-pending' : ($t->status==='answered'?'st-answered':'st-closed');
-                                            $label = $t->status === 'pending' ? 'در انتظار پاسخ' : ($t->status==='answered'?'پاسخ داده شده':'بسته شده');
-                                        @endphp
-                                        <span class="status-badge {{ $class }}">{{ $label }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <button
-                                            class="btn btn-sm btn-primary btn-view-ticket"
-                                            data-id="{{ $t->id }}"
-                                            data-url="{{ route('admin.tickets.show', $t->id) }}"
-                                            type="button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#ticketModal">
-                                            مشاهده
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                        <div class="px-3">
-                            {{ $tickets->links() }}
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="list-page">
+    <header class="list-page__header">
+        <div>
+            <h1>تیکت‌ها</h1>
+            <p class="list-page__subtitle">مشاهده و پاسخ به تیکت‌های پشتیبانی</p>
         </div>
+        <div class="list-page__actions"></div>
+    </header>
+
+    <div class="list-page__card">
+        <div class="table-responsive">
+            <table class="list-page__table">
+                <thead>
+                    <tr>
+                        <th>عنوان</th>
+                        <th>نام ارسال‌کننده</th>
+                        <th>تاریخ ایجاد</th>
+                        <th>وضعیت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($tickets as $t)
+                        <tr>
+                            <td>
+                                <span class="truncate-1" title="{{ $t->title }}">{{ $t->title }}</span>
+                            </td>
+                            <td>{{ $t->sender->name ?? '-' }}</td>
+                            <td>{{ \Morilog\Jalali\Jalalian::fromDateTime($t->created_at)->format('Y/m/d') }}</td>
+                            <td>
+                                @php
+                                    $statusClass = $t->status === 'pending' ? 'status-badge--pending' : ($t->status === 'answered' ? 'status-badge--answered' : 'status-badge--closed');
+                                    $statusLabel = $t->status === 'pending' ? 'در انتظار پاسخ' : ($t->status === 'answered' ? 'پاسخ داده شده' : 'بسته شده');
+                                @endphp
+                                <span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span>
+                            </td>
+                            <td>
+                                <button
+                                    class="list-page__btn-view btn-view-ticket"
+                                    data-id="{{ $t->id }}"
+                                    data-url="{{ route('admin.tickets.show', $t->id) }}"
+                                    type="button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#ticketModal">
+                                    مشاهده
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="list-page__empty">هیچ موردی یافت نشد</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @include('admin.partials.pagination', ['paginator' => $tickets])
     </div>
-</section>
+</div>
 
 <!-- Modal -->
-<div class="modal fade" id="ticketModal" tabindex="-1" aria-labelledby="ticketModalLabel" aria-hidden="true">
+<div class="modal fade admin-modal" id="ticketModal" tabindex="-1" aria-labelledby="ticketModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content" style="max-height:90vh;">
             <div class="modal-header">
@@ -267,35 +258,31 @@
             </div>
             <div class="modal-body">
                 <div id="tkMeta" class="mb-3 text-sm text-muted"></div>
-
                 <div class="mb-4">
                     <h6 class="mb-2">پیام‌ها</h6>
-                    <div id="tkMsgList" class="d-flex flex-column gap-3" style="max-height:45vh; overflow-y:auto; border:1px solid #eee; padding:10px;"></div>
+                    <div id="tkMsgList" class="detail-messages"></div>
                 </div>
-
                 <div id="replyBox" class="mt-3" style="display:none;">
                     <hr>
                     <h6 class="mb-2">ارسال پاسخ</h6>
-                    <form id="replyForm">
-                        <div class="mb-2">
-                            <label class="form-label small">پاسخ شما</label>
+                    <form id="replyForm" class="admin-form" data-ajax-form="1">
+                        <div class="mb-3">
+                            <label class="form-label">پاسخ شما</label>
                             <textarea name="message" class="form-control" rows="4" required></textarea>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label small d-block">فایل‌های پیوست (اختیاری)</label>
+                        <div class="mb-3">
+                            <label class="form-label d-block">فایل‌های پیوست (اختیاری)</label>
                             <input type="file" name="files[]" class="form-control form-control-sm" multiple>
                             <div class="form-text">حداکثر 10 فایل، هر کدام تا 5MB</div>
                         </div>
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success btn-sm">ثبت پاسخ</button>
-
+                            <button type="submit" class="admin-btn admin-btn--primary">ثبت پاسخ</button>
                         </div>
                     </form>
                 </div>
-
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+                <button type="button" class="admin-btn admin-btn--secondary" data-bs-dismiss="modal">بستن</button>
             </div>
         </div>
     </div>

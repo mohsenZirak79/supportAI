@@ -74,9 +74,7 @@ Route::middleware(['web', 'auth:web', \App\Http\Middleware\CheckPermissionForRou
         Route::get('/notifications', [NotificationController::class, 'index'])->name('admin.notifications.index');
         Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('admin.notifications.read');
         Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('admin.notifications.read-all');
-        Route::get('dashboard', function (){
-            return \view('admin.dashboard');
-        })->name('admin.dashboard');
+        Route::get('dashboard', [\App\Domains\AdminPanel\Controllers\AdminDashboardController::class, '__invoke'])->name('admin.dashboard');
     });
 
 Route::prefix('admin')->group(function () {
