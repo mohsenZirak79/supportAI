@@ -249,15 +249,15 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 <script>
 (function() {
     var chartLabelsLastDays = @json($chartLabelsLastDays ?? []),
         chartTicketsLastDays = @json($chartTicketsLastDays ?? []),
         chartTicketsByStatus = @json($chartTicketsByStatus ?? ['pending' => 0, 'answered' => 0, 'closed' => 0]);
-    if (typeof window.Chart === 'undefined') return;
-    var Chart = window.Chart;
-
-    document.addEventListener('DOMContentLoaded', function() {
+    function initCharts() {
+        if (typeof window.Chart === 'undefined') return;
+        var Chart = window.Chart;
         var barsCtx = document.getElementById('dashboard-chart-bars');
         if (barsCtx) {
             new Chart(barsCtx.getContext('2d'), {
@@ -292,7 +292,6 @@
                 }
             });
         }
-
         var donutCtx = document.getElementById('dashboard-chart-donut');
         if (donutCtx) {
             new Chart(donutCtx.getContext('2d'), {
@@ -321,7 +320,20 @@
                 }
             });
         }
-    });
+    }
+    function runWhenReady() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runWhenReady);
+            return;
+        }
+        if (typeof window.Chart === 'undefined') {
+            var s = document.querySelector('script[src*="chart"]');
+            if (s) s.addEventListener('load', runWhenReady);
+            return;
+        }
+        initCharts();
+    }
+    runWhenReady();
 })();
 </script>
 @endpush
