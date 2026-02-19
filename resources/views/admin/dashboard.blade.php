@@ -4,20 +4,24 @@
 
 @push('styles')
 <style>
-    .dashboard-page { max-width: 1200px; margin: 0 auto; }
+    .dashboard-page { width: 100%; }
+    .dashboard-page__header { margin-bottom: 2rem; }
     .dashboard-page h1 { font-size: 1.75rem; font-weight: 700; color: var(--admin-text); margin: 0 0 0.25rem 0; }
-    .dashboard-page .subtitle { color: var(--admin-muted-text); font-size: 0.9375rem; margin-bottom: 1.5rem; }
+    .dashboard-page .subtitle { color: var(--admin-muted-text); font-size: 0.9375rem; margin: 0; }
 
-    .stat-cards { display: grid; grid-template-columns: repeat(1, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
-    @media (min-width: 640px) { .stat-cards { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1024px) { .stat-cards { grid-template-columns: repeat(4, 1fr); } }
-    @media (min-width: 1200px) { .stat-cards { grid-template-columns: repeat(5, 1fr); } }
+    /* کارت‌های آمار: عرض یکسان با بخش تیکت‌های اخیر، گرید پرعرض */
+    .stat-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2.5rem;
+    }
 
     .stat-card {
         background: var(--admin-surface);
         border: 1px solid var(--admin-border);
         border-radius: 1rem;
-        padding: 1.25rem;
+        padding: 1.35rem;
         box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
         transition: box-shadow 0.2s ease, transform 0.2s ease;
         text-decoration: none;
@@ -43,11 +47,13 @@
     .stat-card__title { font-size: 0.9375rem; font-weight: 600; color: var(--admin-text); }
     .stat-card__sub { font-size: 0.8125rem; color: var(--admin-muted-text); margin-top: 2px; }
 
-    .quick-actions { margin-bottom: 2rem; }
+    .quick-actions { margin-bottom: 2.5rem; }
     .quick-actions h2 { font-size: 1.25rem; font-weight: 700; color: var(--admin-text); margin: 0 0 1rem 0; }
-    .quick-actions__grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-    @media (min-width: 640px) { .quick-actions__grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1024px) { .quick-actions__grid { grid-template-columns: repeat(4, 1fr); } }
+    .quick-actions__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+    }
     .quick-action {
         display: flex;
         align-items: center;
@@ -69,7 +75,7 @@
     .quick-action--teal { background: linear-gradient(135deg, #0d9488, #14b8a6); }
     .quick-action--slate { background: linear-gradient(135deg, #475569, #64748b); }
 
-    .recent-section { margin-bottom: 2rem; }
+    .recent-section { margin-bottom: 0; }
     .recent-section h2 { font-size: 1.25rem; font-weight: 700; color: var(--admin-text); margin: 0 0 1rem 0; }
     .recent-card {
         background: var(--admin-surface);
@@ -77,6 +83,7 @@
         border-radius: 1rem;
         padding: 1.25rem;
         box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+        width: 100%;
     }
     .recent-item {
         display: flex;
@@ -96,14 +103,16 @@
     .recent-item__title { font-weight: 600; color: var(--admin-text); font-size: 0.9375rem; }
     .recent-item__meta { font-size: 0.8125rem; color: var(--admin-muted-text); margin-top: 2px; }
     .recent-item__time { font-size: 0.75rem; color: var(--admin-muted-text); flex-shrink: 0; }
-    .recent-empty { text-align: center; padding: 2rem; color: var(--admin-muted-text); font-size: 0.9375rem; }
+    .recent-empty { text-align: center; padding: 2.5rem; color: var(--admin-muted-text); font-size: 0.9375rem; }
 </style>
 @endpush
 
 @section('content')
 <div class="dashboard-page">
-    <h1>داشبورد</h1>
-    <p class="subtitle">سلام {{ auth()->user()->name ?? 'دوست عزیز' }} 👋 — مدیریت تیکت‌ها و گفت‌وگوها</p>
+    <header class="dashboard-page__header">
+        <h1>داشبورد</h1>
+        <p class="subtitle">سلام {{ auth()->user()->name ?? 'دوست عزیز' }} 👋 — مدیریت تیکت‌ها و گفت‌وگوها</p>
+    </header>
 
     {{-- کارت‌های آمار (پالت پروژه) --}}
     <div class="stat-cards">

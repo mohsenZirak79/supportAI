@@ -224,6 +224,22 @@
         @media (min-width: 768px) {
             .admin-header__right { gap: 1rem; }
         }
+        .admin-header__logout {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--admin-muted-text);
+            text-decoration: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: 0.5rem;
+            transition: color 0.2s, background 0.2s;
+        }
+        .admin-header__logout:hover {
+            color: #dc2626;
+            background: rgba(220, 38, 38, 0.08);
+        }
+        @media (max-width: 480px) {
+            .admin-header__logout { font-size: 0.8125rem; padding: 0.4rem 0.6rem; }
+        }
 
         /* نوتیفیکیشن (همان ساختار قبلی برای admin.js) */
         .admin-notifications { position: relative; }
@@ -411,24 +427,6 @@
             .admin-content { padding: 2rem; }
         }
 
-        /* فوتر ساده یک‌خط */
-        .admin-footer {
-            padding: 0.75rem 1rem;
-            border-top: 1px solid var(--admin-border);
-            background: var(--admin-surface);
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8125rem;
-            color: var(--admin-muted-text);
-        }
-        .admin-footer a {
-            color: var(--admin-primary);
-            text-decoration: none;
-        }
-        .admin-footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body class="admin-layout">
@@ -499,6 +497,7 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
             <div class="admin-header__right">
+                <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();" class="admin-header__logout" aria-label="خروج از حساب کاربری">خروج</a>
                 <div class="admin-notifications" data-admin-notifications>
                     <button class="admin-notifications__trigger" type="button" data-admin-notifications-trigger aria-haspopup="true" aria-expanded="false">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 0 0-5 5v3.1c0 .58-.2 1.14-.57 1.58L5 14.4h14l-.43-2.72A2.5 2.5 0 0 1 18 10.1V7a5 5 0 0 0-5-5zm0 18a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 20z"/></svg>
@@ -544,11 +543,6 @@
             @endif
             @yield('content')
         </div>
-
-        <footer class="admin-footer">
-            <span>&copy; {{ now()->year }} Support AI</span>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">{{ __('خروج از حساب کاربری') }}</a>
-        </footer>
     </main>
 
     <form id="admin-logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">@csrf</form>
