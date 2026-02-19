@@ -62,7 +62,7 @@
                 const downloadName = (title || 'voice') + guessExtFromMime(mime);
                 return `<div class="voice-card">
                           <div class="voice-card__header">
-                            <span class="voice-title">${escapeHtml(title || 'پیام صوتی')} <span class="mic">🎙️</span></span>
+                            <span class="voice-title">${escapeHtml(title || 'پیام صوتی')}</span>
                             <span class="voice-time">${fmtDate(created_at)}</span>
                           </div>
                           <div class="voice-card__body">
@@ -117,7 +117,7 @@
                     const isAi = m.sender_type === 'ai';
                     const side = isAi ? 'end' : 'start';
                     const bubbleClass = isAi ? 'detail-bubble--agent' : 'detail-bubble--user';
-                    const senderLabel = isAi ? '🤖 هوش مصنوعی' : '👤 کاربر';
+                    const senderLabel = isAi ? 'هوش مصنوعی' : 'کاربر';
                     const item = document.createElement('div');
                     item.className = 'list-group-item border-0 px-0';
                     item.id = 'msg-' + m.id;
@@ -157,7 +157,7 @@
                     if (files.length) {
                         mediaHtml += '<div class="detail-attachments mt-2">';
                         files.forEach((f, idx) => {
-                            mediaHtml += `<a href="${f.url}" class="detail-attachment-link" target="_blank" rel="noopener">📎 <span class="truncate">${escapeHtml(f.name || ('file' + (idx + 1)))}</span></a>`;
+                            mediaHtml += `<a href="${f.url}" class="detail-attachment-link" target="_blank" rel="noopener"><span class="truncate">${escapeHtml(f.name || ('file' + (idx + 1)))}</span></a>`;
                         });
                         mediaHtml += '</div>';
                     }
@@ -179,12 +179,17 @@
             }
 
             function renderReferrals(data) {
-                refList.innerHTML = ''
                 const conversationId = data.conversation?.id
                 const refs = (data.referrals || []).slice().sort((a, b) =>
                     new Date(a.created_at || 0) - new Date(b.created_at || 0)
                 )
 
+                if (refs.length === 0) {
+                    refList.innerHTML = '<div class="conv-detail__empty">ارجاعی ثبت نشده است.</div>'
+                    return
+                }
+
+                refList.innerHTML = ''
                 refs.forEach(r => {
                     const card = document.createElement('div')
                     card.className = 'card detail-referral-card'
@@ -414,16 +419,16 @@
                 <h5 class="modal-title" id="convModalLabel">مکالمه</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
             </div>
-            <div class="modal-body">
-                <div id="convMeta" class="mb-3 text-sm text-muted"></div>
-                <div class="mb-4">
-                    <h6 class="mb-2">پیام‌ها</h6>
-                    <div id="msgList" class="list-group detail-messages"></div>
-                </div>
-                <div class="mt-4">
-                    <h6 class="mb-2">ارجاع‌ها</h6>
-                    <div id="refList" class="d-flex flex-column gap-3"></div>
-                </div>
+            <div class="modal-body conv-detail-body">
+                <div id="convMeta" class="conv-detail__meta"></div>
+                <section class="conv-detail__section">
+                    <h6 class="conv-detail__section-title">پیام‌ها</h6>
+                    <div id="msgList" class="detail-messages"></div>
+                </section>
+                <section class="conv-detail__section">
+                    <h6 class="conv-detail__section-title">ارجاع‌ها</h6>
+                    <div id="refList" class="conv-detail__refs"></div>
+                </section>
             </div>
             <div class="modal-footer">
                 <button type="button" class="admin-btn admin-btn--secondary" data-bs-dismiss="modal">بستن</button>

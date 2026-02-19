@@ -41,10 +41,31 @@ class AdminDashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // داده نمودار دونات: توزیع تیکت‌ها بر اساس وضعیت
+        $chartTicketsByStatus = [
+            'pending'  => (clone $ticketsQuery)->where('status', 'pending')->count(),
+            'answered' => (clone $ticketsQuery)->where('status', 'answered')->count(),
+            'closed'   => (clone $ticketsQuery)->where('status', 'closed')->count(),
+        ];
+
+        // داده نمودار میله‌ای: تعداد تیکت در ۷ روز اخیر
+        $chartTicketsLastDays = [];
+        $labelsLastDays = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->startOfDay();
+            $labelsLastDays[] = $date->translatedFormat('D d/m');
+            $chartTicketsLastDays[] = (clone $ticketsQuery)
+                ->whereDate('created_at', $date)
+                ->count();
+        }
+
         return view('admin.dashboard', [
             'stats' => $stats,
             'recentTickets' => $recentTickets,
             'isAdmin' => $isAdmin,
+            'chartTicketsByStatus' => $chartTicketsByStatus,
+            'chartTicketsLastDays' => $chartTicketsLastDays,
+            'chartLabelsLastDays' => $labelsLastDays,
         ]);
     }
 }

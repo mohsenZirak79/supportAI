@@ -367,7 +367,7 @@
 
                             <!-- Dropzone -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">📎 {{ $t('ticket.attachFile') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('ticket.attachFile') }}</label>
                                 <div
                                     class="file-drop-zone dropzone-fancy w-full p-4 rounded-lg text-center cursor-pointer border-2 border-dashed border-gray-300"
                                     :class="{'dragging': isDragOverReply}"
@@ -454,7 +454,7 @@
                     <div class="max-h-[75vh] overflow-y-auto">
                         <form @submit.prevent="submitNewTicket" class="p-6 space-y-6">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">🏢 {{ $t('ticket.department') }}</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">{{ $t('ticket.department') }}</label>
                                 <select
                                     v-model="newTicket.department"
                                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
@@ -467,7 +467,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">📝 {{ $t('ticket.subject') }}</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">{{ $t('ticket.subject') }}</label>
                                 <input
                                     type="text"
                                     v-model="newTicket.title"
@@ -477,7 +477,7 @@
                                 >
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">💬 {{ $t('ticket.description') }}</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">{{ $t('ticket.description') }}</label>
                                 <textarea
                                     v-model="newTicket.message"
                                     rows="6"
@@ -488,7 +488,7 @@
                             </div>
                             <!-- File Upload -->
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">📎 {{ $t('ticket.attachFile') }}</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">{{ $t('ticket.attachFile') }}</label>
                                 <div
                                     class="file-drop-zone dropzone-fancy w-full p-8 rounded-lg text-center cursor-pointer border-2 border-dashed border-gray-300"
                                     :class="{'dragging': isDragOver}"
@@ -675,12 +675,12 @@ const handleEsc = (e) => {
 };
 const getFileEmoji = (mimeOrType = '') => {
     const t = String(mimeOrType).toLowerCase();
-    if (t.startsWith('image/')) return '🖼️';
-    if (t.includes('pdf')) return '📄';
-    if (t.includes('word') || t.includes('doc')) return '📝';
-    if (t.includes('zip') || t.includes('rar')) return '📦';
-    if (t.includes('sheet') || t.includes('excel') || t.includes('csv')) return '📊';
-    return '📎';
+    if (t.startsWith('image/')) return '';
+    if (t.includes('pdf')) return '';
+    if (t.includes('word') || t.includes('doc')) return '';
+    if (t.includes('zip') || t.includes('rar')) return '';
+    if (t.includes('sheet') || t.includes('excel') || t.includes('csv')) return '';
+    return '';
 };
 const prettySize = (bytes) => {
     if (!bytes) return '';
@@ -959,11 +959,11 @@ const removeFile = (index) => {
 };
 
 const getFileIcon = (type) => {
-    if (type?.startsWith('image/')) return '🖼️';
-    if (type?.includes('pdf')) return '📄';
-    if (type?.includes('word') || type?.includes('doc')) return '📝';
-    if (type?.includes('zip') || type?.includes('rar')) return '📦';
-    return '📎';
+    if (type?.startsWith('image/')) return '';
+    if (type?.includes('pdf')) return '';
+    if (type?.includes('word') || type?.includes('doc')) return '';
+    if (type?.includes('zip') || type?.includes('rar')) return '';
+    return '';
 };
 
 const formatFileSize = (bytes) => {

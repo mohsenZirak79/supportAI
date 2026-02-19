@@ -85,30 +85,38 @@
                         <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
                         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    <hr>
-                    <div class="col-md-6 mb-3">
-                        <input type="checkbox" id="add_allowTicket" name="allow_ticket">
-                        <label for="add_allowTicket">امکان مشاهده و پاسخ به تیکت‌ها</label>
+                    <hr class="admin-form__divider">
+                    <p class="admin-form__section-label">دسترسی‌ها</p>
+                    <div class="admin-form__check-list">
+                        <label class="admin-form__check-item" for="add_allowTicket">
+                            <input type="checkbox" id="add_allowTicket" name="allow_ticket" class="admin-form__check-input">
+                            <span class="admin-form__check-box"></span>
+                            <span class="admin-form__check-text">امکان مشاهده و پاسخ به تیکت‌ها</span>
+                        </label>
+                        <label class="admin-form__check-item" for="add_allowChat">
+                            <input type="checkbox" id="add_allowChat" name="allow_chat" class="admin-form__check-input">
+                            <span class="admin-form__check-box"></span>
+                            <span class="admin-form__check-text">امکان مشاهده و پاسخ به چت‌ها</span>
+                        </label>
+                        <label class="admin-form__check-item" for="add_allowUsers">
+                            <input type="checkbox" id="add_allowUsers" name="allow_users" class="admin-form__check-input">
+                            <span class="admin-form__check-box"></span>
+                            <span class="admin-form__check-text">امکان مشاهده و مدیریت کاربران</span>
+                        </label>
+                        <label class="admin-form__check-item" for="add_allowRoles">
+                            <input type="checkbox" id="add_allowRoles" name="allow_role" class="admin-form__check-input">
+                            <span class="admin-form__check-box"></span>
+                            <span class="admin-form__check-text">امکان مشاهده و مدیریت نقش‌ها</span>
+                        </label>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <input type="checkbox" id="add_allowChat" name="allow_chat">
-                        <label for="add_allowChat">امکان مشاهده و پاسخ به چت‌ها</label>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <input type="checkbox" id="add_allowUsers" name="allow_users">
-                        <label for="add_allowUsers">امکان مشاهده و مدیریت کاربران</label>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <input type="checkbox" id="add_allowRoles" name="allow_role">
-                        <label for="add_allowRoles">امکان مشاهده و مدیریت نقش‌ها</label>
-                    </div>
-                    <hr>
-                    <div class="col-sm-12 mb-3">
-                        <p class="text-muted small">در صورت انتخاب «کاربر داخلی»، امکان ارجاع چت یا تیکت به این نقش وجود ندارد و فقط مشاهده امکان‌پذیر است.</p>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <input type="checkbox" id="add_isInternal" name="is_internal">
-                        <label for="add_isInternal">کاربر داخلی سیستم</label>
+                    <hr class="admin-form__divider">
+                    <div class="admin-form__check-list">
+                        <p class="admin-form__hint mb-2">در صورت انتخاب «کاربر داخلی»، امکان ارجاع چت یا تیکت به این نقش وجود ندارد و فقط مشاهده امکان‌پذیر است.</p>
+                        <label class="admin-form__check-item" for="add_isInternal">
+                            <input type="checkbox" id="add_isInternal" name="is_internal" class="admin-form__check-input">
+                            <span class="admin-form__check-box"></span>
+                            <span class="admin-form__check-text">کاربر داخلی سیستم</span>
+                        </label>
                     </div>
                     <button type="submit" class="admin-btn admin-btn--primary">ثبت</button>
                 </form>
@@ -135,28 +143,38 @@
                         <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $role->name) }}" required>
                         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    <hr>
-                    <div class="col-md-6 mb-3">
-                        <input type="checkbox" id="edit_allowTicket_{{ $role->id }}" name="allow_ticket" @if($role->allow_ticket) checked @endif>
-                        <label for="edit_allowTicket_{{ $role->id }}">امکان مشاهده و پاسخ به تیکت‌ها</label>
+                    <hr class="admin-form__divider">
+                    <p class="admin-form__section-label">دسترسی‌ها</p>
+                    <div class="admin-form__check-list">
+                        <label class="admin-form__check-item" for="edit_allowTicket_{{ $role->id }}">
+                            <input type="checkbox" id="edit_allowTicket_{{ $role->id }}" name="allow_ticket" class="admin-form__check-input" @if($role->allow_ticket) checked @endif>
+                            <span class="admin-form__check-box"></span>
+                            <span class="admin-form__check-text">امکان مشاهده و پاسخ به تیکت‌ها</span>
+                        </label>
+                        <label class="admin-form__check-item" for="edit_allowChat_{{ $role->id }}">
+                            <input type="checkbox" id="edit_allowChat_{{ $role->id }}" name="allow_chat" class="admin-form__check-input" @if($role->allow_chat) checked @endif>
+                            <span class="admin-form__check-box"></span>
+                            <span class="admin-form__check-text">امکان مشاهده و پاسخ به چت‌ها</span>
+                        </label>
+                        <label class="admin-form__check-item" for="edit_allowUsers_{{ $role->id }}">
+                            <input type="checkbox" id="edit_allowUsers_{{ $role->id }}" name="allow_users" class="admin-form__check-input" @if($role->allow_users) checked @endif>
+                            <span class="admin-form__check-box"></span>
+                            <span class="admin-form__check-text">امکان مشاهده و مدیریت کاربران</span>
+                        </label>
+                        <label class="admin-form__check-item" for="edit_allowRoles_{{ $role->id }}">
+                            <input type="checkbox" id="edit_allowRoles_{{ $role->id }}" name="allow_role" class="admin-form__check-input" @if($role->allow_role) checked @endif>
+                            <span class="admin-form__check-box"></span>
+                            <span class="admin-form__check-text">امکان مشاهده و مدیریت نقش‌ها</span>
+                        </label>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <input type="checkbox" id="edit_allowChat_{{ $role->id }}" name="allow_chat" @if($role->allow_chat) checked @endif>
-                        <label for="edit_allowChat_{{ $role->id }}">امکان مشاهده و پاسخ به چت‌ها</label>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <input type="checkbox" id="edit_allowUsers_{{ $role->id }}" name="allow_users" @if($role->allow_users) checked @endif>
-                        <label for="edit_allowUsers_{{ $role->id }}">امکان مشاهده و مدیریت کاربران</label>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <input type="checkbox" id="edit_allowRoles_{{ $role->id }}" name="allow_role" @if($role->allow_role) checked @endif>
-                        <label for="edit_allowRoles_{{ $role->id }}">امکان مشاهده و مدیریت نقش‌ها</label>
-                    </div>
-                    <hr>
-                    <div class="col-md-6 mb-3">
-                        <input type="checkbox" id="edit_isInternal_{{ $role->id }}" name="is_internal" @if($role->is_internal) checked @endif>
-                        <label for="edit_isInternal_{{ $role->id }}">کاربر داخلی سیستم</label>
-                        <p class="small text-muted mt-1">در صورت انتخاب، امکان ارجاع چت یا تیکت به این نقش وجود ندارد.</p>
+                    <hr class="admin-form__divider">
+                    <div class="admin-form__check-list">
+                        <label class="admin-form__check-item" for="edit_isInternal_{{ $role->id }}">
+                            <input type="checkbox" id="edit_isInternal_{{ $role->id }}" name="is_internal" class="admin-form__check-input" @if($role->is_internal) checked @endif>
+                            <span class="admin-form__check-box"></span>
+                            <span class="admin-form__check-text">کاربر داخلی سیستم</span>
+                        </label>
+                        <p class="admin-form__hint mt-1 mb-0">در صورت انتخاب، امکان ارجاع چت یا تیکت به این نقش وجود ندارد.</p>
                     </div>
                     <button type="submit" class="admin-btn admin-btn--primary">ذخیره تغییرات</button>
                 </form>

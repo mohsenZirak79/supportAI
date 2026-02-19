@@ -163,18 +163,6 @@
         }
         .admin-sidebar__nav-item.is-active svg { opacity: 1; }
 
-        .admin-sidebar__footer {
-            padding: 0.75rem 1rem;
-            border-top: 1px solid var(--admin-border);
-            text-align: center;
-        }
-        .admin-sidebar__footer a {
-            font-size: 0.75rem;
-            color: var(--admin-muted-text);
-            text-decoration: none;
-        }
-        .admin-sidebar__footer a:hover { color: var(--admin-accent); }
-
         /* ناحیه اصلی + هدر */
         .admin-main {
             min-height: 100vh;
@@ -363,17 +351,17 @@
             .admin-user__name { display: none; }
         }
         .admin-user__dropdown {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
+            position: fixed;
             min-width: 180px;
+            max-height: min(320px, calc(100vh - 100px));
+            overflow-y: auto;
             background: var(--admin-surface);
             border-radius: 1rem;
             box-shadow: var(--admin-shadow);
             border: 1px solid var(--admin-border);
             padding: 0.5rem;
             display: none;
-            z-index: 50;
+            z-index: 1050;
         }
         .admin-user__dropdown.is-open { display: block; }
         .admin-user__dropdown a,
@@ -471,9 +459,6 @@
                 @endif
             @endforeach
         </nav>
-        <div class="admin-sidebar__footer">
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">خروج</a>
-        </div>
     </aside>
 
     <main class="admin-main">
@@ -512,7 +497,7 @@
                         </a>
                         <button type="button" class="logout" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                            خروج از حساب کاربری
+                            خروج
                         </button>
                     </div>
                 </div>
@@ -568,11 +553,30 @@
         });
 
         if (userMenu && userDropdown) {
+            function positionUserDropdown() {
+                if (!userDropdown.classList.contains('is-open')) return;
+                var rect = userMenu.getBoundingClientRect();
+                var gap = 8;
+                var dropdownWidth = 180;
+                var dropdownMaxHeight = Math.min(320, window.innerHeight - 100);
+                /* راستِ منو با راستِ دکمه تراز؛ اگر منو از چپ viewport بیرون زد، جایش را محدود کن */
+                var rightPx = window.innerWidth - rect.right;
+                if (rect.right - dropdownWidth < 0) rightPx = window.innerWidth - dropdownWidth;
+                userDropdown.style.top = (rect.bottom + gap) + 'px';
+                userDropdown.style.right = rightPx + 'px';
+                userDropdown.style.left = 'auto';
+                userDropdown.style.maxHeight = dropdownMaxHeight + 'px';
+            }
             userMenu.addEventListener('click', function (e) {
                 e.stopPropagation();
                 var isOpen = userDropdown.classList.toggle('is-open');
                 userMenu.setAttribute('aria-expanded', isOpen);
+                if (isOpen) positionUserDropdown();
             });
+            window.addEventListener('resize', positionUserDropdown);
+            window.addEventListener('scroll', function () {
+                if (userDropdown.classList.contains('is-open')) positionUserDropdown();
+            }, true);
             document.addEventListener('click', function () {
                 userDropdown.classList.remove('is-open');
                 userMenu.setAttribute('aria-expanded', 'false');

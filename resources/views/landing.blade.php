@@ -1972,9 +1972,9 @@
             });
 
             // Log initialization
-            console.log('🎬 Landing page motion system initialized');
+            console.log('Landing page motion system initialized');
             if (prefersReducedMotion) {
-                console.log('⚡ Reduced motion mode active');
+                console.log('Reduced motion mode active');
             }
 
             // ============================================
@@ -2170,7 +2170,7 @@
                 });
             }
 
-            console.log('🌐 i18n language system initialized');
+            console.log('i18n language system initialized');
 
         })();
     </script>

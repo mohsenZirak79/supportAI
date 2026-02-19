@@ -111,7 +111,7 @@
 <div class="dashboard-page">
     <header class="dashboard-page__header">
         <h1>داشبورد</h1>
-        <p class="subtitle">سلام {{ auth()->user()->name ?? 'دوست عزیز' }} 👋 — مدیریت تیکت‌ها و گفت‌وگوها</p>
+        <p class="subtitle">سلام {{ auth()->user()->name ?? 'دوست عزیز' }} — مدیریت تیکت‌ها و گفت‌وگوها</p>
     </header>
 
     {{-- کارت‌های آمار (پالت پروژه) --}}
@@ -205,6 +205,21 @@
         </div>
     </section>
 
+    {{-- نمودارها --}}
+    <section class="charts-section" style="margin-bottom: 2.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--admin-text); margin: 0 0 1rem 0;">نمودار تیکت‌ها</h2>
+        <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+            <div class="chart-card" style="background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 1rem; padding: 1.25rem; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);">
+                <h3 style="font-size: 1rem; font-weight: 600; color: var(--admin-text); margin: 0 0 1rem 0; text-align: right;">تیکت‌های ۷ روز اخیر</h3>
+                <canvas id="dashboard-chart-bars" height="220" style="max-height: 220px;"></canvas>
+            </div>
+            <div class="chart-card" style="background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 1rem; padding: 1.25rem; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);">
+                <h3 style="font-size: 1rem; font-weight: 600; color: var(--admin-text); margin: 0 0 1rem 0; text-align: right;">توزیع بر اساس وضعیت</h3>
+                <canvas id="dashboard-chart-donut" height="220" style="max-height: 220px;"></canvas>
+            </div>
+        </div>
+    </section>
+
     {{-- تیکت‌های اخیر --}}
     <section class="recent-section">
         <h2>تیکت‌های اخیر</h2>
@@ -213,19 +228,100 @@
                 <p class="recent-empty">هنوز تیکتی ثبت نشده است.</p>
             @else
                 @foreach($recentTickets as $t)
-                    <a href="{{ route('admin.tickets.show', $t->id) }}" class="recent-item">
+                    <a href="{{ route('admin.tickets') }}?ticket={{ $t->id }}" class="recent-item">
                         <span class="recent-item__icon" style="background: rgba(15, 23, 42, 0.08); color: var(--admin-primary);">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V9z"/></svg>
                         </span>
                         <span class="recent-item__body">
-                            <span class="recent-item__title">{{ \Illuminate\Support\Str::limit($t->title, 50) }}</span>
+                            <span class="recent-item__title">{{ \Illuminate\Support\Str::limit($t->title ?? '', 50) }}</span>
                             <span class="recent-item__meta">{{ $t->sender->name ?? '-' }} · {{ $t->status === 'pending' ? 'در انتظار' : ($t->status === 'answered' ? 'پاسخ‌داده‌شده' : 'بسته') }}</span>
                         </span>
                         <span class="recent-item__time">{{ $t->created_at->diffForHumans() }}</span>
                     </a>
                 @endforeach
+                <div style="text-align: center; padding: 0.75rem 0; border-top: 1px solid var(--admin-border);">
+                    <a href="{{ route('admin.tickets') }}" style="font-size: 0.875rem; font-weight: 600; color: var(--admin-primary); text-decoration: none;">مشاهده همه تیکت‌ها</a>
+                </div>
             @endif
         </div>
     </section>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function() {
+    var chartLabelsLastDays = @json($chartLabelsLastDays ?? []),
+        chartTicketsLastDays = @json($chartTicketsLastDays ?? []),
+        chartTicketsByStatus = @json($chartTicketsByStatus ?? ['pending' => 0, 'answered' => 0, 'closed' => 0]);
+    if (typeof window.Chart === 'undefined') return;
+    var Chart = window.Chart;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var barsCtx = document.getElementById('dashboard-chart-bars');
+        if (barsCtx) {
+            new Chart(barsCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: chartLabelsLastDays,
+                    datasets: [{
+                        label: 'تعداد تیکت',
+                        data: chartTicketsLastDays,
+                        backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                        borderColor: 'rgb(37, 99, 235)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { font: { family: 'Vazirmatn, Vazir, sans-serif' } }
+                        },
+                        y: {
+                            ticks: { font: { family: 'Vazirmatn, Vazir, sans-serif' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        var donutCtx = document.getElementById('dashboard-chart-donut');
+        if (donutCtx) {
+            new Chart(donutCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['در انتظار', 'پاسخ‌داده‌شده', 'بسته'],
+                    datasets: [{
+                        data: [chartTicketsByStatus.pending || 0, chartTicketsByStatus.answered || 0, chartTicketsByStatus.closed || 0],
+                        backgroundColor: ['#f59e0b', '#22c55e', '#64748b'],
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            rtl: true,
+                            labels: { font: { family: 'Vazirmatn, Vazir, sans-serif' } }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+    });
+})();
+</script>
+@endpush

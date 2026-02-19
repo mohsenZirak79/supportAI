@@ -138,7 +138,7 @@
                 if(!files.length) return '';
                 let html = '<div class="detail-attachments">';
                 files.slice(0, 100).forEach(f=>{
-                    html += `<a class="detail-attachment-link" href="${f.url}" target="_blank" rel="noopener" title="${escapeHtml(f.name||'file')}"><span>📎</span><span class="truncate">${escapeHtml(f.name||'file')}</span></a>`;
+                    html += `<a class="detail-attachment-link" href="${f.url}" target="_blank" rel="noopener" title="${escapeHtml(f.name||'file')}"><span class="truncate">${escapeHtml(f.name||'file')}</span></a>`;
                 });
                 html += '</div>';
                 return html;

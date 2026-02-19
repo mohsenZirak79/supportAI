@@ -476,10 +476,17 @@ table.dataTable tbody td {
     display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.5rem 1rem;
     border: 1px solid var(--admin-border); border-radius: 0.75rem; background: var(--admin-surface);
     font-size: 0.875rem; font-weight: 500; color: var(--admin-text); cursor: pointer;
+    text-decoration: none;
     transition: background 0.2s, border-color 0.2s;
 }
-.pagination-bar__btn:hover:not(:disabled) { background: rgba(15, 23, 42, 0.05); border-color: var(--admin-primary); color: var(--admin-primary); }
+.pagination-bar__btn:hover:not(:disabled) { background: rgba(15, 23, 42, 0.05); border-color: var(--admin-primary); color: var(--admin-primary); text-decoration: none; }
 .pagination-bar__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* فلش‌های صفحه‌بندی: در LTR قبلی ← و بعدی → */
+.pagination-bar__arrow--prev::before { content: '\2190'; }
+.pagination-bar__arrow--next::before { content: '\2192'; }
+/* در RTL (فارسی) جهت فلش‌ها برعکس: قبلی → و بعدی ← */
+[dir="rtl"] .pagination-bar__arrow--prev::before { content: '\2192'; }
+[dir="rtl"] .pagination-bar__arrow--next::before { content: '\2190'; }
 .list-page__btn-view {
     display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.85rem; border-radius: 0.5rem;
     font-size: 0.8125rem; font-weight: 600; background: var(--admin-primary); color: var(--admin-primary-contrast);
@@ -508,6 +515,9 @@ table.dataTable tbody td {
 .admin-modal .modal-dialog {
     max-width: min(560px, calc(100vw - 2rem));
     margin: 1.75rem auto;
+    min-height: calc(100% - 1.75rem * 2);
+    display: flex;
+    align-items: center;
 }
 .admin-modal .modal-dialog.modal-xl { max-width: min(900px, calc(100vw - 2rem)); }
 .admin-modal .modal-content {
@@ -521,6 +531,14 @@ table.dataTable tbody td {
     padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--admin-border);
     background: rgba(15, 23, 42, 0.02);
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+}
+/* در RTL دکمه بستن (ضربدر) دقیقاً سمت چپ هدر */
+[dir="rtl"] .admin-modal .modal-header .btn-close {
+    margin-inline-start: 0;
+    margin-inline-end: auto;
 }
 .admin-modal .modal-title {
     font-size: 1.125rem;
@@ -589,6 +607,96 @@ table.dataTable tbody td {
 .admin-form .form-check-input { margin-left: 0.35rem; }
 .admin-form .form-check-label { font-weight: 500; font-size: 0.9375rem; }
 
+/* چک‌باکس‌های زیبا (مودال نقش‌ها و هر فرم ادمین) */
+.admin-form__divider {
+    border: 0;
+    height: 1px;
+    background: var(--admin-border);
+    margin: 1.25rem 0;
+}
+.admin-form__section-label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--admin-muted-text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 0.75rem 0;
+}
+.admin-form__check-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.admin-form__check-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--admin-border);
+    background: rgba(15, 23, 42, 0.02);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.admin-form__check-item:hover {
+    background: rgba(37, 99, 235, 0.05);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+.admin-form__check-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+.admin-form__check-box {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    border: 2px solid var(--admin-border);
+    border-radius: 0.375rem;
+    background: var(--admin-surface);
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+[dir="rtl"] .admin-form__check-item { flex-direction: row-reverse; }
+.admin-form__check-input:focus + .admin-form__check-box {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+.admin-form__check-input:checked + .admin-form__check-box {
+    background: var(--admin-primary);
+    border-color: var(--admin-primary);
+}
+.admin-form__check-input:checked + .admin-form__check-box::after {
+    content: "";
+    width: 0.35rem;
+    height: 0.65rem;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 0.15rem;
+}
+.admin-form__check-item:has(.admin-form__check-input:checked) {
+    background: rgba(37, 99, 235, 0.06);
+    border-color: rgba(37, 99, 235, 0.25);
+}
+.admin-form__check-text {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--admin-text);
+}
+.admin-form__hint {
+    font-size: 0.8125rem;
+    color: var(--admin-muted-text);
+    line-height: 1.45;
+}
+
 /* دکمه‌های فرم */
 .admin-btn {
     display: inline-flex;
@@ -647,20 +755,54 @@ body .jdp-container { z-index: 201000 !important; }
    فاز ۵: صفحات جزئیات (تیکت، گفت‌وگو)
 ------------------------------ */
 
-/* نوار/کارت متا (عنوان، ارسال‌کننده، تاریخ، وضعیت) */
-.detail-meta {
-    background: rgba(15, 23, 42, 0.03);
-    border: 1px solid var(--admin-border);
+/* ---------- مودال جزئیات مکالمه (زیباتر) ---------- */
+.conv-detail-body {
+    padding: 1.5rem 1.75rem;
+}
+.conv-detail__meta {
+    margin-bottom: 1.5rem;
+}
+.conv-detail__section {
+    margin-bottom: 1.5rem;
+}
+.conv-detail__section:last-child { margin-bottom: 0; }
+.conv-detail__section-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--admin-muted-text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 0.75rem 0;
+}
+.conv-detail__refs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.conv-detail__empty {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.9375rem;
+    color: var(--admin-muted-text);
+    background: rgba(15, 23, 42, 0.02);
+    border: 1px dashed var(--admin-border);
     border-radius: 0.75rem;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1.25rem;
+}
+
+/* نوار/کارت متا (عنوان چت، کاربر) */
+.detail-meta {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.04), rgba(34, 211, 238, 0.03));
+    border: 1px solid rgba(37, 99, 235, 0.12);
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 0;
 }
 .detail-meta__title {
-    font-size: 1rem;
+    font-size: 1.0625rem;
     font-weight: 700;
     color: var(--admin-text);
     margin: 0 0 0.75rem 0;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.65rem;
     border-bottom: 1px solid var(--admin-border);
 }
 .detail-meta__row {
@@ -676,36 +818,40 @@ body .jdp-container { z-index: 201000 !important; }
 .detail-meta__label { color: var(--admin-muted-text); font-weight: 500; }
 .detail-meta__value { font-weight: 600; }
 
-/* حباب پیام (کاربر vs پشتیبان/هوش مصنوعی) */
+/* حباب پیام (کاربر vs هوش مصنوعی) */
 .detail-bubble {
     max-width: 88%;
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    padding: 0.875rem 1.125rem;
     border: 1px solid;
     font-size: 0.9375rem;
-    line-height: 1.5;
+    line-height: 1.55;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 .detail-bubble--user {
-    background: #eff6ff;
-    border-color: #bfdbfe;
+    background: linear-gradient(180deg, #eff6ff, #dbeafe);
+    border-color: #93c5fd;
     color: #1e40af;
 }
 .detail-bubble--agent {
-    background: #ecfdf5;
-    border-color: #a7f3d0;
+    background: linear-gradient(180deg, #ecfdf5, #d1fae5);
+    border-color: #6ee7b7;
     color: #065f46;
 }
 .detail-bubble__sender {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     color: inherit;
-    opacity: 0.9;
-    margin-bottom: 0.35rem;
+    opacity: 0.95;
+    margin-bottom: 0.4rem;
 }
 .detail-bubble__time {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     color: var(--admin-muted-text);
     margin-top: 0.5rem;
+    opacity: 0.9;
 }
 .detail-attachments {
     margin-top: 0.5rem;
@@ -718,17 +864,17 @@ body .jdp-container { z-index: 201000 !important; }
     align-items: center;
     gap: 0.35rem;
     max-width: 220px;
-    padding: 0.3rem 0.55rem;
+    padding: 0.35rem 0.65rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     line-height: 1;
-    background: #eef2ff;
+    background: rgba(255, 255, 255, 0.7);
     color: #4338ca;
-    border: 1px solid #c7d2fe;
+    border: 1px solid rgba(99, 102, 241, 0.35);
     text-decoration: none;
     transition: background 0.2s, border-color 0.2s;
 }
-.detail-attachment-link:hover { background: #e0e7ff; border-color: #a5b4fc; color: #4338ca; }
+.detail-attachment-link:hover { background: #fff; border-color: #818cf8; color: #4338ca; }
 .detail-attachment-link .truncate {
     max-width: 140px;
     white-space: nowrap;
@@ -740,12 +886,13 @@ body .jdp-container { z-index: 201000 !important; }
 .detail-messages {
     max-height: 45vh;
     overflow-y: auto;
+    background: rgba(15, 23, 42, 0.02);
     border: 1px solid var(--admin-border);
-    border-radius: 0.5rem;
-    padding: 1rem;
+    border-radius: 1rem;
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 .detail-messages__loading,
 .detail-messages__error {
@@ -758,15 +905,35 @@ body .jdp-container { z-index: 201000 !important; }
 /* کارت ارجاع در گفت‌وگو */
 .detail-referral-card {
     border: 1px solid var(--admin-border);
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     overflow: hidden;
     background: var(--admin-surface);
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
 }
 .detail-referral-card .card-body {
-    padding: 1rem 1.25rem;
+    padding: 1.25rem 1.5rem;
 }
 .detail-referral-card .badge { font-size: 0.75rem; font-weight: 600; }
+
+/* ویس‌کارت در مودال مکالمه (هماهنگ با تم) */
+.conv-detail-body .voice-card {
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+.conv-detail-body .voice-card__body {
+    background: rgba(15, 23, 42, 0.02);
+    border-color: var(--admin-border);
+}
+.conv-detail-body .voice-card .download-link {
+    color: var(--admin-primary);
+}
+.conv-detail-body .voice-card .download-link:hover {
+    text-decoration: none;
+    opacity: 0.9;
+}
 
 /* ------------------------------
    فاز ۶: تجربه کاربری و دسترسی

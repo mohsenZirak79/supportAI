@@ -598,13 +598,13 @@ const referralStatusLabel = (status) => {
 };
 const getFileEmoji = (mimeOrType = '') => {
     const type = String(mimeOrType || '').toLowerCase();
-    if (type.startsWith('image/')) return '🖼️';
-    if (type.includes('pdf')) return '📄';
-    if (type.includes('word') || type.includes('doc')) return '📝';
-    if (type.includes('zip') || type.includes('rar')) return '📦';
-    if (type.includes('sheet') || type.includes('excel') || type.includes('csv')) return '📊';
-    if (type.startsWith('audio/')) return '🎧';
-    return '📎';
+    if (type.startsWith('image/')) return '';
+    if (type.includes('pdf')) return '';
+    if (type.includes('word') || type.includes('doc')) return '';
+    if (type.includes('zip') || type.includes('rar')) return '';
+    if (type.includes('sheet') || type.includes('excel') || type.includes('csv')) return '';
+    if (type.startsWith('audio/')) return '';
+    return '';
 };
 // --- State ---
 const chats = ref([]); // لیست چت‌ها از API
@@ -2822,11 +2822,12 @@ function handleMenuClickOutside(event) {
 }
 
 .bot-message .message-bubble::before {
-    content: "🤖";
+    content: "AI";
     position: absolute;
     top: -8px;
     inset-inline-start: -8px;
-    font-size: 1rem;
+    font-size: 0.65rem;
+    font-weight: 700;
     background: white;
     width: 24px;
     height: 24px;
@@ -2853,8 +2854,8 @@ function handleMenuClickOutside(event) {
 }
 
 :global(.v-toast__item.welcome-toast::before) {
-    content: "✨";
-    display: inline-flex;
+    content: none;
+    display: none;
 }
 
 :global(.v-toast__item.welcome-toast .v-toast__text) {

@@ -474,7 +474,7 @@ export const initMotionSystem = () => {
         });
     }
     
-    console.log('🎬 Motion system initialized');
+    console.log('Motion system initialized');
 };
 
 // Auto-initialize on DOM ready
