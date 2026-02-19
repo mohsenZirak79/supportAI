@@ -553,33 +553,77 @@
         });
 
         if (userMenu && userDropdown) {
+            var closeTimeout = null;
+            var isPinned = false;
+            var dropdownWidth = 180;
+
             function positionUserDropdown() {
                 if (!userDropdown.classList.contains('is-open')) return;
                 var rect = userMenu.getBoundingClientRect();
                 var gap = 8;
-                var dropdownWidth = 180;
                 var dropdownMaxHeight = Math.min(320, window.innerHeight - 100);
-                /* راستِ منو با راستِ دکمه تراز؛ اگر منو از چپ viewport بیرون زد، جایش را محدود کن */
-                var rightPx = window.innerWidth - rect.right;
-                if (rect.right - dropdownWidth < 0) rightPx = window.innerWidth - dropdownWidth;
                 userDropdown.style.top = (rect.bottom + gap) + 'px';
-                userDropdown.style.right = rightPx + 'px';
-                userDropdown.style.left = 'auto';
                 userDropdown.style.maxHeight = dropdownMaxHeight + 'px';
+                /* راستِ منو با راستِ دکمه تراز؛ اگر منو از چپ viewport بیرون زد، به چپ viewport بچسب */
+                var rightPx = window.innerWidth - rect.right;
+                if (rect.right - dropdownWidth < 0) {
+                    userDropdown.style.left = '0';
+                    userDropdown.style.right = 'auto';
+                } else {
+                    userDropdown.style.right = rightPx + 'px';
+                    userDropdown.style.left = 'auto';
+                }
             }
+
+            function openDropdown() {
+                userDropdown.classList.add('is-open');
+                userMenu.setAttribute('aria-expanded', 'true');
+                positionUserDropdown();
+            }
+            function closeDropdown() {
+                userDropdown.classList.remove('is-open');
+                userMenu.setAttribute('aria-expanded', 'false');
+                isPinned = false;
+            }
+            function cancelCloseTimer() {
+                if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
+            }
+            function scheduleClose() {
+                cancelCloseTimer();
+                if (isPinned) return;
+                closeTimeout = setTimeout(function () {
+                    closeTimeout = null;
+                    closeDropdown();
+                }, 120);
+            }
+
+            userMenu.addEventListener('mouseenter', function () {
+                cancelCloseTimer();
+                openDropdown();
+            });
+            userMenu.addEventListener('mouseleave', function () {
+                scheduleClose();
+            });
+            userDropdown.addEventListener('mouseenter', function () {
+                cancelCloseTimer();
+            });
+            userDropdown.addEventListener('mouseleave', function () {
+                scheduleClose();
+            });
+
             userMenu.addEventListener('click', function (e) {
                 e.stopPropagation();
-                var isOpen = userDropdown.classList.toggle('is-open');
-                userMenu.setAttribute('aria-expanded', isOpen);
-                if (isOpen) positionUserDropdown();
+                openDropdown();
+                isPinned = true;
             });
             window.addEventListener('resize', positionUserDropdown);
             window.addEventListener('scroll', function () {
                 if (userDropdown.classList.contains('is-open')) positionUserDropdown();
             }, true);
-            document.addEventListener('click', function () {
-                userDropdown.classList.remove('is-open');
-                userMenu.setAttribute('aria-expanded', 'false');
+            document.addEventListener('click', function (e) {
+                if (userMenu.contains(e.target) || userDropdown.contains(e.target)) return;
+                closeDropdown();
+                cancelCloseTimer();
             });
             userDropdown.addEventListener('click', function (e) { e.stopPropagation(); });
         }

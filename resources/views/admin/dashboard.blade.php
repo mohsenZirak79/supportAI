@@ -325,7 +325,27 @@
                         legend: {
                             position: 'bottom',
                             rtl: true,
-                            labels: { font: { family: 'Vazirmatn, Vazir, sans-serif' } }
+                            labels: {
+                                font: { family: 'Vazirmatn, Vazir, sans-serif', size: 13 },
+                                padding: 16,
+                                usePointStyle: true,
+                                pointStyle: 'rect',
+                                boxWidth: 14,
+                                boxHeight: 14,
+                                generateLabels: function(chart) {
+                                    var data = chart.data;
+                                    return (data.labels || []).map(function(label, i) {
+                                        return {
+                                            text: label + ' (' + (data.datasets[0].data[i] || 0) + ')',
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            strokeStyle: data.datasets[0].borderColor || '#fff',
+                                            lineWidth: 1,
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                            }
                         }
                     },
                     cutout: '60%'

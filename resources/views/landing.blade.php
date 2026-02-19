@@ -43,8 +43,8 @@
             --color-primary-lighter: #06b6d4;
             --color-primary-dark: #0c5c72;
             --color-accent: #22d3ee;
-            --color-surface: #ffffff;
-            --color-surface-elevated: #f8fafb;
+            --color-surface: #f0f9ff;
+            --color-surface-elevated: #e0f2fe;
             --color-text: #1f2937;
             --color-text-muted: #6b7280;
             --color-text-subtle: #9ca3af;
@@ -611,7 +611,7 @@
             align-items: center;
             padding: var(--space-4xl) var(--space-xl);
             padding-top: calc(80px + var(--space-4xl));
-            background: linear-gradient(160deg, #f0fdfa 0%, #e0f2fe 40%, #f8fafc 100%);
+            background: linear-gradient(165deg, #ecfeff 0%, #cffafe 25%, #e0f2fe 55%, #ccfbf1 85%, #f0fdfa 100%);
             overflow: hidden;
         }
 
@@ -757,7 +757,7 @@
         /* بلوک هوش مصنوعی */
         .ai-block {
             padding: var(--space-4xl) var(--space-xl);
-            background: #fff;
+            background: linear-gradient(180deg, #f0fdfa 0%, #ecfeff 100%);
             border-top: 1px solid var(--color-border);
             border-bottom: 1px solid var(--color-border);
         }
@@ -806,7 +806,7 @@
         .features {
             position: relative;
             padding: var(--space-5xl) var(--space-xl);
-            background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-elevated) 50%, var(--color-surface) 100%);
+            background: linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 50%, #ecfeff 100%);
             overflow: hidden;
         }
 

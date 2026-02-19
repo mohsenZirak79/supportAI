@@ -9,6 +9,7 @@ use App\Domains\Shared\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Morilog\Jalali\Jalalian;
 
 class AdminDashboardController extends Controller
 {
@@ -49,12 +50,23 @@ class AdminDashboardController extends Controller
             'closed'   => (clone $ticketsQuery)->where('status', 'closed')->count(),
         ];
 
-        // داده نمودار میله‌ای: تعداد تیکت در ۷ روز اخیر
+        // داده نمودار میله‌ای: تعداد تیکت در ۷ روز اخیر (برچسب‌ها فارسی و تاریخ شمسی)
+        $persianWeekdays = [
+            0 => 'یکشنبه',
+            1 => 'دوشنبه',
+            2 => 'سه‌شنبه',
+            3 => 'چهارشنبه',
+            4 => 'پنج‌شنبه',
+            5 => 'جمعه',
+            6 => 'شنبه',
+        ];
         $chartTicketsLastDays = [];
         $labelsLastDays = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i)->startOfDay();
-            $labelsLastDays[] = $date->translatedFormat('D d/m');
+            $jalali = Jalalian::forge($date);
+            $dateStr = $jalali->format('d/m');
+            $labelsLastDays[] = $persianWeekdays[$date->dayOfWeek] . ' ' . strtr($dateStr, '0123456789', '۰۱۲۳۴۵۶۷۸۹');
             $chartTicketsLastDays[] = (clone $ticketsQuery)
                 ->whereDate('created_at', $date)
                 ->count();

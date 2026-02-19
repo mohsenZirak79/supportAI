@@ -114,10 +114,11 @@
             order: 2;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-end;
             padding: 1rem;
+            padding-inline-end: 0;
         }
-        html[dir="rtl"] .register-visual { order: 1; }
+        html[dir="rtl"] .register-visual { order: 1; justify-content: flex-start; padding-inline-start: 0; }
         .register-visual img {
             width: 100%;
             max-width: 420px;
