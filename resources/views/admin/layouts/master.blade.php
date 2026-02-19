@@ -18,8 +18,8 @@
     <style>
         /* ─── فاز ۱: رنگ‌های پروژه (بدون تغییر primary/accent) ─── */
         :root {
-            --admin-primary: rgba(15, 23, 42, 0.92);
-            --admin-primary-contrast: #f8fafc;
+            --admin-primary: #2563eb;
+            --admin-primary-contrast: #ffffff;
             --admin-accent: #22d3ee;
             --admin-accent-soft: rgba(34, 211, 238, 0.18);
             --admin-muted: #94a3b8;
@@ -220,25 +220,10 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            margin-right: auto;
         }
         @media (min-width: 768px) {
             .admin-header__right { gap: 1rem; }
-        }
-        .admin-header__logout {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--admin-muted-text);
-            text-decoration: none;
-            padding: 0.5rem 0.85rem;
-            border-radius: 0.5rem;
-            transition: color 0.2s, background 0.2s;
-        }
-        .admin-header__logout:hover {
-            color: #dc2626;
-            background: rgba(220, 38, 38, 0.08);
-        }
-        @media (max-width: 480px) {
-            .admin-header__logout { font-size: 0.8125rem; padding: 0.4rem 0.6rem; }
         }
 
         /* نوتیفیکیشن (همان ساختار قبلی برای admin.js) */
@@ -497,7 +482,6 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
             <div class="admin-header__right">
-                <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();" class="admin-header__logout" aria-label="خروج از حساب کاربری">خروج</a>
                 <div class="admin-notifications" data-admin-notifications>
                     <button class="admin-notifications__trigger" type="button" data-admin-notifications-trigger aria-haspopup="true" aria-expanded="false">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 0 0-5 5v3.1c0 .58-.2 1.14-.57 1.58L5 14.4h14l-.43-2.72A2.5 2.5 0 0 1 18 10.1V7a5 5 0 0 0-5-5zm0 18a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 20z"/></svg>

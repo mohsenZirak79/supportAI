@@ -433,9 +433,9 @@ table.dataTable tbody td {
     display: inline-flex; align-items: center; gap: 0.5rem;
     padding: 0.5rem 1.25rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.9375rem;
     background: var(--admin-primary); color: var(--admin-primary-contrast); border: none;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2); transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25); transition: transform 0.2s, box-shadow 0.2s;
 }
-.list-page__btn-primary:hover { color: var(--admin-primary-contrast); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25); }
+.list-page__btn-primary:hover { color: var(--admin-primary-contrast); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); }
 .list-page__btn-secondary {
     display: inline-flex; align-items: center; gap: 0.5rem;
     padding: 0.5rem 1.25rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.9375rem;
@@ -485,7 +485,7 @@ table.dataTable tbody td {
     font-size: 0.8125rem; font-weight: 600; background: var(--admin-primary); color: var(--admin-primary-contrast);
     border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
 }
-.list-page__btn-view:hover { color: var(--admin-primary-contrast); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
+.list-page__btn-view:hover { color: var(--admin-primary-contrast); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
 .list-page__btn-action { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; margin-left: 0.35rem; border-radius: 0.5rem; font-size: 0.8125rem; font-weight: 600; border: none; cursor: pointer; transition: transform 0.2s; }
 .list-page__btn-action--edit { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
 .list-page__btn-action--edit:hover { color: #fff; transform: translateY(-1px); }
@@ -606,11 +606,11 @@ table.dataTable tbody td {
 .admin-btn--primary {
     background: var(--admin-primary);
     color: var(--admin-primary-contrast);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 .admin-btn--primary:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
 }
 .admin-btn--secondary {
     background: var(--admin-surface);

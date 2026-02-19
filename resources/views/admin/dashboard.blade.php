@@ -70,7 +70,7 @@
     .quick-action__icon svg { width: 24px; height: 24px; }
     .quick-action__text h3 { font-size: 1rem; font-weight: 700; margin: 0 0 0.25rem 0; }
     .quick-action__text p { font-size: 0.8125rem; opacity: 0.9; margin: 0; }
-    .quick-action--primary { background: linear-gradient(135deg, var(--admin-primary), rgba(15, 23, 42, 0.95)); }
+    .quick-action--primary { background: linear-gradient(135deg, var(--admin-primary), #1d4ed8); }
     .quick-action--accent { background: linear-gradient(135deg, var(--admin-accent), #06b6d4); }
     .quick-action--teal { background: linear-gradient(135deg, #0d9488, #14b8a6); }
     .quick-action--slate { background: linear-gradient(135deg, #475569, #64748b); }
@@ -117,7 +117,7 @@
     {{-- کارت‌های آمار (پالت پروژه) --}}
     <div class="stat-cards">
         <a href="{{ route('admin.tickets') }}" class="stat-card">
-            <div class="stat-card__icon" style="background: linear-gradient(135deg, var(--admin-primary), rgba(15,23,42,0.9));">
+            <div class="stat-card__icon" style="background: linear-gradient(135deg, var(--admin-primary), #1d4ed8);">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V9z"/><path d="M6 9h.01M18 9h.01M6 15h.01M18 15h.01"/></svg>
             </div>
             <div class="stat-card__value">{{ $stats['tickets_total'] }}</div>
