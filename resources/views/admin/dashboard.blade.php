@@ -211,11 +211,15 @@
         <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
             <div class="chart-card" style="background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 1rem; padding: 1.25rem; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);">
                 <h3 style="font-size: 1rem; font-weight: 600; color: var(--admin-text); margin: 0 0 1rem 0; text-align: right;">تیکت‌های ۷ روز اخیر</h3>
-                <canvas id="dashboard-chart-bars" height="220" style="max-height: 220px;"></canvas>
+                <div class="chart-wrap" style="position: relative; width: 100%; height: 220px;">
+                    <canvas id="dashboard-chart-bars"></canvas>
+                </div>
             </div>
             <div class="chart-card" style="background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 1rem; padding: 1.25rem; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);">
                 <h3 style="font-size: 1rem; font-weight: 600; color: var(--admin-text); margin: 0 0 1rem 0; text-align: right;">توزیع بر اساس وضعیت</h3>
-                <canvas id="dashboard-chart-donut" height="220" style="max-height: 220px;"></canvas>
+                <div class="chart-wrap" style="position: relative; width: 100%; height: 220px;">
+                    <canvas id="dashboard-chart-donut"></canvas>
+                </div>
             </div>
         </div>
     </section>
@@ -260,22 +264,26 @@
         var Chart = window.Chart;
         var barsCtx = document.getElementById('dashboard-chart-bars');
         if (barsCtx) {
+            var dataArr = Array.isArray(chartTicketsLastDays) ? chartTicketsLastDays : [];
+            var maxVal = dataArr.length ? Math.max.apply(null, dataArr) : 0;
             new Chart(barsCtx.getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: chartLabelsLastDays,
+                    labels: Array.isArray(chartLabelsLastDays) ? chartLabelsLastDays : [],
                     datasets: [{
                         label: 'تعداد تیکت',
-                        data: chartTicketsLastDays,
+                        data: dataArr,
                         backgroundColor: 'rgba(37, 99, 235, 0.7)',
                         borderColor: 'rgb(37, 99, 235)',
                         borderWidth: 1,
-                        borderRadius: 6
+                        borderRadius: 6,
+                        barThickness: 'flex',
+                        minBarLength: 2
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
                     indexAxis: 'y',
                     plugins: {
                         legend: { display: false }
@@ -283,7 +291,11 @@
                     scales: {
                         x: {
                             beginAtZero: true,
-                            ticks: { font: { family: 'Vazirmatn, Vazir, sans-serif' } }
+                            suggestedMax: maxVal < 5 ? 5 : undefined,
+                            ticks: {
+                                stepSize: 1,
+                                font: { family: 'Vazirmatn, Vazir, sans-serif' }
+                            }
                         },
                         y: {
                             ticks: { font: { family: 'Vazirmatn, Vazir, sans-serif' } }
@@ -308,7 +320,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             position: 'bottom',

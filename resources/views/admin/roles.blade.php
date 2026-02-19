@@ -28,6 +28,12 @@
         </div>
     </header>
 
+    @include('admin.partials.list-filters', [
+        'action' => route('admin.roles'),
+        'searchPlaceholder' => 'جستجو در عنوان نقش...',
+        'searchValue' => request('search'),
+    ])
+
     <div class="list-page__card">
         <div class="table-responsive">
             <table class="list-page__table">
@@ -66,6 +72,9 @@
                 </tbody>
             </table>
         </div>
+        @if(method_exists($roles, 'hasPages') && $roles->hasPages())
+            @include('admin.partials.pagination', ['paginator' => $roles])
+        @endif
     </div>
 </div>
 

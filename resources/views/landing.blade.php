@@ -1839,12 +1839,13 @@
             // ============================================
             const revealElements = document.querySelectorAll('[data-reveal]');
 
+            // زودتر تریگر شود: المان‌ها وقتی هنوز ۱۵۰px پایین‌تر از دید هستند لود می‌شوند
             const revealObserver = new IntersectionObserver((entries) => {
-                entries.forEach((entry, index) => {
+                entries.forEach((entry) => {
                     if (entry.isIntersecting) {
                         const element = entry.target;
                         const staggerIndex = Array.from(revealElements).indexOf(element);
-                        const delay = prefersReducedMotion ? 0 : Math.min(staggerIndex, 6) * MOTION.stagger;
+                        const delay = prefersReducedMotion ? 0 : Math.min(staggerIndex, 6) * 50;
 
                         setTimeout(() => {
                             element.classList.add('revealed');
@@ -1854,8 +1855,8 @@
                     }
                 });
             }, {
-                threshold: 0.15,
-                rootMargin: '0px 0px -60px 0px'
+                threshold: 0.05,
+                rootMargin: '0px 0px 150px 0px'
             });
 
             revealElements.forEach(el => revealObserver.observe(el));
@@ -1928,17 +1929,26 @@
             });
 
             // ============================================
-            // PARALLAX FOR GRADIENT ORBS
+            // PARALLAX FOR GRADIENT ORBS (با rAF برای اسکرول روان)
             // ============================================
             if (!prefersReducedMotion) {
                 const orbs = document.querySelectorAll('.gradient-orb');
+                let scrollTicking = false;
 
-                window.addEventListener('scroll', function() {
+                function updateOrbs() {
                     const scrollY = window.scrollY;
                     orbs.forEach((orb, index) => {
                         const speed = 0.1 + (index * 0.05);
                         orb.style.transform = `translateY(${scrollY * speed}px)`;
                     });
+                    scrollTicking = false;
+                }
+
+                window.addEventListener('scroll', function() {
+                    if (!scrollTicking) {
+                        requestAnimationFrame(updateOrbs);
+                        scrollTicking = true;
+                    }
                 }, { passive: true });
             }
 
@@ -1950,12 +1960,10 @@
             const statsObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && !prefersReducedMotion) {
-                        // Stats are already displayed with Persian numerals
-                        // Just trigger the reveal animation
                         statsObserver.unobserve(entry.target);
                     }
                 });
-            }, { threshold: 0.5 });
+            }, { threshold: 0.1, rootMargin: '0px 0px 80px 0px' });
 
             statNumberElements.forEach(stat => statsObserver.observe(stat));
 

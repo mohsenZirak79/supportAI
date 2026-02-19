@@ -57,20 +57,6 @@
                         <option value="en">EN</option>
                         <option value="ar">ع</option>
                     </select>
-                    <button
-                        class="nav-link"
-                        type="button"
-                        :disabled="!activeChatId"
-                        @click="toggleReferralPanel"
-                    >
-                        <span class="nav-dot" v-if="hasPublicReferralResponses"></span>
-                        {{ $t('nav.referrals') }}
-                    </button>
-                    <button @click="goToTickets" class="nav-link">{{ $t('nav.tickets') }}</button>
-                    <button @click="goToProfile" class="nav-link">{{ $t('nav.profile') }}</button>
-                    <button @click="logout" class="nav-link danger" :disabled="loggingOut">
-                        {{ loggingOut ? '...' : $t('nav.logout') }}
-                    </button>
                 </nav>
             </div>
         </header>
@@ -114,6 +100,22 @@
                             </button>
                         </div>
                     </div>
+                </div>
+                <div class="sidebar-footer">
+                    <button
+                        class="sidebar-footer__link"
+                        type="button"
+                        :disabled="!activeChatId"
+                        @click="toggleReferralPanel"
+                    >
+                        <span class="sidebar-footer__dot" v-if="hasPublicReferralResponses"></span>
+                        {{ $t('nav.referrals') }}
+                    </button>
+                    <button type="button" class="sidebar-footer__link" @click="goToTickets">{{ $t('nav.tickets') }}</button>
+                    <button type="button" class="sidebar-footer__link" @click="goToProfile">{{ $t('nav.profile') }}</button>
+                    <button type="button" class="sidebar-footer__link sidebar-footer__link--danger" @click="logout" :disabled="loggingOut">
+                        {{ loggingOut ? '...' : $t('nav.logout') }}
+                    </button>
                 </div>
             </aside>
             <div
@@ -1871,29 +1873,18 @@ function handleMenuClickOutside(event) {
 }
 
 
-/* Unified Header Styles */
+/* Unified Header – رنگ واحد، بدون گرادیان */
 .app-header {
-    background: linear-gradient(120deg, #0f766e 0%, #0ea5e9 50%, #22d3ee 100%);
-    background-size: 200% 200%;
-    animation: headerGradient 8s ease infinite;
+    background: #0e7490;
     color: white;
-    padding: 0 24px;
+    padding: 0 20px;
     height: 56px;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 100;
-    box-shadow: 0 4px 20px rgba(15, 118, 110, 0.3);
-}
-
-@keyframes headerGradient {
-    0%, 100% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .header-inner {
@@ -1914,7 +1905,7 @@ function handleMenuClickOutside(event) {
 }
 
 .mobile-menu-btn {
-    background: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.2);
     border: none;
     color: white;
     width: 32px;
@@ -1930,7 +1921,7 @@ function handleMenuClickOutside(event) {
 .brand-icon {
     width: 28px;
     height: 28px;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.25);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -1961,11 +1952,11 @@ function handleMenuClickOutside(event) {
 }
 
 .lang-select {
-    background: rgba(255,255,255,0.15);
-    border: none;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
     color: white;
     padding: 6px 10px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.85rem;
     cursor: pointer;
 }
@@ -1975,47 +1966,10 @@ function handleMenuClickOutside(event) {
     color: white;
 }
 
-.nav-link {
-    position: relative;
-    background: transparent;
-    border: none;
-    color: rgba(255,255,255,0.85);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.nav-link:hover {
-    background: rgba(255,255,255,0.15);
-    color: white;
-}
-
-.nav-link.danger {
-    color: #fecaca;
-}
-
-.nav-link.danger:hover {
-    background: rgba(239,68,68,0.2);
-}
-
-.nav-dot {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 6px;
-    height: 6px;
-    background: #f87171;
-    border-radius: 50%;
-}
-
 /* Header Responsive */
 @media (max-width: 640px) {
     .app-header {
-        padding: 0 12px;
+        padding: 0 14px;
         height: 52px;
     }
 
@@ -2033,32 +1987,19 @@ function handleMenuClickOutside(event) {
     }
 
     .header-nav {
-        gap: 4px;
-        max-width: 70vw;
-        overflow-x: auto;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .header-nav::-webkit-scrollbar {
-        display: none;
+        gap: 8px;
     }
 
     .lang-select {
-        padding: 4px 6px;
-        font-size: 0.75rem;
-    }
-
-    .nav-link {
         padding: 5px 8px;
-        font-size: 0.75rem;
+        font-size: 0.8rem;
     }
 }
 
 @media (max-width: 480px) {
     .app-header {
         height: 48px;
-        padding: 0 10px;
+        padding: 0 12px;
     }
 
     .mobile-menu-btn {
@@ -2119,32 +2060,40 @@ function handleMenuClickOutside(event) {
 
 .sidebar {
     width: 260px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.92) 100%);
-    border-left: 1px solid rgba(226, 232, 240, 0.6);
+    min-width: 260px;
+    background: #f8fafc;
+    border-inline-start: 1px solid rgba(226, 232, 240, 0.8);
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    transition: transform .3s ease, box-shadow .3s ease;
-    backdrop-filter: blur(20px);
-    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
     position: relative;
     z-index: 2;
 }
 
+.sidebar .chat-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
 .new-chat-btn {
-    padding: 14px 20px;
-    background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+    flex-shrink: 0;
+    padding: 12px 16px;
+    margin: 12px;
+    background: #0e7490;
     color: white;
     font-weight: 600;
+    font-size: 0.9375rem;
     cursor: pointer;
     text-align: center;
-    margin: 12px;
-    border-radius: 8px;
-    transition: opacity 0.2s;
+    border-radius: 10px;
+    border: none;
+    transition: background 0.2s, transform 0.2s;
 }
 
 .new-chat-btn:hover {
-    opacity: 0.9;
+    background: #0d6a7a;
 }
 
 .chat-list {
@@ -2174,9 +2123,8 @@ function handleMenuClickOutside(event) {
     font-weight: 600;
 }*/
 .chat-item.active {
-    background-color: #eef2ff;
-    border-right: 3px solid transparent;
-    border-image: linear-gradient(180deg, #0e7490, #0891b2) 1;
+    background-color: rgba(14, 116, 144, 0.08);
+    border-inline-start: 3px solid #0e7490;
 }
 
 .chat-item__title {
@@ -2252,6 +2200,58 @@ function handleMenuClickOutside(event) {
     cursor: not-allowed;
 }
 
+/* پایین سایدبار – لینک‌ها مثل ChatGPT */
+.sidebar-footer {
+    flex-shrink: 0;
+    border-top: 1px solid rgba(226, 232, 240, 0.9);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: #fff;
+}
+
+.sidebar-footer__link {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    text-align: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #475569;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-footer__link:hover:not(:disabled) {
+    background: rgba(14, 116, 144, 0.08);
+    color: #0e7490;
+}
+
+.sidebar-footer__link:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sidebar-footer__link--danger:hover:not(:disabled) {
+    background: rgba(220, 38, 38, 0.08);
+    color: #dc2626;
+}
+
+.sidebar-footer__dot {
+    position: absolute;
+    top: 10px;
+    inset-inline-end: 14px;
+    width: 6px;
+    height: 6px;
+    background: #ef4444;
+    border-radius: 50%;
+}
+
 .chat-main {
     flex: 1;
     display: flex;
@@ -2267,12 +2267,8 @@ function handleMenuClickOutside(event) {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-        radial-gradient(circle at 18% 20%, rgba(14, 165, 233, 0.08), transparent 40%),
-        radial-gradient(circle at 80% 10%, rgba(34, 211, 238, 0.08), transparent 38%),
-        linear-gradient(120deg, rgba(248, 250, 252, 0.6), rgba(255, 255, 255, 0.2));
+    background: #fafbfc;
     pointer-events: none;
-    opacity: 0.9;
 }
 
 .empty-state {
@@ -3499,21 +3495,30 @@ function handleMenuClickOutside(event) {
         position: fixed;
         top: 52px;
         bottom: 0;
-        left: auto;
-        right: 0;
+        inset-inline-end: 0;
         width: min(85vw, 320px);
         transform: translateX(110%);
         border: none;
-        box-shadow: -8px 0 24px rgba(15, 23, 42, 0.25);
+        box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
         z-index: 90;
-        background: #fff;
+        background: #f8fafc;
         display: flex;
         flex-direction: column;
-        transition: transform 0.3s ease;
+        transition: transform 0.25s ease;
+    }
+    [dir="rtl"] .sidebar.is-mobile {
+        transform: translateX(-110%);
+    }
+    [dir="rtl"] .sidebar.is-mobile.is-open {
+        transform: translateX(0);
     }
 
     .sidebar.is-mobile.is-open {
         transform: translateX(0);
+    }
+    .sidebar.is-mobile .sidebar-footer {
+        background: #fff;
+        border-top: 1px solid #e2e8f0;
     }
 
     .sidebar-overlay {

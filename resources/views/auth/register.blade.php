@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
@@ -57,6 +57,8 @@
 
         body {
             min-height: 100vh;
+            min-height: 100dvh;
+            min-height: -webkit-fill-available;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
             display: flex;
             align-items: center;
@@ -64,6 +66,8 @@
             padding: 2rem;
             position: relative;
             overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* Animated Background */
@@ -104,16 +108,20 @@
         /* Language Switcher */
         .lang-switcher {
             position: fixed;
-            top: 1.5rem;
-            right: 1.5rem;
+            top: max(1rem, env(safe-area-inset-top));
+            right: max(1rem, env(safe-area-inset-right));
+            left: auto;
             display: flex;
+            flex-wrap: wrap;
             gap: 0.5rem;
             z-index: 100;
+            max-width: calc(100vw - 2rem);
+            justify-content: flex-end;
         }
 
         html[dir="ltr"] .lang-switcher {
             right: auto;
-            left: 1.5rem;
+            left: max(1rem, env(safe-area-inset-left));
         }
 
         .lang-btn {
@@ -146,6 +154,7 @@
             position: relative;
             width: 100%;
             max-width: 600px;
+            min-width: 0;
             background: rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(20px);
             border-radius: 24px;
@@ -156,6 +165,7 @@
             opacity: 0;
             transform: translateY(20px);
             margin: 4rem 0;
+            overflow-wrap: break-word;
         }
 
         @keyframes cardEntrance {
@@ -217,6 +227,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 1rem;
+            min-width: 0;
         }
 
         @media (max-width: 600px) {
@@ -227,6 +238,7 @@
 
         .form-group {
             margin-bottom: 1rem;
+            min-width: 0;
         }
 
         .form-group.full-width {
@@ -243,6 +255,7 @@
 
         .form-input, .form-textarea {
             width: 100%;
+            max-width: 100%;
             padding: 0.75rem 1rem;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -251,6 +264,7 @@
             font-size: 0.95rem;
             transition: all 0.3s ease;
             outline: none;
+            box-sizing: border-box;
         }
 
         .form-input::placeholder, .form-textarea::placeholder {
@@ -318,6 +332,8 @@
             border-radius: 10px;
             padding: 1rem;
             margin-bottom: 1.5rem;
+            max-width: 100%;
+            overflow-wrap: break-word;
         }
 
         .error-alert ul {
@@ -370,7 +386,8 @@
         @media (max-width: 768px) {
             body {
                 padding: 1rem;
-                overflow-y: auto;
+                padding-left: max(1rem, env(safe-area-inset-left));
+                padding-right: max(1rem, env(safe-area-inset-right));
             }
 
             .register-card {
@@ -380,14 +397,8 @@
             }
 
             .lang-switcher {
-                position: fixed;
-                top: 0.75rem;
-                right: 0.75rem;
+                top: max(0.75rem, env(safe-area-inset-top));
                 gap: 0.25rem;
-            }
-
-            html[dir="ltr"] .lang-switcher {
-                left: 0.75rem;
             }
 
             .lang-btn {
@@ -410,15 +421,19 @@
         @media (max-width: 576px) {
             body {
                 padding: 0.75rem;
+                padding-left: max(0.75rem, env(safe-area-inset-left));
+                padding-right: max(0.75rem, env(safe-area-inset-right));
+                padding-bottom: max(1rem, env(safe-area-inset-bottom));
                 align-items: flex-start;
-                padding-top: 3rem;
+                padding-top: 3.5rem;
             }
 
             .register-card {
                 padding: 1.5rem;
                 border-radius: 18px;
-                margin-top: 1rem;
+                margin-top: 0;
                 margin-bottom: 1.5rem;
+                max-width: 100%;
             }
 
             .logo-container {
@@ -502,16 +517,13 @@
         @media (max-width: 400px) {
             body {
                 padding: 0.5rem;
+                padding-left: max(0.5rem, env(safe-area-inset-left));
+                padding-right: max(0.5rem, env(safe-area-inset-right));
             }
 
             .lang-switcher {
-                top: 0.5rem;
-                right: 0.5rem;
+                top: max(0.5rem, env(safe-area-inset-top));
                 gap: 0.2rem;
-            }
-
-            html[dir="ltr"] .lang-switcher {
-                left: 0.5rem;
             }
 
             .lang-btn {
@@ -554,6 +566,10 @@
 
         /* Very small */
         @media (max-width: 320px) {
+            body {
+                padding: 0.5rem;
+            }
+
             .register-card {
                 padding: 1rem;
             }

@@ -445,18 +445,18 @@ table.dataTable tbody td {
 .list-page__btn-secondary:hover { background: rgba(15, 23, 42, 0.06); border-color: var(--admin-primary); color: var(--admin-primary); }
 .list-page__card {
     background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 1rem;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06); overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06); overflow: hidden;
 }
 .list-page__table { width: 100%; border-collapse: collapse; }
 .list-page__table thead th {
-    text-align: right; padding: 1rem 1rem; font-size: 0.8125rem; font-weight: 600; color: var(--admin-text);
-    border-bottom: 1px solid var(--admin-border); background: rgba(15, 23, 42, 0.02);
+    text-align: right; padding: 1rem 1.25rem; font-size: 0.8125rem; font-weight: 700; color: var(--admin-text);
+    border-bottom: 2px solid var(--admin-border); background: rgba(15, 23, 42, 0.03);
 }
 .list-page__table tbody td {
-    padding: 1rem; font-size: 0.9375rem; color: var(--admin-text); border-bottom: 1px solid var(--admin-border);
+    padding: 1rem 1.25rem; font-size: 0.9375rem; color: var(--admin-text); border-bottom: 1px solid var(--admin-border);
     vertical-align: middle;
 }
-.list-page__table tbody tr:hover { background: rgba(15, 23, 42, 0.03); }
+.list-page__table tbody tr:hover { background: rgba(37, 99, 235, 0.03); }
 .list-page__table tbody tr:last-child td { border-bottom: none; }
 .list-page__empty { text-align: center; padding: 3rem 1.5rem; color: var(--admin-muted-text); font-size: 1rem; }
 .status-badge {
@@ -500,8 +500,94 @@ table.dataTable tbody td {
 .list-page__btn-action--delete:hover { color: #fff; transform: translateY(-1px); }
 .list-page .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .list-page .truncate-1 { max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* نوار جستجو و فیلتر */
+.list-filters {
+    background: rgba(15, 23, 42, 0.02);
+    border: 1px solid var(--admin-border);
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+.list-filters__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+}
+.list-filters__search-wrap {
+    flex: 1;
+    min-width: 200px;
+}
+.list-filters__input {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    font-size: 0.9375rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 0.75rem;
+    background: var(--admin-surface);
+    color: var(--admin-text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.list-filters__input::placeholder { color: var(--admin-muted-text); }
+.list-filters__input:focus {
+    outline: none;
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.list-filters__filter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 140px;
+}
+.list-filters__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--admin-muted-text);
+}
+.list-filters__select {
+    padding: 0.6rem 0.85rem;
+    font-size: 0.9375rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 0.75rem;
+    background: var(--admin-surface);
+    color: var(--admin-text);
+    min-width: 140px;
+}
+.list-filters__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+.list-filters__btn {
+    padding: 0.6rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+}
+.list-filters__btn--primary {
+    background: var(--admin-primary);
+    color: var(--admin-primary-contrast);
+}
+.list-filters__btn--primary:hover { opacity: 0.95; transform: translateY(-1px); }
+.list-filters__btn--secondary {
+    background: var(--admin-surface);
+    color: var(--admin-text);
+    border: 1px solid var(--admin-border);
+}
+.list-filters__btn--secondary:hover { background: rgba(15, 23, 42, 0.05); border-color: var(--admin-primary); color: var(--admin-primary); }
+
 @media (max-width: 768px) {
     .list-page__header { flex-direction: column; align-items: stretch; }
+    .list-filters__row { flex-direction: column; align-items: stretch; }
+    .list-filters__search-wrap { min-width: 0; }
+    .list-filters__filter { min-width: 0; }
+    .list-filters__actions { justify-content: flex-end; }
     .list-page__table thead th, .list-page__table tbody td { padding: 0.75rem; font-size: 0.875rem; }
 }
 

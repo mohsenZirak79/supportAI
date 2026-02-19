@@ -15,8 +15,9 @@ class AdminDashboardController extends Controller
     public function __invoke(Request $request)
     {
         $user = Auth::user();
+        // ادمین سامانه (ادمین، برنامه‌نویس، یا internal) به تمام تیکت‌ها دسترسی دارد
         $hasInternal = $user->roles()->where('is_internal', 1)->exists();
-        $isAdmin = $user->hasRole('ادمین') || $hasInternal;
+        $isAdmin = $user->hasRole('ادمین') || $user->hasRole('برنامه نویس') || $hasInternal;
 
         $ticketsQuery = Ticket::query()->whereNull('parent_id');
         if (!$isAdmin) {

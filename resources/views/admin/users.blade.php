@@ -53,6 +53,20 @@
         </div>
     </header>
 
+    @include('admin.partials.list-filters', [
+        'action' => route('admin.users'),
+        'searchPlaceholder' => 'جستجو در نام، ایمیل، تلفن، کد ملی...',
+        'searchValue' => request('search'),
+        'filters' => [
+            [
+                'name' => 'role_id',
+                'label' => 'نقش',
+                'empty_option' => 'همه نقش‌ها',
+                'options' => $roles->pluck('name', 'id')->toArray(),
+            ],
+        ],
+    ])
+
     <div class="list-page__card">
         <div class="table-responsive">
             <table class="list-page__table">
@@ -100,6 +114,9 @@
                 </tbody>
             </table>
         </div>
+        @if(method_exists($users, 'hasPages') && $users->hasPages())
+            @include('admin.partials.pagination', ['paginator' => $users])
+        @endif
     </div>
 </div>
 

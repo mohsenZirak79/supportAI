@@ -197,6 +197,24 @@
         <div class="list-page__actions"></div>
     </header>
 
+    @include('admin.partials.list-filters', [
+        'action' => route('admin.tickets'),
+        'searchPlaceholder' => 'جستجو در عنوان تیکت یا نام ارسال‌کننده...',
+        'searchValue' => request('search'),
+        'filters' => [
+            [
+                'name' => 'status',
+                'label' => 'وضعیت',
+                'empty_option' => 'همه',
+                'options' => [
+                    'pending' => 'در انتظار پاسخ',
+                    'answered' => 'پاسخ داده شده',
+                    'closed' => 'بسته شده',
+                ],
+            ],
+        ],
+    ])
+
     <div class="list-page__card">
         <div class="table-responsive">
             <table class="list-page__table">

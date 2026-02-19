@@ -24,14 +24,23 @@ class AdminChatController extends Controller
             ->with(['user:id,name'])
             ->latest();
         if (!$isAdmin) {
-            // فقط مکالماتی که حداقل یک referral مرتبط با کاربر دارد
             $query->whereHas('referrals', function ($q) use ($user, $roleNames) {
                 $q->whereIn('assigned_role', $roleNames)
                     ->orWhere('assigned_agent_id', $user->id);
             });
         }
 
-        $conversations = $query->paginate(20);
+        if ($request->filled('search')) {
+            $term = '%' . $request->search . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('title', 'like', $term)
+                    ->orWhereHas('user', function ($q2) use ($term) {
+                        $q2->where('name', 'like', $term);
+                    });
+            });
+        }
+
+        $conversations = $query->paginate(20)->withQueryString();
 
         return view('admin.chats', compact('conversations'));
     }

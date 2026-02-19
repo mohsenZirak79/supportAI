@@ -16,11 +16,11 @@ class AdminTicketController extends Controller
     {
         $user = Auth::user();
 
-        // آیا کاربر internal است یا نقش ادمین دارد؟
+        // ادمین سامانه (ادمین، برنامه‌نویس، یا نقش internal) به تمام تیکت‌ها دسترسی دارد
         $hasInternal = $user->roles()
             ->where('is_internal', 1)
             ->exists();
-        $isAdmin = $user->hasRole('ادمین') || $hasInternal;
+        $isAdmin = $user->hasRole('ادمین') || $user->hasRole('برنامه نویس') || $hasInternal;
 
         $query = Ticket::query()
             ->whereNull('parent_id')
@@ -33,12 +33,25 @@ class AdminTicketController extends Controller
             ->latest('created_at');
 
         if (!$isAdmin) {
-            // نقش‌های کاربر (idهای int)
             $roleIds = $user->roles()->pluck('id')->all();
             $query->whereIn('department_role_id', $roleIds);
         }
 
-        $tickets = $query->paginate(20);
+        if ($request->filled('search')) {
+            $term = '%' . $request->search . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('title', 'like', $term)
+                    ->orWhereHas('sender', function ($q2) use ($term) {
+                        $q2->where('name', 'like', $term);
+                    });
+            });
+        }
+
+        if ($request->filled('status') && in_array($request->status, ['pending', 'answered', 'closed'], true)) {
+            $query->where('status', $request->status);
+        }
+
+        $tickets = $query->paginate(20)->withQueryString();
 
         return view('admin.tickets', compact('tickets'));
     }
@@ -56,9 +69,9 @@ class AdminTicketController extends Controller
             ->with(['sender:id,name'])
             ->firstOrFail();
 
-        // مجوز دیدن
+        // مجوز دیدن: ادمین سامانه به تمام تیکت‌ها دسترسی دارد
         $hasInternal = $user->roles()->where('is_internal', 1)->exists();
-        $isAdmin = $user->hasRole('ادمین') || $hasInternal;
+        $isAdmin = $user->hasRole('ادمین') || $user->hasRole('برنامه نویس') || $hasInternal;
 
         if (!$isAdmin) {
             $roleIds = $user->roles()->pluck('id')->all();
@@ -127,9 +140,9 @@ class AdminTicketController extends Controller
             ->whereNull('parent_id')
             ->firstOrFail();
 
-        // مجوز پاسخ
+        // مجوز پاسخ: ادمین سامانه به تمام تیکت‌ها دسترسی دارد
         $hasInternal = $user->roles()->where('is_internal', 1)->exists();
-        $isAdmin = $user->hasRole('ادمین') || $hasInternal;
+        $isAdmin = $user->hasRole('ادمین') || $user->hasRole('برنامه نویس') || $hasInternal;
         if (!$isAdmin) {
             $roleIds = $user->roles()->pluck('id')->all();
             abort_unless(in_array((int)$root->department_role_id, $roleIds, true), 403);

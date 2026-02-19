@@ -42,27 +42,50 @@ class WebController
         return view('admin.chats', compact('conversation'));
     }
 
-    public function showUsers()
+    public function showUsers(Request $request)
     {
-        if (auth()->user()->hasRole('برنامه نویس')){
-            $users = User::with('roles')->get();
-        }else{
-            $users = User::with('roles')
-                ->whereDoesntHave('roles', function ($query) {
-                    $query->where('name', 'برنامه نویس');
-                })->get();
+        $query = User::query()->with('roles');
+
+        if (!auth()->user()->hasRole('برنامه نویس')) {
+            $query->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'برنامه نویس');
+            });
         }
 
-        $roles = Role::where('id', '<>', 1)->get();
-        return view('admin.users', compact('users' , 'roles'));
+        if ($request->filled('search')) {
+            $term = '%' . $request->search . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', $term)
+                    ->orWhere('family', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhere('phone', 'like', $term)
+                    ->orWhere('national_id', 'like', $term);
+            });
+        }
+
+        if ($request->filled('role_id')) {
+            $query->whereHas('roles', function ($q) use ($request) {
+                $q->where('roles.id', $request->role_id);
+            });
+        }
+
+        $users = $query->latest()->paginate(15)->withQueryString();
+        $roles = Role::where('id', '<>', 1)->orderBy('name')->get();
+
+        return view('admin.users', compact('users', 'roles'));
     }
 
-    public function showRoles()
+    public function showRoles(Request $request)
     {
-        // نقش‌ها همراه با تعداد کاربران
-        $roles = Role::withCount('users')
-            ->where('id', '!=', 1)
-            ->get();
+        $query = Role::withCount('users')->where('id', '!=', 1);
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->search . '%';
+            $query->where('name', 'like', $term);
+        }
+
+        $roles = $query->orderBy('name')->paginate(20)->withQueryString();
+
         return view('admin.roles', compact('roles'));
     }
 

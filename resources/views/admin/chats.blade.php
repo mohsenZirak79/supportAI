@@ -370,6 +370,12 @@
         <div class="list-page__actions"></div>
     </header>
 
+    @include('admin.partials.list-filters', [
+        'action' => route('admin.chats'),
+        'searchPlaceholder' => 'جستجو در عنوان مکالمه یا نام کاربر...',
+        'searchValue' => request('search'),
+    ])
+
     <div class="list-page__card">
         <div class="table-responsive">
             <table class="list-page__table">

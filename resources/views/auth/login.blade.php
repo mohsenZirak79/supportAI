@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
@@ -54,13 +54,17 @@
 
         body {
             min-height: 100vh;
+            min-height: 100dvh;
+            min-height: -webkit-fill-available;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 2rem;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* Animated Background */
@@ -108,17 +112,21 @@
 
         /* Language Switcher */
         .lang-switcher {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
+            position: fixed;
+            top: max(1rem, env(safe-area-inset-top));
+            right: max(1rem, env(safe-area-inset-right));
+            left: auto;
             display: flex;
+            flex-wrap: wrap;
             gap: 0.35rem;
             z-index: 100;
+            max-width: calc(100vw - 2rem);
+            justify-content: flex-end;
         }
 
         html[dir="ltr"] .lang-switcher {
             right: auto;
-            left: 1rem;
+            left: max(1rem, env(safe-area-inset-left));
         }
 
         .lang-btn {
@@ -151,6 +159,7 @@
             position: relative;
             width: 100%;
             max-width: 420px;
+            min-width: 0;
             background: rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(20px);
             border-radius: 24px;
@@ -160,6 +169,7 @@
             animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
             transform: translateY(20px);
+            overflow-wrap: break-word;
         }
 
         /* ============================================
@@ -169,23 +179,17 @@
         @media (max-width: 768px) {
             body {
                 padding: 1.5rem;
-                overflow-y: auto;
+                padding-left: max(1.5rem, env(safe-area-inset-left));
+                padding-right: max(1.5rem, env(safe-area-inset-right));
             }
 
             .lang-switcher {
-                position: fixed;
-                top: 1rem;
-                right: 1rem;
-            }
-
-            html[dir="ltr"] .lang-switcher {
-                right: auto;
-                left: 1rem;
+                top: max(0.75rem, env(safe-area-inset-top));
             }
 
             .login-card {
                 padding: 2rem;
-                max-width: 380px;
+                max-width: 100%;
             }
 
             .bg-gradient-orb-1 {
@@ -210,8 +214,11 @@
         @media (max-width: 576px) {
             body {
                 padding: 1rem;
-                min-height: 100vh;
-                min-height: -webkit-fill-available;
+                padding-left: max(1rem, env(safe-area-inset-left));
+                padding-right: max(1rem, env(safe-area-inset-right));
+                padding-bottom: max(1rem, env(safe-area-inset-bottom));
+                align-items: flex-start;
+                padding-top: 3.5rem;
             }
 
             html {
@@ -219,13 +226,8 @@
             }
 
             .lang-switcher {
-                top: 0.75rem;
-                right: 0.75rem;
+                top: max(0.5rem, env(safe-area-inset-top));
                 gap: 0.3rem;
-            }
-
-            html[dir="ltr"] .lang-switcher {
-                left: 0.75rem;
             }
 
             .lang-btn {
@@ -234,10 +236,10 @@
             }
 
             .login-card {
-                padding: 1.75rem;
+                padding: 1.5rem;
                 border-radius: 20px;
                 max-width: 100%;
-                margin-top: 2.5rem;
+                margin-top: 0;
             }
 
             .logo-container {
@@ -316,16 +318,13 @@
         @media (max-width: 400px) {
             body {
                 padding: 0.75rem;
+                padding-left: max(0.75rem, env(safe-area-inset-left));
+                padding-right: max(0.75rem, env(safe-area-inset-right));
             }
 
             .lang-switcher {
-                top: 0.5rem;
-                right: 0.5rem;
+                top: max(0.5rem, env(safe-area-inset-top));
                 gap: 0.2rem;
-            }
-
-            html[dir="ltr"] .lang-switcher {
-                left: 0.5rem;
             }
 
             .lang-btn {
@@ -334,9 +333,8 @@
             }
 
             .login-card {
-                padding: 1.5rem;
+                padding: 1.25rem;
                 border-radius: 16px;
-                margin-top: 2rem;
             }
 
             .logo-icon {
@@ -370,8 +368,12 @@
 
         /* Very small devices */
         @media (max-width: 320px) {
+            body {
+                padding: 0.5rem;
+            }
+
             .login-card {
-                padding: 1.25rem;
+                padding: 1rem;
             }
 
             .login-title {
@@ -494,6 +496,7 @@
 
         .form-input {
             width: 100%;
+            max-width: 100%;
             padding: 0.875rem 1rem;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -502,6 +505,7 @@
             font-size: 1rem;
             transition: all 0.3s ease;
             outline: none;
+            box-sizing: border-box;
         }
 
         .form-input::placeholder {
@@ -636,15 +640,18 @@
             }
         }
 
-        /* Success Alert */
+        /* Success Alert - centered in RTL/LTR */
         .success-alert {
             position: fixed;
-            top: 2rem;
+            top: max(2rem, env(safe-area-inset-top));
             left: 50%;
+            right: auto;
             transform: translateX(-50%);
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
-            padding: 1rem 2rem;
+            padding: 1rem 1.25rem;
+            margin: 0 1rem;
+            max-width: calc(100vw - 2rem);
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
             z-index: 1000;
