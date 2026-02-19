@@ -3,7 +3,7 @@
 import "./admin/bootstrap.min.js";
 import "./admin/jquery-3.7.1.min.js";
 import "./admin/bootstrap-notify.js";
-import Chart from "./admin/chartjs.min.js";
+import Chart from "chart.js/auto";
 import "./admin/Chart.extension.js";
 window.Chart = Chart;
 import "./admin/choices.min.js";
