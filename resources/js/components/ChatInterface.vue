@@ -92,6 +92,12 @@
                             <button type="button" @click.stop="openRenameModal(chat)">{{ $t('chat.renameChat') }}</button>
                             <button
                                 type="button"
+                                @click.stop="openReferralPanelForChat(chat)"
+                            >
+                                {{ $t('nav.referrals') }}
+                            </button>
+                            <button
+                                type="button"
                                 class="danger"
                                 :disabled="deletingChatId === chat.id"
                                 @click.stop="deleteChat(chat.id)"
@@ -103,19 +109,51 @@
                 </div>
                 <div class="sidebar-footer">
                     <button
-                        class="sidebar-footer__link"
                         type="button"
-                        :disabled="!activeChatId"
-                        @click="toggleReferralPanel"
+                        class="sidebar-user-trigger"
+                        :aria-expanded="userMenuOpen"
+                        aria-haspopup="true"
+                        @click="userMenuOpen = !userMenuOpen"
                     >
-                        <span class="sidebar-footer__dot" v-if="hasPublicReferralResponses"></span>
-                        {{ $t('nav.referrals') }}
+                        <img
+                            v-if="currentUser.avatar"
+                            :src="currentUser.avatar"
+                            :alt="currentUser.name"
+                            class="sidebar-user-avatar"
+                        />
+                        <div v-else class="sidebar-user-avatar sidebar-user-avatar--placeholder">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                        <span class="sidebar-user-name">{{ currentUser.name || $t('nav.profile') }}</span>
+                        <span class="sidebar-footer__dot sidebar-footer__dot--on-trigger" v-if="hasPublicReferralResponses && !userMenuOpen"></span>
                     </button>
-                    <button type="button" class="sidebar-footer__link" @click="goToTickets">{{ $t('nav.tickets') }}</button>
-                    <button type="button" class="sidebar-footer__link" @click="goToProfile">{{ $t('nav.profile') }}</button>
-                    <button type="button" class="sidebar-footer__link sidebar-footer__link--danger" @click="logout" :disabled="loggingOut">
-                        {{ loggingOut ? '...' : $t('nav.logout') }}
-                    </button>
+                    <div v-if="userMenuOpen" class="sidebar-user-menu" ref="userMenuRef">
+                        <button
+                            type="button"
+                            class="sidebar-user-menu__item"
+                            :disabled="!activeChatId"
+                            @click="userMenuOpen = false; toggleReferralPanel()"
+                        >
+                            <span class="sidebar-footer__dot" v-if="hasPublicReferralResponses"></span>
+                            {{ $t('nav.referrals') }}
+                        </button>
+                        <button type="button" class="sidebar-user-menu__item" @click="userMenuOpen = false; goToTickets()">
+                            {{ $t('nav.tickets') }}
+                        </button>
+                        <button type="button" class="sidebar-user-menu__item" @click="userMenuOpen = false; goToProfile()">
+                            {{ $t('nav.profile') }}
+                        </button>
+                        <button
+                            type="button"
+                            class="sidebar-user-menu__item sidebar-user-menu__item--danger"
+                            :disabled="loggingOut"
+                            @click="userMenuOpen = false; logout()"
+                        >
+                            {{ loggingOut ? '...' : $t('nav.logout') }}
+                        </button>
+                    </div>
                 </div>
             </aside>
             <div
@@ -483,6 +521,9 @@ const audioChunks = ref([]);
 const availableRoles = ref([]);
 const chatMenuOpenId = ref(null);
 const deletingChatId = ref(null);
+const currentUser = ref({ name: '', avatar: null });
+const userMenuOpen = ref(false);
+const userMenuRef = ref(null);
 const renameModal = reactive({
     open: false,
     chatId: null,
@@ -528,6 +569,26 @@ const fetchCurrentUserName = async () => {
         return getDisplayName(payload?.user);
     } catch (error) {
         return '';
+    }
+};
+
+const fetchCurrentUser = async () => {
+    try {
+        const res = await apiFetch('/user/profile');
+        if (!res.ok) return;
+        const payload = await res.json();
+        const u = payload?.user;
+        if (u) {
+            currentUser.value = {
+                name: getDisplayName(u),
+                avatar: u.avatar || null
+            };
+        }
+        if (u?.voice_gender) {
+            userVoiceGender.value = u.voice_gender;
+        }
+    } catch (error) {
+        console.debug('Failed to fetch current user', error);
     }
 };
 
@@ -717,6 +778,15 @@ const toggleReferralPanel = async () => {
     }
     referralPanelOpen.value = true;
     await loadReferrals(activeChatId.value);
+};
+
+const openReferralPanelForChat = async (chat) => {
+    closeChatMenu();
+    if (activeChatId.value !== chat.id) {
+        await setActiveChat(chat.id);
+    }
+    referralPanelOpen.value = true;
+    await loadReferrals(chat.id);
 };
 
 const handleReferralEsc = (event) => {
@@ -1547,7 +1617,8 @@ onMounted(() => {
 
     loadChats();
     fetchDepartments();
-    fetchUserPreferences(); // Load user's voice preference
+    fetchUserPreferences();
+    fetchCurrentUser();
     nextTick(() => {
         showWelcomeToast();
     });
@@ -1653,6 +1724,11 @@ function handleMenuClickOutside(event) {
     const inButton = typeof target.closest === 'function' ? target.closest('.chat-menu-btn') : null;
     if (!inMenu && !inButton) {
         closeChatMenu();
+    }
+    const inUserTrigger = typeof target.closest === 'function' ? target.closest('.sidebar-user-trigger') : null;
+    const inUserMenu = typeof target.closest === 'function' ? target.closest('.sidebar-user-menu') : null;
+    if (!inUserTrigger && !inUserMenu) {
+        userMenuOpen.value = false;
     }
 }
 </script>
@@ -2200,18 +2276,96 @@ function handleMenuClickOutside(event) {
     cursor: not-allowed;
 }
 
-/* پایین سایدبار – لینک‌ها مثل ChatGPT */
+/* پایین سایدبار – کاربر (نام + آواتار) و منوی کشویی */
 .sidebar-footer {
     flex-shrink: 0;
     border-top: 1px solid rgba(226, 232, 240, 0.9);
-    padding: 12px;
+    padding: 10px 12px;
+    background: #fff;
+    position: relative;
+}
+
+.sidebar-user-trigger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    text-align: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #334155;
+    background: rgba(241, 245, 249, 0.8);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.sidebar-user-trigger:hover {
+    background: rgba(226, 232, 240, 0.6);
+    border-color: rgba(148, 163, 184, 0.4);
+}
+
+.sidebar-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.sidebar-user-avatar--placeholder {
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.sidebar-user-avatar--placeholder svg {
+    width: 18px;
+    height: 18px;
+}
+
+.sidebar-user-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-footer__dot--on-trigger {
+    position: absolute;
+    top: 8px;
+    inset-inline-end: 8px;
+}
+
+.sidebar-user-menu {
+    position: absolute;
+    bottom: 100%;
+    left: 12px;
+    right: 12px;
+    margin-bottom: 6px;
+    padding: 6px;
+    background: #fff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
     display: flex;
     flex-direction: column;
     gap: 2px;
-    background: #fff;
+    z-index: 100;
 }
 
-.sidebar-footer__link {
+[dir="rtl"] .sidebar-user-menu {
+    left: 12px;
+    right: 12px;
+}
+
+.sidebar-user-menu__item {
     position: relative;
     display: block;
     width: 100%;
@@ -2227,19 +2381,30 @@ function handleMenuClickOutside(event) {
     transition: background 0.15s, color 0.15s;
 }
 
-.sidebar-footer__link:hover:not(:disabled) {
+.sidebar-user-menu__item:hover:not(:disabled) {
     background: rgba(14, 116, 144, 0.08);
     color: #0e7490;
 }
 
-.sidebar-footer__link:disabled {
+.sidebar-user-menu__item:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.sidebar-footer__link--danger:hover:not(:disabled) {
+.sidebar-user-menu__item--danger:hover:not(:disabled) {
     background: rgba(220, 38, 38, 0.08);
     color: #dc2626;
+}
+
+.sidebar-user-menu__item .sidebar-footer__dot {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    inset-inline-end: 14px;
+    width: 6px;
+    height: 6px;
+    background: #ef4444;
+    border-radius: 50%;
 }
 
 .sidebar-footer__dot {

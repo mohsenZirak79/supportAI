@@ -672,26 +672,19 @@
 </head>
 
 <body>
-    <!-- Background Orbs -->
-    <div class="bg-gradient-orb bg-gradient-orb-1"></div>
-    <div class="bg-gradient-orb bg-gradient-orb-2"></div>
-    <div class="bg-gradient-orb bg-gradient-orb-3"></div>
-
-    <!-- Language Switcher -->
     <div class="lang-switcher">
         <button class="lang-btn" data-lang="fa">فارسی</button>
         <button class="lang-btn" data-lang="en">English</button>
         <button class="lang-btn" data-lang="ar">العربية</button>
-</div>
-
-@if(session('success'))
-        <div class="success-alert" id="successAlert">
-        {{ session('success') }}
     </div>
-@endif
 
-    <!-- Login Card -->
-    <div class="login-card">
+    @if(session('success'))
+        <div class="success-alert" id="successAlert">{{ session('success') }}</div>
+    @endif
+
+    <div class="login-page">
+        <div class="login-form-wrap">
+            <div class="login-card">
         <!-- Logo -->
         <div class="logo-container">
             <div class="logo-icon">
@@ -735,13 +728,18 @@
         <div id="error" class="error-msg"></div>
 
         <!-- Footer -->
-        <div class="card-footer">
-            <p>
-                <span data-i18n="auth.noAccount">حساب کاربری ندارید؟</span>
-                <a href="{{ route('register') }}" data-i18n="nav.register">ثبت‌نام</a>
-                                </p>
-                            </div>
-                        </div>
+                <div class="card-footer">
+                    <p>
+                        <span data-i18n="auth.noAccount">حساب کاربری ندارید؟</span>
+                        <a href="{{ route('register') }}" data-i18n="nav.register">ثبت‌نام</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="login-visual" aria-hidden="true">
+            <img src="{{ asset('images/Artificial intelligence-amico.svg') }}" alt="">
+        </div>
+    </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
