@@ -13,6 +13,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
     @vite(['resources/css/admin.css', 'resources/js/admin.js', 'resources/js/register.js'])
     @stack('styles')
     <style>
