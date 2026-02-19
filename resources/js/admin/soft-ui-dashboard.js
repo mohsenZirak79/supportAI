@@ -92,8 +92,9 @@ if (document.querySelector('.fixed-plugin')) {
 var total = document.querySelectorAll('.nav-pills');
 
 total.forEach(function(item, i) {
-  var moving_div = document.createElement('div');
   var first_li = item.querySelector('li:first-child .nav-link');
+  if (!first_li) return;
+  var moving_div = document.createElement('div');
   var tab = first_li.cloneNode();
   tab.innerHTML = "-";
 
@@ -253,7 +254,8 @@ function navbarFixed(el) {
 // Navbar blur on scroll
 function navbarBlurOnScroll(id) {
   const navbar = document.getElementById(id);
-  let navbarScrollActive = navbar ? navbar.getAttribute("navbar-scroll") : false;
+  if (!navbar) return;
+  let navbarScrollActive = navbar.getAttribute("navbar-scroll") || false;
   let scrollDistance = 5;
   let classes = ['position-sticky', 'blur', 'shadow-blur', 'mt-4', 'left-auto', 'top-1', 'z-index-sticky'];
   let toggleClasses = ['shadow-none'];
@@ -370,18 +372,18 @@ if (iconSidenav) {
 }
 
 function toggleSidenav() {
+  if (!body || !sidenav) return;
   if (body.classList.contains(className)) {
     body.classList.remove(className);
     setTimeout(function() {
-      sidenav.classList.remove('bg-white');
+      if (sidenav) sidenav.classList.remove('bg-white');
     }, 100);
     sidenav.classList.remove('bg-transparent');
-
   } else {
     body.classList.add(className);
     sidenav.classList.add('bg-white');
     sidenav.classList.remove('bg-transparent');
-    iconSidenav.classList.remove('d-none');
+    if (iconSidenav) iconSidenav.classList.remove('d-none');
   }
 }
 
@@ -392,8 +394,9 @@ let referenceButtons = document.querySelector('[data-class]');
 window.addEventListener("resize", navbarColorOnResize);
 
 function navbarColorOnResize() {
+  if (!sidenav) return;
   if (window.innerWidth > 1200) {
-    if (referenceButtons.classList.contains('active') && referenceButtons.getAttribute('data-class') === 'bg-transparent') {
+    if (referenceButtons && referenceButtons.classList.contains('active') && referenceButtons.getAttribute('data-class') === 'bg-transparent') {
       sidenav.classList.remove('bg-white');
     } else {
       sidenav.classList.add('bg-white');

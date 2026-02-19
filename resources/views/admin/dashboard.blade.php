@@ -253,12 +253,14 @@
 @endsection
 
 @push('scripts')
-<script id="dashboard-chart-js-src" src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 <script>
 (function() {
-    var chartLabelsLastDays = @json($chartLabelsLastDays ?? []),
-        chartTicketsLastDays = @json($chartTicketsLastDays ?? []),
-        chartTicketsByStatus = @json($chartTicketsByStatus ?? ['pending' => 0, 'answered' => 0, 'closed' => 0]);
+    var chartLabelsLastDays = @json($chartLabelsLastDays ?? []);
+    var chartTicketsLastDays = @json($chartTicketsLastDays ?? []);
+    var chartTicketsByStatus = @json($chartTicketsByStatus ?? ['pending' => 0, 'answered' => 0, 'closed' => 0]);
+    if (typeof chartTicketsByStatus !== 'object' || chartTicketsByStatus === null) {
+        chartTicketsByStatus = { pending: 0, answered: 0, closed: 0 };
+    }
     function initCharts() {
         var Chart = window.Chart;
         if (typeof Chart === 'undefined') return;
@@ -357,20 +359,17 @@
             } catch (e) { console.error('Dashboard donut chart error:', e); }
         }
     }
+    var chartAttempts = 0;
+    var maxChartAttempts = 100;
     function runWhenReady() {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', runWhenReady);
             return;
         }
         if (typeof window.Chart === 'undefined') {
-            var chartScript = document.getElementById('dashboard-chart-js-src');
-            if (chartScript) {
-                chartScript.addEventListener('load', runWhenReady);
-                chartScript.addEventListener('error', function () {
-                    console.warn('Chart.js failed to load from CDN');
-                });
-            } else {
-                setTimeout(runWhenReady, 100);
+            chartAttempts++;
+            if (chartAttempts < maxChartAttempts) {
+                setTimeout(runWhenReady, 50);
             }
             return;
         }
