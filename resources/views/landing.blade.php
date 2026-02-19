@@ -578,15 +578,16 @@
         }
 
         .btn-hero-secondary {
-            background: rgba(255, 255, 255, 0.95);
+            background: transparent;
             color: var(--color-primary);
+            border: 2px solid var(--color-primary);
             border: 2px solid rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
         }
 
         .btn-hero-secondary:hover {
-            background: white;
-            transform: translateY(-3px);
+            background: rgba(14, 116, 144, 0.08);
+            transform: translateY(-2px);
             box-shadow: 0 12px 36px rgba(0, 0, 0, 0.2);
         }
 
@@ -602,241 +603,112 @@
         /* ============================================
            HERO SECTION - Cinematic Entrance
            ============================================ */
+        /* Hero - ساختار مدرن دو ستونه با تصویر ثابت */
         .hero {
             position: relative;
             min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center;
-            padding: var(--space-5xl) var(--space-xl);
+            padding: var(--space-4xl) var(--space-xl);
+            padding-top: calc(80px + var(--space-4xl));
+            background: linear-gradient(160deg, #f0fdfa 0%, #e0f2fe 40%, #f8fafc 100%);
             overflow: hidden;
         }
 
-        /* Hero Background Slider */
-        .hero-slider {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .hero-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: var(--space-4xl);
+            max-width: 1200px;
+            margin: 0 auto;
             width: 100%;
-            height: 100%;
-            z-index: 0;
         }
 
-        .hero-slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
-            transform: scale(1.1);
-            transition: opacity 1.5s var(--ease-smooth), transform 8s var(--ease-smooth);
+        [dir="rtl"] .hero-inner {
+            direction: rtl;
         }
 
-        .hero-slide.active {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* Hero Overlay with animated gradient */
-        .hero-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                135deg,
-                rgba(14, 116, 144, 0.85) 0%,
-                rgba(8, 145, 178, 0.75) 50%,
-                rgba(6, 182, 212, 0.7) 100%
-            );
-            z-index: 1;
-        }
-
-        /* Animated gradient mesh */
-        .hero-gradient-mesh {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            opacity: 0.4;
-            background:
-                radial-gradient(ellipse at 20% 80%, rgba(34, 211, 238, 0.3) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, rgba(14, 116, 144, 0.3) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(8, 145, 178, 0.2) 0%, transparent 60%);
-            animation: meshShift 15s ease-in-out infinite;
-        }
-
-        @keyframes meshShift {
-            0%, 100% {
-                opacity: 0.4;
-                transform: scale(1) translate(0, 0);
-            }
-            50% {
-                opacity: 0.6;
-                transform: scale(1.05) translate(-2%, 2%);
-            }
-        }
-
-        /* Floating particles */
-        .hero-particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 3;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 50%;
-            animation: particleFloat 20s linear infinite;
-        }
-
-        .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 25s; }
-        .particle:nth-child(2) { left: 20%; animation-delay: -5s; animation-duration: 20s; }
-        .particle:nth-child(3) { left: 30%; animation-delay: -10s; animation-duration: 28s; }
-        .particle:nth-child(4) { left: 40%; animation-delay: -15s; animation-duration: 22s; }
-        .particle:nth-child(5) { left: 50%; animation-delay: -3s; animation-duration: 24s; }
-        .particle:nth-child(6) { left: 60%; animation-delay: -8s; animation-duration: 26s; }
-        .particle:nth-child(7) { left: 70%; animation-delay: -12s; animation-duration: 21s; }
-        .particle:nth-child(8) { left: 80%; animation-delay: -6s; animation-duration: 27s; }
-        .particle:nth-child(9) { left: 90%; animation-delay: -18s; animation-duration: 23s; }
-
-        @keyframes particleFloat {
-            0% {
-                transform: translateY(100vh) scale(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) scale(1);
-                opacity: 0;
-            }
-        }
-
-        /* Hero Content */
         .hero-content {
             position: relative;
-            z-index: 10;
-            max-width: 900px;
-            text-align: center;
+            z-index: 2;
         }
 
-        /* Staggered entrance animations */
         .hero-badge {
             display: inline-flex;
             align-items: center;
             gap: var(--space-xs);
             padding: var(--space-xs) var(--space-md);
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(14, 116, 144, 0.1);
+            border: 1px solid rgba(14, 116, 144, 0.2);
             border-radius: var(--radius-full);
-            color: white;
+            color: var(--color-primary);
             font-size: var(--font-size-sm);
-            font-weight: 500;
-            margin-bottom: var(--space-xl);
-            opacity: 0;
-            transform: translateY(20px);
-            animation: heroFadeUp var(--duration-slower) var(--ease-expo) forwards;
-            animation-delay: 400ms;
+            font-weight: 600;
+            margin-bottom: var(--space-lg);
         }
 
         .hero-badge-dot {
             width: 8px;
             height: 8px;
-            background: var(--color-accent);
+            background: var(--color-primary);
             border-radius: 50%;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
         }
 
         .hero h1 {
-            font-size: clamp(var(--font-size-2xl), 5vw, var(--font-size-4xl));
-            font-weight: 700;
-            color: white;
-            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-            margin-bottom: var(--space-xl);
+            font-size: clamp(var(--font-size-2xl), 4vw, var(--font-size-4xl));
+            font-weight: 800;
+            color: var(--color-dark);
+            margin-bottom: var(--space-lg);
             letter-spacing: -0.03em;
-            line-height: 1.1;
-            opacity: 0;
-            transform: translateY(30px);
-            animation: heroFadeUp var(--duration-slower) var(--ease-expo) forwards;
-            animation-delay: 600ms;
+            line-height: 1.2;
         }
 
         .hero p {
-            font-size: clamp(var(--font-size-base), 2.5vw, var(--font-size-xl));
-            color: rgba(255, 255, 255, 0.9);
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-size: clamp(var(--font-size-base), 1.8vw, var(--font-size-lg));
+            color: var(--color-text-muted);
             margin-bottom: var(--space-2xl);
-            line-height: 1.8;
-            opacity: 0;
-            transform: translateY(30px);
-            animation: heroFadeUp var(--duration-slower) var(--ease-expo) forwards;
-            animation-delay: 800ms;
+            line-height: 1.7;
         }
 
         .hero-cta {
             display: flex;
             gap: var(--space-md);
-            justify-content: center;
             flex-wrap: wrap;
-            opacity: 0;
-            transform: translateY(30px);
-            animation: heroFadeUp var(--duration-slower) var(--ease-expo) forwards;
-            animation-delay: 1000ms;
         }
 
-        @keyframes heroFadeUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .hero-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
         }
 
-        /* Scroll indicator */
+        .hero-visual img {
+            width: 100%;
+            max-width: 480px;
+            height: auto;
+            object-fit: contain;
+        }
+
         .scroll-indicator {
             position: absolute;
             bottom: var(--space-2xl);
             left: 50%;
             transform: translateX(-50%);
-            z-index: 10;
+            z-index: 2;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: var(--space-xs);
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--color-text-muted);
             font-size: var(--font-size-sm);
-            opacity: 0;
-            animation: heroFadeUp var(--duration-slower) var(--ease-expo) forwards;
-            animation-delay: 1400ms;
             cursor: pointer;
             transition: color var(--duration-fast);
         }
 
         .scroll-indicator:hover {
-            color: white;
+            color: var(--color-primary);
         }
 
         .scroll-indicator-mouse {
@@ -862,6 +734,70 @@
         @keyframes scrollWheel {
             0%, 100% { opacity: 1; transform: translateX(-50%) translateY(0); }
             50% { opacity: 0.3; transform: translateX(-50%) translateY(10px); }
+        }
+
+        @media (max-width: 900px) {
+            .hero-inner {
+                grid-template-columns: 1fr;
+                gap: var(--space-2xl);
+                text-align: center;
+            }
+            .hero-content { order: 1; }
+            .hero-visual { order: 0; }
+            .hero-visual img { max-width: 320px; margin: 0 auto; }
+            .hero-cta { justify-content: center; }
+            [dir="rtl"] .hero-inner { direction: rtl; }
+        }
+
+        @media (max-width: 576px) {
+            .hero { padding: var(--space-2xl) var(--space-md); padding-top: calc(70px + var(--space-2xl)); }
+            .hero-visual img { max-width: 260px; }
+        }
+
+        /* بلوک هوش مصنوعی */
+        .ai-block {
+            padding: var(--space-4xl) var(--space-xl);
+            background: #fff;
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
+        }
+        .ai-block-inner {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            align-items: center;
+            gap: var(--space-4xl);
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        [dir="rtl"] .ai-block-inner { direction: rtl; }
+        .ai-block-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ai-block-visual img {
+            width: 100%;
+            max-width: 320px;
+            height: auto;
+            object-fit: contain;
+        }
+        .ai-block-title {
+            font-size: clamp(var(--font-size-xl), 2.5vw, var(--font-size-3xl));
+            font-weight: 700;
+            color: var(--color-dark);
+            margin-bottom: var(--space-md);
+            line-height: 1.3;
+        }
+        .ai-block-desc {
+            font-size: var(--font-size-base);
+            color: var(--color-text-muted);
+            line-height: 1.8;
+        }
+        @media (max-width: 768px) {
+            .ai-block-inner { grid-template-columns: 1fr; gap: var(--space-2xl); text-align: center; }
+            .ai-block-visual { order: 0; }
+            .ai-block-content { order: 1; }
+            .ai-block-visual img { max-width: 240px; margin: 0 auto; }
         }
 
         /* ============================================
@@ -1532,70 +1468,51 @@
         </nav>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Hero Section - مدرن با تصویر ثابت -->
     <section class="hero" role="region" aria-label="معرفی پنل پشتیبانی">
-        <!-- Background Image Slider -->
-        <div class="hero-slider" aria-hidden="true">
-            <div class="hero-slide active" style="background-image: url('/images/1.jpg');"></div>
-            <div class="hero-slide" style="background-image: url('/images/2.jpg');"></div>
-            <div class="hero-slide" style="background-image: url('/images/3.jpg');"></div>
-        </div>
-
-        <!-- Overlay -->
-        <div class="hero-overlay" aria-hidden="true"></div>
-
-        <!-- Animated gradient mesh -->
-        <div class="hero-gradient-mesh" aria-hidden="true"></div>
-
-        <!-- Floating particles -->
-        <div class="hero-particles" aria-hidden="true">
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-        </div>
-
-        <div class="hero-content">
-            <div class="hero-badge">
-                <span class="hero-badge-dot" aria-hidden="true"></span>
-                <span data-i18n="landing.advancedPlatform">پلتفرم پیشرفته پشتیبانی</span>
+        <div class="hero-inner">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="hero-badge-dot" aria-hidden="true"></span>
+                    <span data-i18n="landing.advancedPlatform">پلتفرم پیشرفته پشتیبانی</span>
+                </div>
+                <h1 data-i18n="landing.heroTitle">سیستم مدیریت پشتیبانی مناطق آزاد تجاری</h1>
+                <p data-i18n="landing.heroSubtitle">پلتفرم جامع و هوشمند برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط مؤثر با کاربران</p>
+                <div class="hero-cta">
+                    @auth
+                        <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-lg" data-i18n="landing.goToDashboard">
+                            <span>ورود به داشبورد</span>
+                            <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
+                    @else
+                        <a href="{{ route('register') }}" class="btn btn-primary btn-lg" data-i18n="landing.getStarted">
+                            <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            <span>شروع کنید</span>
+                        </a>
+                        <a href="{{ route('login') }}" class="btn btn-hero-secondary btn-lg" data-i18n="landing.loginToAccount">ورود به حساب کاربری</a>
+                    @endauth
+                </div>
             </div>
-            <h1 data-i18n="landing.heroTitle">سیستم مدیریت پشتیبانی مناطق آزاد تجاری</h1>
-            <p data-i18n="landing.heroSubtitle">پلتفرم جامع و هوشمند برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط مؤثر با کاربران</p>
-            <div class="hero-cta">
-                @auth
-                    <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-lg" data-i18n="landing.goToDashboard">
-                        <span>ورود به داشبورد</span>
-                        <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                    </a>
-                @else
-                    <a href="{{ route('register') }}" class="btn btn-primary btn-lg" data-i18n="landing.getStarted">
-                        <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                        <span>شروع کنید</span>
-
-                    </a>
-                    <a href="{{ route('login') }}" class="btn btn-hero-secondary btn-lg" data-i18n="landing.loginToAccount">
-                        ورود به حساب کاربری
-                    </a>
-                @endauth
+            <div class="hero-visual" aria-hidden="true">
+                <img src="{{ asset('images/Tropical island-rafiki.svg') }}" alt="">
             </div>
         </div>
-
-        <!-- Scroll indicator -->
         <div class="scroll-indicator" onclick="document.querySelector('.features').scrollIntoView({ behavior: 'smooth' })" role="button" aria-label="اسکرول به پایین">
-            <div class="scroll-indicator-mouse">
-                <div class="scroll-indicator-wheel"></div>
-            </div>
+            <div class="scroll-indicator-mouse"><div class="scroll-indicator-wheel"></div></div>
             <span data-i18n="landing.scrollDown">اسکرول کنید</span>
+        </div>
+    </section>
+
+    <!-- بلوک هوش مصنوعی - با تصویر brain chemistry -->
+    <section class="ai-block" role="region" aria-label="هوش مصنوعی و پشتیبانی">
+        <div class="ai-block-inner">
+            <div class="ai-block-visual" aria-hidden="true">
+                <img src="{{ asset('images/brain chemistry-rafiki.svg') }}" alt="">
+            </div>
+            <div class="ai-block-content">
+                <h2 class="ai-block-title" data-i18n="landing.aiBlockTitle">پشتیبانی هوشمند با هوش مصنوعی</h2>
+                <p class="ai-block-desc" data-i18n="landing.aiBlockDesc">با بهره‌گیری از فناوری روز، پاسخگویی سریع و دقیق به کاربران را تجربه کنید. چت‌بات هوشمند و مدیریت تیکت در یک پلتفرم.</p>
+            </div>
         </div>
     </section>
 
@@ -1816,25 +1733,6 @@
             }, { passive: true });
 
             // ============================================
-            // HERO IMAGE SLIDER
-            // ============================================
-            const heroSlides = document.querySelectorAll('.hero-slide');
-            let currentSlide = 0;
-            const slideInterval = 7000; // 7 seconds
-
-            function nextSlide() {
-                if (heroSlides.length <= 1) return;
-
-                heroSlides[currentSlide].classList.remove('active');
-                currentSlide = (currentSlide + 1) % heroSlides.length;
-                heroSlides[currentSlide].classList.add('active');
-            }
-
-            if (heroSlides.length > 1 && !prefersReducedMotion) {
-                setInterval(nextSlide, slideInterval);
-            }
-
-            // ============================================
             // SCROLL REVEAL ANIMATIONS
             // ============================================
             const revealElements = document.querySelectorAll('[data-reveal]');
@@ -2030,7 +1928,9 @@
                     'landing.support247': 'پشتیبانی آنلاین',
                     'landing.footerDesc': 'راه‌حل جامع و پیشرفته برای مدیریت ارتباط با کاربران و ارائه خدمات پشتیبانی حرفه‌ای با استفاده از تکنولوژی‌های روز دنیا',
                     'landing.copyright': 'پنل پشتیبانی مناطق آزاد تجاری. تمام حقوق محفوظ است.',
-                    'landing.brandName': 'پنل پشتیبانی مناطق آزاد تجاری'
+                    'landing.brandName': 'پنل پشتیبانی مناطق آزاد تجاری',
+                    'landing.aiBlockTitle': 'پشتیبانی هوشمند با هوش مصنوعی',
+                    'landing.aiBlockDesc': 'با بهره‌گیری از فناوری روز، پاسخگویی سریع و دقیق به کاربران را تجربه کنید. چت‌بات هوشمند و مدیریت تیکت در یک پلتفرم.'
                 },
                 en: {
                     'nav.login': 'Login',
@@ -2063,7 +1963,9 @@
                     'landing.support247': '24/7 Support',
                     'landing.footerDesc': 'Comprehensive and advanced solution for user communication management and professional support services using cutting-edge technologies',
                     'landing.copyright': 'Free Trade Zone Support Panel. All rights reserved.',
-                    'landing.brandName': 'Free Trade Zone Support Panel'
+                    'landing.brandName': 'Free Trade Zone Support Panel',
+                    'landing.aiBlockTitle': 'Smart support with AI',
+                    'landing.aiBlockDesc': 'Experience fast, accurate responses with cutting-edge technology. Smart chatbot and ticket management in one platform.'
                 },
                 ar: {
                     'nav.login': 'تسجيل الدخول',
@@ -2094,6 +1996,8 @@
                     'landing.ticketsAnswered': 'تذكرة تم الرد عليها',
                     'landing.satisfaction': 'رضا المستخدمين',
                     'landing.support247': 'دعم على مدار الساعة',
+                    'landing.aiBlockTitle': 'دعم ذكي بالذكاء الاصطناعي',
+                    'landing.aiBlockDesc': 'تجربة ردود سريعة ودقيقة بفضل التقنيات الحديثة. روبوت دردشة ذكي وإدارة التذاكر في منصة واحدة.',
                     'landing.footerDesc': 'حل شامل ومتقدم لإدارة التواصل مع المستخدمين وتقديم خدمات الدعم الاحترافية باستخدام أحدث التقنيات',
                     'landing.copyright': 'لوحة دعم المنطقة التجارية الحرة. جميع الحقوق محفوظة.',
                     'landing.brandName': 'لوحة دعم المنطقة التجارية الحرة'

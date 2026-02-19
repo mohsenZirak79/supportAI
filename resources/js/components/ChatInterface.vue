@@ -2723,6 +2723,10 @@ function handleMenuClickOutside(event) {
     margin-inline-start: 2px;
 }
 
+[dir="rtl"] .input-actions .send-btn svg {
+    transform: scaleX(-1);
+}
+
 .scroll-bottom-btn {
     position: absolute;
     inset-inline-end: 24px;
