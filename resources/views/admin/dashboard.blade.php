@@ -253,17 +253,18 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<script id="dashboard-chart-js-src" src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 <script>
 (function() {
     var chartLabelsLastDays = @json($chartLabelsLastDays ?? []),
         chartTicketsLastDays = @json($chartTicketsLastDays ?? []),
         chartTicketsByStatus = @json($chartTicketsByStatus ?? ['pending' => 0, 'answered' => 0, 'closed' => 0]);
     function initCharts() {
-        if (typeof window.Chart === 'undefined') return;
         var Chart = window.Chart;
+        if (typeof Chart === 'undefined') return;
         var barsCtx = document.getElementById('dashboard-chart-bars');
         if (barsCtx) {
+            try {
             var dataArr = Array.isArray(chartTicketsLastDays) ? chartTicketsLastDays : [];
             var maxVal = dataArr.length ? Math.max.apply(null, dataArr) : 0;
             new Chart(barsCtx.getContext('2d'), {
@@ -303,9 +304,11 @@
                     }
                 }
             });
+            } catch (e) { console.error('Dashboard bar chart error:', e); }
         }
         var donutCtx = document.getElementById('dashboard-chart-donut');
         if (donutCtx) {
+            try {
             new Chart(donutCtx.getContext('2d'), {
                 type: 'doughnut',
                 data: {
@@ -351,6 +354,7 @@
                     cutout: '60%'
                 }
             });
+            } catch (e) { console.error('Dashboard donut chart error:', e); }
         }
     }
     function runWhenReady() {
@@ -359,11 +363,18 @@
             return;
         }
         if (typeof window.Chart === 'undefined') {
-            var s = document.querySelector('script[src*="chart"]');
-            if (s) s.addEventListener('load', runWhenReady);
+            var chartScript = document.getElementById('dashboard-chart-js-src');
+            if (chartScript) {
+                chartScript.addEventListener('load', runWhenReady);
+                chartScript.addEventListener('error', function () {
+                    console.warn('Chart.js failed to load from CDN');
+                });
+            } else {
+                setTimeout(runWhenReady, 100);
+            }
             return;
         }
-        initCharts();
+        requestAnimationFrame(initCharts);
     }
     runWhenReady();
 })();
