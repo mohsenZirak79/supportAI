@@ -252,7 +252,8 @@
         .admin-notifications__dropdown {
             position: absolute;
             top: calc(100% + 8px);
-            right: 0;
+            left: 0;
+            right: auto;
             width: min(360px, 92vw);
             background: var(--admin-surface);
             border-radius: 1rem;
@@ -564,14 +565,13 @@
                 var dropdownMaxHeight = Math.min(320, window.innerHeight - 100);
                 userDropdown.style.top = (rect.bottom + gap) + 'px';
                 userDropdown.style.maxHeight = dropdownMaxHeight + 'px';
-                /* راستِ منو با راستِ دکمه تراز؛ اگر منو از چپ viewport بیرون زد، به چپ viewport بچسب */
-                var rightPx = window.innerWidth - rect.right;
-                if (rect.right - dropdownWidth < 0) {
-                    userDropdown.style.left = '0';
+                /* باز شدن به سمت راست: لبه چپ منو با لبه چپ دکمه تراز؛ اگر از راست viewport بیرون زد، به راست viewport بچسب */
+                if (rect.left + dropdownWidth > window.innerWidth) {
+                    userDropdown.style.left = (window.innerWidth - dropdownWidth) + 'px';
                     userDropdown.style.right = 'auto';
                 } else {
-                    userDropdown.style.right = rightPx + 'px';
-                    userDropdown.style.left = 'auto';
+                    userDropdown.style.left = rect.left + 'px';
+                    userDropdown.style.right = 'auto';
                 }
             }
 
