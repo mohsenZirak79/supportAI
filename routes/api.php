@@ -33,6 +33,28 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 //use App\Domains\AdminPanel\Controllers\UserController;
 //use App\Domains\AdminPanel\Controllers\RoleController;
 
+// تست اتصال از سمت PHP به سرویس AI (فقط برای دیباگ؛ در پروداکشن حذف یا با توکن محافظت کن)
+Route::get('v1/_ping-ai', function () {
+    $base = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/');
+    $url = $base . '/';
+    try {
+        $r = \Illuminate\Support\Facades\Http::withOptions(['connect_timeout' => 5])->timeout(8)->get($url);
+        return response()->json([
+            'ok' => $r->successful(),
+            'url' => $url,
+            'status' => $r->status(),
+            'message' => $r->successful() ? 'اتصال از PHP به سرویس AI برقرار است' : 'پاسخ غیر 200',
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'ok' => false,
+            'url' => $url,
+            'error' => $e->getMessage(),
+            'message' => 'اتصال از PHP به سرویس AI برقرار نشد (مثلاً تایم‌اوت یا دسترسی شبکه)',
+        ], 500);
+    }
+});
+
 Route::get('v1/_debug-jwt', function (\Illuminate\Http\Request $request) {
 //    \Log::debug('headers', $request->headers->all());
 

@@ -35,7 +35,7 @@ return [
         ],
     ],
     'python_ai' => [
-        'url' => env('PYTHON_AI_URL', 'http://localhost:5000'),
+        'url' => env('PYTHON_AI_URL', 'http://127.0.0.1:5000'),
     ],
 
 ];

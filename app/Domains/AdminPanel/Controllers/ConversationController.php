@@ -165,13 +165,15 @@ class ConversationController extends Controller
                     // در Spatie v10، getPath() مسیر کامل فایل را می‌دهد
                     $absolutePath = $voiceMedia->getPath();
 
-                    $aiBaseUrl = rtrim(config('services.python_ai.url', 'https://ai.mokhtal.xyz'), '/');
-                    // درخواست multipart
+                    $aiBaseUrl = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/');
+                    $voiceUrl = $aiBaseUrl . '/api/voice-to-answer';
+                    \Log::info('AI API request (voice)', ['url' => $voiceUrl]);
                     $resp = Http::withoutVerifying()
+                        ->withOptions(['connect_timeout' => 10])
                         ->asMultipart()
-                        ->timeout(60)
+                        ->timeout(120)
                         ->attach('file', fopen($absolutePath, 'r'), $voiceMedia->file_name)
-                        ->post($aiBaseUrl . '/api/voice-to-answer', [
+                        ->post($voiceUrl, [
                             'user_type' => 'new',
                             'first_message' => $isFirstMessage ? 'true' : 'false',
                         ]);
@@ -192,8 +194,10 @@ class ConversationController extends Controller
                 }
             } else {
                 // متن
-                $aiBaseUrl = rtrim(config('services.python_ai.url', 'https://ai.mokhtal.xyz'), '/');
-                $resp = Http::withoutVerifying()->timeout(45)->post($aiBaseUrl . '/api/ask', [
+                $aiBaseUrl = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/');
+                $askUrl = $aiBaseUrl . '/api/ask';
+                \Log::info('AI API request', ['url' => $askUrl]);
+                $resp = Http::withoutVerifying()->withOptions(['connect_timeout' => 10])->timeout(120)->post($askUrl, [
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
                     'first_message' => $isFirstMessage,

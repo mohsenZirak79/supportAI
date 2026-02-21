@@ -226,12 +226,15 @@ class ConversationController extends Controller
                             }
                         }
 
-                        $aiBaseUrl = rtrim(config('services.python_ai.url', 'https://ai.mokhtal.xyz'), '/');
+                        $aiBaseUrl = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/');
+                        $voiceUrl = $aiBaseUrl . '/api/voice-to-answer';
+                        \Log::info('AI API request (voice)', ['url' => $voiceUrl]);
                         $resp1 = Http::withoutVerifying()
+                            ->withOptions(['connect_timeout' => 10])
                             ->asMultipart()
-                            ->timeout(60)
+                            ->timeout(120)
                             ->attach('file', fopen($filePath, 'r'), $fileName)
-                            ->post($aiBaseUrl . '/api/voice-to-answer', [
+                            ->post($voiceUrl, [
                                 'user_type'     => 'new',
                                 'first_message' => $isFirstMessage ? 'true' : 'false',
                                 'lang'          => $lang,
@@ -260,7 +263,7 @@ class ConversationController extends Controller
                             $dataUrl = "data:{$mimeForJson};base64,{$b64}";
 
                             $lang = $validated['lang'] ?? 'fa'; // Default to Persian
-                            $resp2 = Http::withoutVerifying()->timeout(60)->post($aiBaseUrl . '/api/voice-to-answer', [
+                            $resp2 = Http::withoutVerifying()->withOptions(['connect_timeout' => 10])->timeout(120)->post($voiceUrl, [
                                 'audio_data'    => $dataUrl,
                                 'user_type'     => 'new',
                                 'first_message' => $isFirstMessage,
@@ -321,14 +324,19 @@ class ConversationController extends Controller
                     'lang' => $lang,
                 ]);
 
-                $aiBaseUrl = rtrim(config('services.python_ai.url', 'https://ai.mokhtal.xyz'), '/');
-                $resp = Http::withoutVerifying()->timeout(45)->post($aiBaseUrl . '/api/ask', [
-                    'question' => $validated['content'] ?? '',
-                    'user_type' => 'new',
-                    'first_message' => $isFirstMessage,
-                    'lang' => $lang,
-                    'user_name' => $userName, // Send user's name for personalization
-                ]);
+                $aiBaseUrl = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/');
+                $askUrl = $aiBaseUrl . '/api/ask';
+                \Log::info('AI API request', ['url' => $askUrl]);
+                $resp = Http::withoutVerifying()
+                    ->withOptions(['connect_timeout' => 10])
+                    ->timeout(120)
+                    ->post($askUrl, [
+                        'question' => $validated['content'] ?? '',
+                        'user_type' => 'new',
+                        'first_message' => $isFirstMessage,
+                        'lang' => $lang,
+                        'user_name' => $userName,
+                    ]);
 
                 if ($resp->successful()) {
                     $json = $resp->json();
@@ -385,7 +393,12 @@ class ConversationController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            \Log::error('AI API error: ' . $e->getMessage());
+            $aiUrl = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/') . '/api/ask';
+            \Log::error('AI API error', [
+                'message' => $e->getMessage(),
+                'url' => $aiUrl,
+                'exception' => get_class($e),
+            ]);
             $aiReplyText = 'خطا در ارتباط با سرویس هوش مصنوعی.';
         }
 
