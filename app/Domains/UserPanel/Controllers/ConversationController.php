@@ -227,7 +227,8 @@ class ConversationController extends Controller
                         }
 
                         $aiBaseUrl = rtrim(config('services.python_ai.url', 'https://ai.mokhtal.xyz'), '/');
-                        $resp1 = Http::asMultipart()
+                        $resp1 = Http::withoutVerifying()
+                            ->asMultipart()
                             ->timeout(60)
                             ->attach('file', fopen($filePath, 'r'), $fileName)
                             ->post($aiBaseUrl . '/api/voice-to-answer', [
@@ -259,7 +260,7 @@ class ConversationController extends Controller
                             $dataUrl = "data:{$mimeForJson};base64,{$b64}";
 
                             $lang = $validated['lang'] ?? 'fa'; // Default to Persian
-                            $resp2 = Http::timeout(60)->post($aiBaseUrl . '/api/voice-to-answer', [
+                            $resp2 = Http::withoutVerifying()->timeout(60)->post($aiBaseUrl . '/api/voice-to-answer', [
                                 'audio_data'    => $dataUrl,
                                 'user_type'     => 'new',
                                 'first_message' => $isFirstMessage,
@@ -321,7 +322,7 @@ class ConversationController extends Controller
                 ]);
 
                 $aiBaseUrl = rtrim(config('services.python_ai.url', 'https://ai.mokhtal.xyz'), '/');
-                $resp = Http::timeout(45)->post($aiBaseUrl . '/api/ask', [
+                $resp = Http::withoutVerifying()->timeout(45)->post($aiBaseUrl . '/api/ask', [
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
                     'first_message' => $isFirstMessage,

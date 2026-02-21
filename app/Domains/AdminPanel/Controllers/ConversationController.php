@@ -167,7 +167,8 @@ class ConversationController extends Controller
 
                     $aiBaseUrl = rtrim(config('services.python_ai.url', 'https://ai.mokhtal.xyz'), '/');
                     // درخواست multipart
-                    $resp = Http::asMultipart()
+                    $resp = Http::withoutVerifying()
+                        ->asMultipart()
                         ->timeout(60)
                         ->attach('file', fopen($absolutePath, 'r'), $voiceMedia->file_name)
                         ->post($aiBaseUrl . '/api/voice-to-answer', [
@@ -192,7 +193,7 @@ class ConversationController extends Controller
             } else {
                 // متن
                 $aiBaseUrl = rtrim(config('services.python_ai.url', 'https://ai.mokhtal.xyz'), '/');
-                $resp = Http::timeout(45)->post($aiBaseUrl . '/api/ask', [
+                $resp = Http::withoutVerifying()->timeout(45)->post($aiBaseUrl . '/api/ask', [
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
                     'first_message' => $isFirstMessage,
