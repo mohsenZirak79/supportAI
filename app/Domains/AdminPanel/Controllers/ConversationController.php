@@ -165,11 +165,12 @@ class ConversationController extends Controller
                     // در Spatie v10، getPath() مسیر کامل فایل را می‌دهد
                     $absolutePath = $voiceMedia->getPath();
 
+                    $aiBaseUrl = rtrim(config('services.python_ai.url', 'https://ai.mokhtal.xyz'), '/');
                     // درخواست multipart
                     $resp = Http::asMultipart()
                         ->timeout(60)
                         ->attach('file', fopen($absolutePath, 'r'), $voiceMedia->file_name)
-                        ->post('https://ai.mokhtal.xyz/api/voice-to-answer', [
+                        ->post($aiBaseUrl . '/api/voice-to-answer', [
                             'user_type' => 'new',
                             'first_message' => $isFirstMessage ? 'true' : 'false',
                         ]);
@@ -190,7 +191,8 @@ class ConversationController extends Controller
                 }
             } else {
                 // متن
-                $resp = Http::timeout(45)->post('https://ai.mokhtal.xyz/api/ask', [
+                $aiBaseUrl = rtrim(config('services.python_ai.url', 'https://ai.mokhtal.xyz'), '/');
+                $resp = Http::timeout(45)->post($aiBaseUrl . '/api/ask', [
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
                     'first_message' => $isFirstMessage,
