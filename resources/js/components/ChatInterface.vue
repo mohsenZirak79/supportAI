@@ -44,9 +44,7 @@
                         </svg>
                     </button>
                     <div class="brand-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                        </svg>
+                        <img src="/images/logo.png" alt="پارس فناوران مبتکر" class="brand-logo-img">
                     </div>
                     <span class="brand-text">{{ activeChat?.title || $t('chat.title') }}</span>
                 </div>
@@ -2143,9 +2141,12 @@ function handleMenuClickOutside(event) {
     flex-shrink: 0;
 }
 
-.chat-logo svg {
+.chat-logo svg,
+.chat-logo img,
+.brand-icon img.brand-logo-img {
     width: 100%;
     height: 100%;
+    object-fit: contain;
 }
 
 .chat-container {

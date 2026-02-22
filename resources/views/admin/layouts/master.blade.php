@@ -6,12 +6,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('پنل مدیریت'))</title>
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
     <meta name="theme-color" content="#0e7490">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
+    <meta name="apple-mobile-web-app-title" content="پارس فناوران مبتکر">
 
     @vite(['resources/css/admin.css', 'resources/js/admin.js', 'resources/js/register.js'])
     @stack('styles')
@@ -109,9 +108,11 @@
             box-shadow: 0 8px 20px rgba(34, 211, 238, 0.35);
             overflow: hidden;
         }
+        .admin-sidebar__logo img,
         .admin-sidebar__logo svg {
-            width: 24px;
-            height: 24px;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
         .admin-sidebar__title strong { display: block; font-size: 1rem; color: var(--admin-text); }
         .admin-sidebar__title small { display: block; font-size: 0.75rem; color: var(--admin-muted-text); margin-top: 2px; }
@@ -443,10 +444,10 @@
         <div class="admin-sidebar__brand">
             <a href="{{ route('admin.dashboard') }}" style="display:flex;align-items:center;gap:0.75rem;text-decoration:none;color:inherit;">
                 <span class="admin-sidebar__logo">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <img src="{{ asset('images/logo.png') }}" alt="پارس فناوران مبتکر">
                 </span>
                 <span class="admin-sidebar__title">
-                    <strong>Support AI</strong>
+                    <strong>پارس فناوران مبتکر</strong>
                     <small>{{ __('پنل مدیریت') }}</small>
                 </span>
             </a>

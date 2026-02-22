@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     
     <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/css/user.css', 'resources/js/profile.js'])

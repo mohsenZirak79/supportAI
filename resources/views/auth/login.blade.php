@@ -5,18 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
 
     <!-- Manifest -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#0e7490">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
+    <meta name="apple-mobile-web-app-title" content="پارس فناوران مبتکر">
 
     <title data-i18n="auth.loginTitle">ورود کاربر</title>
     @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/css/user.css', 'resources/js/app.js'])
@@ -147,7 +144,8 @@
             align-items: center;
             justify-content: center;
         }
-        .logo-icon svg { width: 26px; height: 26px; fill: #fff; }
+        .logo-icon svg,
+        .logo-icon img { width: 26px; height: 26px; object-fit: contain; }
         .login-title { color: #0f172a; font-size: 1.35rem; font-weight: 700; margin-bottom: 0.35rem; }
         .login-subtitle { color: #64748b; font-size: 0.9rem; }
         .form-group { margin-bottom: 1.25rem; }
@@ -232,9 +230,7 @@
         <!-- Logo -->
         <div class="logo-container">
             <div class="logo-icon">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
+                <img src="{{ asset('images/logo.png') }}" alt="پارس فناوران مبتکر">
             </div>
             <h1 class="login-title" data-i18n="auth.welcome">خوش آمدید</h1>
             <p class="login-subtitle" data-i18n="auth.enterPhone">شماره تلفن همراه خود را وارد کنید.</p>

@@ -5,18 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
 
     <!-- Manifest -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#0e7490">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
+    <meta name="apple-mobile-web-app-title" content="پارس فناوران مبتکر">
 
     <title data-i18n="auth.registerTitle">ثبت‌نام کاربر</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
@@ -151,7 +148,8 @@
             align-items: center;
             justify-content: center;
         }
-        .logo-icon svg { width: 26px; height: 26px; fill: #fff; }
+        .logo-icon svg,
+        .logo-icon img { width: 26px; height: 26px; object-fit: contain; }
         .register-title { color: #0f172a; font-size: 1.35rem; font-weight: 700; margin-bottom: 0.35rem; }
         .register-subtitle { color: #64748b; font-size: 0.9rem; }
 
@@ -241,9 +239,7 @@
             <div class="register-card">
                 <div class="logo-container">
             <div class="logo-icon">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                </svg>
+                <img src="{{ asset('images/logo.png') }}" alt="پارس فناوران مبتکر">
             </div>
             <h1 class="register-title" data-i18n="auth.welcome">خوش آمدید</h1>
             <p class="register-subtitle" data-i18n="auth.enterInfo">لطفا اطلاعات خود را وارد کنید.</p>

@@ -7,18 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
 
     <!-- Manifest -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#0e7490">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
+    <meta name="apple-mobile-web-app-title" content="پارس فناوران مبتکر">
 
     <title>تیکت‌ها</title>
     @vite(['resources/css/app.css', 'resources/css/user.css', 'resources/js/tickets.js'])

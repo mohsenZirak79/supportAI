@@ -4,21 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>پنل پشتیبانی مناطق آزاد تجاری - سیستم مدیریت تیکت‌ها و گفت‌وگوها</title>
+    <title>پارس فناوران مبتکر - سیستم مدیریت تیکت‌ها و گفت‌وگوها</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-192.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo-192.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo-192.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
 
     <!-- Manifest -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#0e7490">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="پشتیبانی مناطق آزاد تجاری">
+    <meta name="apple-mobile-web-app-title" content="پارس فناوران مبتکر">
 
     @vite(['resources/css/app.css', 'resources/css/auth.css', 'resources/css/user.css', 'resources/js/app.js'])
     <script>
@@ -327,10 +324,12 @@
             overflow: hidden;
         }
 
-        .navbar-brand-icon svg {
+        .navbar-brand-icon svg,
+        .navbar-brand-icon img {
             width: 100%;
             height: 100%;
-            padding: 8px;
+            padding: 6px;
+            object-fit: contain;
         }
 
         .navbar-brand:hover .navbar-brand-icon {
@@ -1156,10 +1155,12 @@
             box-shadow: 0 4px 20px rgba(14, 116, 144, 0.4);
         }
 
-        .footer-brand-icon svg {
+        .footer-brand-icon svg,
+        .footer-brand-icon img {
             width: 100%;
             height: 100%;
-            padding: 10px;
+            padding: 8px;
+            object-fit: contain;
         }
 
         .footer-brand h3 {
@@ -1430,17 +1431,11 @@
     <!-- Header / Navbar -->
     <header class="landing-header" id="header" role="banner">
         <nav class="navbar" role="navigation" aria-label="Main navigation">
-            <a href="/" class="navbar-brand" aria-label="صفحه اصلی - پنل پشتیبانی مناطق آزاد تجاری">
+            <a href="/" class="navbar-brand" aria-label="صفحه اصلی - پارس فناوران مبتکر">
                 <div class="navbar-brand-icon">
-                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(255,255,255,0.3)"/>
-                        <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(255,255,255,0.2)"/>
-                        <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(255,255,255,0.4)"/>
-                        <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
-                        <path d="M42,35 Q50,30 58,35 Q50,40 42,35" fill="white" opacity="0.9"/>
-                    </svg>
+                    <img src="{{ asset('images/logo.png') }}" alt="پارس فناوران مبتکر">
                 </div>
-                <span data-i18n="landing.brandName">پنل پشتیبانی مناطق آزاد تجاری</span>
+                <span data-i18n="landing.brandName">پارس فناوران مبتکر</span>
             </a>
             <div class="navbar-actions">
                 <!-- Beautiful Language Switcher -->
@@ -1478,7 +1473,7 @@
                     <span class="hero-badge-dot" aria-hidden="true"></span>
                     <span data-i18n="landing.advancedPlatform">پلتفرم پیشرفته پشتیبانی</span>
                 </div>
-                <h1 data-i18n="landing.heroTitle">سیستم مدیریت پشتیبانی مناطق آزاد تجاری</h1>
+                <h1 data-i18n="landing.heroTitle">سیستم مدیریت پشتیبانی پارس فناوران مبتکر</h1>
                 <p data-i18n="landing.heroSubtitle">پلتفرم جامع و هوشمند برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط مؤثر با کاربران</p>
                 <div class="hero-cta">
                     @auth
@@ -1652,14 +1647,9 @@
             <div class="footer-main" data-reveal>
                 <div class="footer-brand">
                     <div class="footer-brand-icon">
-                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M0,60 Q25,50 50,60 T100,60 L100,100 L0,100 Z" fill="rgba(255,255,255,0.3)"/>
-                            <path d="M0,70 Q25,60 50,70 T100,70 L100,100 L0,100 Z" fill="rgba(255,255,255,0.2)"/>
-                            <path d="M30,50 Q40,40 50,50 Q60,40 70,50 L70,100 L30,100 Z" fill="rgba(255,255,255,0.4)"/>
-                            <circle cx="50" cy="35" r="12" fill="white" opacity="0.9"/>
-                        </svg>
+                        <img src="{{ asset('images/logo.png') }}" alt="پارس فناوران مبتکر">
                     </div>
-                    <h3 data-i18n="landing.brandName">پنل پشتیبانی مناطق آزاد تجاری</h3>
+                    <h3 data-i18n="landing.brandName">پارس فناوران مبتکر</h3>
                 </div>
                 <p class="footer-description" data-i18n="landing.footerDesc">
                     راه‌حل جامع و پیشرفته برای مدیریت ارتباط با کاربران و ارائه خدمات پشتیبانی حرفه‌ای با استفاده از تکنولوژی‌های روز دنیا
@@ -1668,7 +1658,7 @@
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; {{ date('Y') }} <span data-i18n="landing.copyright">پنل پشتیبانی مناطق آزاد تجاری. تمام حقوق محفوظ است.</span></p>
+            <p>&copy; {{ date('Y') }} <span data-i18n="landing.copyright">پارس فناوران مبتکر. تمام حقوق محفوظ است.</span></p>
         </div>
     </footer>
 
@@ -1903,7 +1893,7 @@
                     'nav.login': 'ورود',
                     'nav.register': 'ثبت‌نام',
                     'landing.goToDashboard': 'ورود به داشبورد',
-                    'landing.heroTitle': 'سیستم مدیریت پشتیبانی مناطق آزاد تجاری',
+                    'landing.heroTitle': 'سیستم مدیریت پشتیبانی پارس فناوران مبتکر',
                     'landing.heroSubtitle': 'پلتفرم جامع و هوشمند برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط مؤثر با کاربران',
                     'landing.advancedPlatform': 'پلتفرم پیشرفته پشتیبانی',
                     'landing.getStarted': 'شروع کنید',
@@ -1929,8 +1919,8 @@
                     'landing.satisfaction': 'رضایت کاربران',
                     'landing.support247': 'پشتیبانی آنلاین',
                     'landing.footerDesc': 'راه‌حل جامع و پیشرفته برای مدیریت ارتباط با کاربران و ارائه خدمات پشتیبانی حرفه‌ای با استفاده از تکنولوژی‌های روز دنیا',
-                    'landing.copyright': 'پنل پشتیبانی مناطق آزاد تجاری. تمام حقوق محفوظ است.',
-                    'landing.brandName': 'پنل پشتیبانی مناطق آزاد تجاری',
+                    'landing.copyright': 'پارس فناوران مبتکر. تمام حقوق محفوظ است.',
+                    'landing.brandName': 'پارس فناوران مبتکر',
                     'landing.aiBlockTitle': 'پشتیبانی هوشمند با هوش مصنوعی',
                     'landing.aiBlockDesc': 'با بهره‌گیری از فناوری روز، پاسخگویی سریع و دقیق به کاربران را تجربه کنید. چت‌بات هوشمند و مدیریت تیکت در یک پلتفرم.'
                 },
@@ -1938,7 +1928,7 @@
                     'nav.login': 'Login',
                     'nav.register': 'Register',
                     'landing.goToDashboard': 'Go to Dashboard',
-                    'landing.heroTitle': 'Free Trade Zone Support Management System',
+                    'landing.heroTitle': 'Pars Fannavaran Mobtaker Support Management System',
                     'landing.heroSubtitle': 'A comprehensive and intelligent platform for managing tickets, conversations, and effective user communication',
                     'landing.advancedPlatform': 'Advanced Support Platform',
                     'landing.getStarted': 'Get Started',
@@ -1964,8 +1954,8 @@
                     'landing.satisfaction': 'User Satisfaction',
                     'landing.support247': '24/7 Support',
                     'landing.footerDesc': 'Comprehensive and advanced solution for user communication management and professional support services using cutting-edge technologies',
-                    'landing.copyright': 'Free Trade Zone Support Panel. All rights reserved.',
-                    'landing.brandName': 'Free Trade Zone Support Panel',
+                    'landing.copyright': 'Pars Fannavaran Mobtaker. All rights reserved.',
+                    'landing.brandName': 'Pars Fannavaran Mobtaker',
                     'landing.aiBlockTitle': 'Smart support with AI',
                     'landing.aiBlockDesc': 'Experience fast, accurate responses with cutting-edge technology. Smart chatbot and ticket management in one platform.'
                 },
@@ -1973,7 +1963,7 @@
                     'nav.login': 'تسجيل الدخول',
                     'nav.register': 'إنشاء حساب',
                     'landing.goToDashboard': 'الذهاب للوحة التحكم',
-                    'landing.heroTitle': 'نظام إدارة دعم المنطقة التجارية الحرة',
+                    'landing.heroTitle': 'نظام إدارة دعم بارس فنافوران مبدع',
                     'landing.heroSubtitle': 'منصة شاملة وذكية لإدارة التذاكر والمحادثات والتواصل الفعال مع المستخدمين',
                     'landing.advancedPlatform': 'منصة دعم متقدمة',
                     'landing.getStarted': 'ابدأ الآن',
@@ -2001,8 +1991,8 @@
                     'landing.aiBlockTitle': 'دعم ذكي بالذكاء الاصطناعي',
                     'landing.aiBlockDesc': 'تجربة ردود سريعة ودقيقة بفضل التقنيات الحديثة. روبوت دردشة ذكي وإدارة التذاكر في منصة واحدة.',
                     'landing.footerDesc': 'حل شامل ومتقدم لإدارة التواصل مع المستخدمين وتقديم خدمات الدعم الاحترافية باستخدام أحدث التقنيات',
-                    'landing.copyright': 'لوحة دعم المنطقة التجارية الحرة. جميع الحقوق محفوظة.',
-                    'landing.brandName': 'لوحة دعم المنطقة التجارية الحرة'
+                    'landing.copyright': 'بارس فنافوران مبدع. جميع الحقوق محفوظة.',
+                    'landing.brandName': 'بارس فنافوران مبدع'
                 }
             };
 
