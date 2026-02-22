@@ -247,7 +247,8 @@
         .navbar {
             max-width: 1200px;
             margin: 0 auto;
-            padding: var(--space-md) var(--space-xl);
+            padding: 10px var(--space-xl);
+            min-height: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -309,8 +310,8 @@
         }
 
         .navbar-brand-icon {
-            width: 128px;
-            height: 128px;
+            width: 48px;
+            height: 48px;
             background: transparent;
             border-radius: var(--radius-md);
             display: flex;
@@ -1187,9 +1188,9 @@
            ============================================ */
         @media (max-width: 900px) {
             .navbar {
-                padding: var(--space-sm) var(--space-md);
+                padding: 8px var(--space-md);
                 flex-wrap: wrap;
-                gap: 10px;
+                gap: 8px;
             }
 
             .navbar-brand span {
@@ -1232,8 +1233,8 @@
             }
 
             .navbar-brand-icon {
-                width: 104px;
-                height: 104px;
+                width: 40px;
+                height: 40px;
             }
 
             .navbar-actions {
@@ -1339,8 +1340,8 @@
             }
 
             .navbar-brand-icon {
-                width: 88px;
-                height: 88px;
+                width: 36px;
+                height: 36px;
             }
 
             .navbar-actions .btn {

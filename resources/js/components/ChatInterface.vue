@@ -43,9 +43,6 @@
                             <line x1="3" y1="18" x2="21" y2="18"/>
                         </svg>
                     </button>
-                    <div class="brand-icon">
-                        <img src="/images/logo.png" alt="پارس فناوران مبتکر" class="brand-logo-img">
-                    </div>
                     <span class="brand-text">{{ activeChat?.title || $t('chat.title') }}</span>
                 </div>
                 <nav class="header-nav">
@@ -2015,22 +2012,6 @@ function handleMenuClickOutside(event) {
     flex-shrink: 0;
 }
 
-.brand-icon {
-    width: 96px;
-    height: 96px;
-    background: transparent;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.brand-icon svg {
-    width: 52px;
-    height: 52px;
-}
-
 .brand-text {
     font-weight: 600;
     font-size: 1rem;
@@ -2077,11 +2058,6 @@ function handleMenuClickOutside(event) {
         display: none;
     }
 
-    .brand-icon {
-        width: 84px;
-        height: 84px;
-    }
-
     .header-nav {
         gap: 8px;
     }
@@ -2101,11 +2077,6 @@ function handleMenuClickOutside(event) {
     .mobile-menu-btn {
         width: 28px;
         height: 28px;
-    }
-
-    .brand-icon {
-        width: 76px;
-        height: 76px;
     }
 
     .nav-link {
@@ -2141,8 +2112,7 @@ function handleMenuClickOutside(event) {
 }
 
 .chat-logo svg,
-.chat-logo img,
-.brand-icon img.brand-logo-img {
+.chat-logo img {
     width: 100%;
     height: 100%;
     object-fit: contain;
