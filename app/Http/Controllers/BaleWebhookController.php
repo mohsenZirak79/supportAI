@@ -25,6 +25,9 @@ class BaleWebhookController extends Controller
     /** پیام فوری هنگام دریافت درخواست (قبل از پاسخ AI) */
     const PLACEHOLDER_MESSAGE = 'سرویس هوشمند در حال تحلیل پیام شما و آماده‌سازی پاسخ هست...';
 
+    /** وقتی کاربر فقط عکس/ویس/فایل بدون متن یا زیرنویس فرستاده */
+    const UNSUPPORTED_MEDIA_REPLY = 'در حال حاضر فقط پیام متنی یا عکس با زیرنویس پشتیبانی می‌شود. لطفاً سوالت را به صورت متن بنویس یا زیر عکس بنویس.';
+
     public function __construct(BaleApiService $bale)
     {
         $this->bale = $bale;
@@ -62,13 +65,27 @@ class BaleWebhookController extends Controller
 
         // طبق مستندات: آپدیت حداکثر یکی از message یا edited_message یا callback_query یا pre_checkout_query را دارد
         $message = $payload['message'] ?? $payload['edited_message'] ?? null;
-        if (!$message || !isset($message['text'])) {
+        if (!$message) {
             return response('', 200);
         }
 
         $chatId = isset($message['chat']['id']) ? $message['chat']['id'] : null;
-        $text = trim((string) $message['text']);
-        if ($chatId === null || $text === '') {
+        if ($chatId === null) {
+            return response('', 200);
+        }
+
+        // متن از پیام متنی یا از زیرنویس عکس/ویدیو/فایل (caption)
+        $text = trim((string) ($message['text'] ?? $message['caption'] ?? ''));
+        $hasMediaOnly = !empty($message['photo']) || !empty($message['voice']) || !empty($message['document'])
+            || !empty($message['video']) || !empty($message['audio']) || !empty($message['sticker']) || !empty($message['animation']);
+
+        if ($text === '' && !$hasMediaOnly) {
+            return response('', 200);
+        }
+
+        // عکس/ویس/فایل بدون هیچ متن یا زیرنویس → یک راهنما بفرست
+        if ($text === '' && $hasMediaOnly) {
+            $this->bale->sendMessage($chatId, self::UNSUPPORTED_MEDIA_REPLY);
             return response('', 200);
         }
 
