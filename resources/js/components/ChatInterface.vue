@@ -2016,20 +2016,19 @@ function handleMenuClickOutside(event) {
 }
 
 .brand-icon {
-    width: 28px;
-    height: 28px;
-    background: rgba(255,255,255,0.25);
+    width: 40px;
+    height: 40px;
+    background: transparent;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 10px 25px rgba(15, 118, 110, 0.35);
 }
 
 .brand-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
 }
 
 .brand-text {
@@ -2079,8 +2078,8 @@ function handleMenuClickOutside(event) {
     }
 
     .brand-icon {
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
     }
 
     .header-nav {
@@ -2105,8 +2104,8 @@ function handleMenuClickOutside(event) {
     }
 
     .brand-icon {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
     }
 
     .nav-link {

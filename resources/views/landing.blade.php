@@ -309,18 +309,14 @@
         }
 
         .navbar-brand-icon {
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            width: 56px;
+            height: 56px;
+            background: transparent;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: var(--font-size-xl);
-            box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
-            transition: all var(--duration-normal) var(--ease-spring);
+            transition: transform var(--duration-normal) var(--ease-spring);
             overflow: hidden;
         }
 
@@ -328,13 +324,12 @@
         .navbar-brand-icon img {
             width: 100%;
             height: 100%;
-            padding: 6px;
+            padding: 2px;
             object-fit: contain;
         }
 
         .navbar-brand:hover .navbar-brand-icon {
-            transform: rotate(8deg) scale(1.1);
-            box-shadow: 0 8px 24px rgba(14, 116, 144, 0.4);
+            transform: scale(1.05);
         }
 
         .navbar-actions {
@@ -1238,8 +1233,8 @@
             }
 
             .navbar-brand-icon {
-                width: 36px;
-                height: 36px;
+                width: 46px;
+                height: 46px;
             }
 
             .navbar-actions {
@@ -1345,8 +1340,8 @@
             }
 
             .navbar-brand-icon {
-                width: 32px;
-                height: 32px;
+                width: 40px;
+                height: 40px;
             }
 
             .navbar-actions .btn {
