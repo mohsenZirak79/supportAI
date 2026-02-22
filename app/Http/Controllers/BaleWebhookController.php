@@ -120,6 +120,7 @@ class BaleWebhookController extends Controller
         if (trim($replyText) === '') {
             $replyText = self::FALLBACK_REPLY;
         }
+        $replyText = $this->formatReplyForBale($replyText);
 
         if ($placeholderMessageId !== null) {
             $editRes = $this->bale->editMessageText($chatId, (int) $placeholderMessageId, $replyText);
@@ -142,6 +143,41 @@ class BaleWebhookController extends Controller
         }
 
         return response('', 200);
+    }
+
+    /**
+     * قالب‌بندی پاسخ AI برای نمایش در بله.
+     * - هدرهای ### و ## به بولد با ایموجی تبدیل می‌شوند (هشتگ نمی‌افتد).
+     * - فاصله‌گذاری مارک‌داون بله رعایت می‌شود (قبل/بعد ستاره و زیرخط).
+     * - نکات مهم با ایموجی مشخص می‌شوند.
+     */
+    protected function formatReplyForBale(string $text): string
+    {
+        if (trim($text) === '') {
+            return $text;
+        }
+
+        // هدر سطح ۳ (### عنوان) → خط جدید + ایموجی + بولد
+        $text = preg_replace('/^###\s+(.+)$/mu', "\n\n🔹 ** $1 **\n\n", $text);
+        // هدر سطح ۲ (## عنوان)
+        $text = preg_replace('/^##\s+(.+)$/mu', "\n\n📋 ** $1 **\n\n", $text);
+        // هدر سطح ۱ (# عنوان)
+        $text = preg_replace('/^#\s+(.+)$/mu', "\n\n▶ ** $1 **\n\n", $text);
+
+        // بولد مارک‌داون: **متن** → ** متن ** (بله فاصله قبل/بعد ستاره می‌خواهد)
+        $text = preg_replace('/\*\*\s*([^*]+?)\s*\*\*/u', ' ** $1 ** ', $text);
+        // ایتالیک: *متن* → _ متن _ (با فاصله برای بله)
+        $text = preg_replace('/\*\s*([^*]+?)\s*\*/u', ' _ $1 _ ', $text);
+
+        // نکته مهم / نکته: با ایموجی
+        $text = preg_replace('/(^|\n)\s*نکته\s*مهم\s*:/u', "$1💡 نکته مهم:", $text);
+        $text = preg_replace('/(^|\n)\s*نکته\s*:/u', "$1💡 نکته:", $text);
+        // توصیه می‌شود
+        $text = preg_replace('/(^|\n)\s*توصیه\s*می\s*شود/u', "$1✅ توصیه می‌شود", $text);
+
+        // چند خط خالی پشت‌سرهم → حداکثر دو خط
+        $text = preg_replace('/\n{3,}/u', "\n\n", $text);
+        return trim($text);
     }
 
     /**
