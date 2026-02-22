@@ -84,6 +84,45 @@ class BaleApiService
     }
 
     /**
+     * ویرایش متن یک پیام (editMessageText).
+     * برای تبدیل پیام «در حال تحلیل» به پاسخ نهایی استفاده می‌شود.
+     *
+     * @param int|string $chatId
+     * @param int $messageId شناسه پیامی که باید ویرایش شود
+     * @param string $text متن جدید (۱ تا ۴۰۹۶ کاراکتر)
+     */
+    public function editMessageText($chatId, int $messageId, string $text): array
+    {
+        if (!$this->configured) {
+            return ['ok' => false];
+        }
+        $text = trim($text);
+        $text = mb_substr($text, 0, 4096);
+        if ($text === '') {
+            $text = '—';
+        }
+        $response = Http::timeout(15)
+            ->post("{$this->baseUrl}/editMessageText", [
+                'chat_id'    => $chatId,
+                'message_id' => $messageId,
+                'text'       => $text,
+            ]);
+        $body = $response->json();
+        if ($body === null) {
+            $body = ['ok' => false];
+        }
+        if (!($response->successful() && ($body['ok'] ?? false))) {
+            Log::warning('Bale editMessageText failed', [
+                'chat_id' => $chatId,
+                'message_id' => $messageId,
+                'status' => $response->status(),
+                'body' => $body,
+            ]);
+        }
+        return $body;
+    }
+
+    /**
      * اعلام وضعیت «در حال تایپ» به کاربر (حداکثر ۶ ثانیه در کلاینت نمایش داده می‌شود).
      * action: typing | upload_photo | record_video | upload_video | record_voice | upload_voice | choose_sticker
      */

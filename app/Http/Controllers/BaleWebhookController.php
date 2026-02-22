@@ -22,6 +22,9 @@ class BaleWebhookController extends Controller
     /** حداقل طول متن برای پاسخ (مستندات: sendMessage بین ۱ تا ۴۰۹۶ کاراکتر) */
     const FALLBACK_REPLY = 'پاسخی در دسترس نیست. لطفاً بعداً تلاش کنید.';
 
+    /** پیام فوری هنگام دریافت درخواست (قبل از پاسخ AI) */
+    const PLACEHOLDER_MESSAGE = 'سرویس هوشمند در حال تحلیل پیام شما و آماده‌سازی پاسخ هست...';
+
     public function __construct(BaleApiService $bale)
     {
         $this->bale = $bale;
@@ -88,18 +91,37 @@ class BaleWebhookController extends Controller
 
         $this->bale->sendChatAction($chatId, 'typing');
 
+        // پیام فوری تا کاربر بداند در حال پردازش است
+        $placeholderRes = $this->bale->sendMessage($chatId, self::PLACEHOLDER_MESSAGE);
+        $placeholderMessageId = null;
+        if ($placeholderRes['ok'] ?? false) {
+            $sent = $placeholderRes['result'] ?? [];
+            $placeholderMessageId = $sent['message_id'] ?? null;
+        }
+
         $replyText = $this->getAiReply($text, $isFirstMessage, $userName);
         if (trim($replyText) === '') {
             $replyText = self::FALLBACK_REPLY;
         }
 
-        $res = $this->bale->sendMessage($chatId, $replyText);
-        if (!($res['ok'] ?? false)) {
-            Log::error('Bale sendMessage failed after AI reply', [
-                'update_id' => $updateId,
-                'chat_id'   => $chatId,
-                'response'  => $res,
-            ]);
+        if ($placeholderMessageId !== null) {
+            $editRes = $this->bale->editMessageText($chatId, (int) $placeholderMessageId, $replyText);
+            if (!($editRes['ok'] ?? false)) {
+                Log::warning('Bale editMessageText failed, sending new message', [
+                    'update_id' => $updateId,
+                    'chat_id'   => $chatId,
+                ]);
+                $this->bale->sendMessage($chatId, $replyText);
+            }
+        } else {
+            $res = $this->bale->sendMessage($chatId, $replyText);
+            if (!($res['ok'] ?? false)) {
+                Log::error('Bale sendMessage failed after AI reply', [
+                    'update_id' => $updateId,
+                    'chat_id'   => $chatId,
+                    'response'  => $res,
+                ]);
+            }
         }
 
         return response('', 200);
