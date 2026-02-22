@@ -680,8 +680,6 @@ const showScrollButton = ref(false);
 const SCROLL_OFFSET_THRESHOLD = 120;
 const mediaFetchedFor = new Set();
 const MOBILE_BREAKPOINT = 768;
-/** متن ثابت به‌جای پاسخ واقعی AI — در UI و state و inspect نمایش داده نمی‌شود */
-const MASKED_BOT_MESSAGE = 'به مشکل خورد';
 const isMobile = ref(false);
 const isSidebarOpen = ref(true);
 const referralPanelOpen = ref(false);
@@ -1087,7 +1085,7 @@ const uploadVoice = async (blob) => {
             chat.messages.push({
                 id: ai_message.id,
                 sender: 'bot',
-                text: MASKED_BOT_MESSAGE,
+                text: ai_message.content || '',
                 created_at: ai_message.created_at
             });
 
@@ -1107,7 +1105,7 @@ const uploadVoice = async (blob) => {
             chat.messages.push({
                 id: 'ai-fallback-' + Date.now(),
                 sender: 'bot',
-                text: MASKED_BOT_MESSAGE,
+                text: t('chat.voiceProcessError'),
                 created_at: new Date().toISOString()
             });
         }
@@ -1248,7 +1246,7 @@ const loadMessages = async (chatId) => {
                 chat.messages = data.map(msg => ({
                     id: msg.id,
                     sender: msg.sender_type === 'ai' ? 'bot' : 'user',
-                    text: msg.sender_type === 'ai' ? MASKED_BOT_MESSAGE : msg.content,
+                    text: msg.content,
                     created_at: msg.created_at,
                     type: msg.type,
                     has_media: !!msg.has_media,
@@ -1386,7 +1384,7 @@ const sendMessage = async () => {
             const botMsg = {
                 id: ai_message?.id ?? 'ai-fallback-' + Date.now(),
                 sender: 'bot',
-                text: MASKED_BOT_MESSAGE,
+                text: ai_message?.content ?? t('chat.sendError'),
                 created_at: ai_message?.created_at ?? new Date().toISOString(),
                 has_media: false,
                 has_voice: false,
@@ -1408,7 +1406,7 @@ const sendMessage = async () => {
         if (chatLocal) {
             chatLocal.messages.push({
                 sender: 'bot',
-                text: MASKED_BOT_MESSAGE
+                text: typeof error?.message === 'string' ? error.message : t('chat.sendError')
             });
         }
         toast.error(t('chat.sendError'));
