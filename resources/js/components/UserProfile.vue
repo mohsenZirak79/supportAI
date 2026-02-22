@@ -473,9 +473,9 @@ onMounted(() => {
 }
 
 .brand-icon {
-    width: 28px;
-    height: 28px;
-    background: rgba(255,255,255,0.15);
+    width: 48px;
+    height: 48px;
+    background: transparent;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -483,8 +483,8 @@ onMounted(() => {
 }
 
 .brand-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 26px;
+    height: 26px;
 }
 
 .brand-text {
@@ -927,8 +927,8 @@ onMounted(() => {
     }
     
     .brand-icon {
-        width: 32px;
-        height: 32px;
+        width: 40px;
+        height: 40px;
     }
     
     .header-nav {

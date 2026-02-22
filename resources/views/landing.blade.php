@@ -309,8 +309,8 @@
         }
 
         .navbar-brand-icon {
-            width: 56px;
-            height: 56px;
+            width: 64px;
+            height: 64px;
             background: transparent;
             border-radius: var(--radius-md);
             display: flex;
@@ -1140,21 +1140,20 @@
         }
 
         .footer-brand-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            width: 64px;
+            height: 64px;
+            background: transparent;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 20px rgba(14, 116, 144, 0.4);
         }
 
         .footer-brand-icon svg,
         .footer-brand-icon img {
             width: 100%;
             height: 100%;
-            padding: 8px;
+            padding: 2px;
             object-fit: contain;
         }
 
@@ -1233,8 +1232,8 @@
             }
 
             .navbar-brand-icon {
-                width: 46px;
-                height: 46px;
+                width: 52px;
+                height: 52px;
             }
 
             .navbar-actions {
@@ -1340,8 +1339,8 @@
             }
 
             .navbar-brand-icon {
-                width: 40px;
-                height: 40px;
+                width: 44px;
+                height: 44px;
             }
 
             .navbar-actions .btn {

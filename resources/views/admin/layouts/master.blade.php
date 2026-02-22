@@ -97,21 +97,21 @@
             border-radius: 0 0 0 1rem;
         }
         .admin-sidebar__logo {
-            width: 44px;
-            height: 44px;
+            width: 56px;
+            height: 56px;
             border-radius: 12px;
-            background: linear-gradient(135deg, var(--admin-accent), rgba(255, 255, 255, 0.7));
+            background: transparent;
             color: #0f172a;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 20px rgba(34, 211, 238, 0.35);
             overflow: hidden;
         }
         .admin-sidebar__logo img,
         .admin-sidebar__logo svg {
             width: 100%;
             height: 100%;
+            padding: 2px;
             object-fit: contain;
         }
         .admin-sidebar__title strong { display: block; font-size: 1rem; color: var(--admin-text); }

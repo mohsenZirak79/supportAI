@@ -135,17 +135,17 @@
 
         .logo-container { text-align: center; margin-bottom: 1.5rem; }
         .logo-icon {
-            width: 48px;
-            height: 48px;
+            width: 72px;
+            height: 72px;
             margin: 0 auto 0.75rem;
-            background: var(--color-primary);
+            background: transparent;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .logo-icon svg,
-        .logo-icon img { width: 26px; height: 26px; object-fit: contain; }
+        .logo-icon img { width: 100%; height: 100%; padding: 2px; object-fit: contain; }
         .login-title { color: #0f172a; font-size: 1.35rem; font-weight: 700; margin-bottom: 0.35rem; }
         .login-subtitle { color: #64748b; font-size: 0.9rem; }
         .form-group { margin-bottom: 1.25rem; }
