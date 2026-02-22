@@ -310,8 +310,8 @@
         }
 
         .navbar-brand-icon {
-            width: 48px;
-            height: 48px;
+            width: 96px;
+            height: 96px;
             background: transparent;
             border-radius: var(--radius-md);
             display: flex;
@@ -1233,8 +1233,8 @@
             }
 
             .navbar-brand-icon {
-                width: 40px;
-                height: 40px;
+                width: 80px;
+                height: 80px;
             }
 
             .navbar-actions {
@@ -1340,8 +1340,8 @@
             }
 
             .navbar-brand-icon {
-                width: 36px;
-                height: 36px;
+                width: 72px;
+                height: 72px;
             }
 
             .navbar-actions .btn {
