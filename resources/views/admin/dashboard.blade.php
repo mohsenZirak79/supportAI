@@ -104,6 +104,23 @@
     .recent-item__meta { font-size: 0.8125rem; color: var(--admin-muted-text); margin-top: 2px; }
     .recent-item__time { font-size: 0.75rem; color: var(--admin-muted-text); flex-shrink: 0; }
     .recent-empty { text-align: center; padding: 2.5rem; color: var(--admin-muted-text); font-size: 0.9375rem; }
+
+    @media (max-width: 768px) {
+        .dashboard-page__header { margin-bottom: 1.5rem; }
+        .dashboard-page h1 { font-size: 1.4rem; }
+        .stat-cards { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+        .stat-card { padding: 1rem; }
+        .stat-card__value { font-size: 1.5rem; }
+        .quick-actions__grid { grid-template-columns: 1fr; gap: 0.75rem; }
+        .quick-action { padding: 1rem; }
+        .recent-card { padding: 1rem; }
+        .recent-item { padding: 0.6rem 0; }
+    }
+    @media (max-width: 480px) {
+        .stat-cards { grid-template-columns: 1fr; }
+        .stat-card__icon { width: 40px; height: 40px; }
+        .stat-card__icon svg { width: 20px; height: 20px; }
+    }
 </style>
 @endpush
 

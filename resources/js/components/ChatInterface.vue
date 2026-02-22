@@ -1754,18 +1754,23 @@ function handleMenuClickOutside(event) {
     --border-soft: rgba(148, 163, 184, 0.25);
     --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.12);
     --shadow-strong: 0 20px 45px rgba(15, 23, 42, 0.18);
+    --header-h: 56px;
     background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #f0fdf4 50%, #ecfeff 75%, #faf5ff 100%);
     height: 100vh;
     height: 100dvh;
+    min-height: -webkit-fill-available;
     overflow: hidden;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    padding-top: 56px;
+    padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    width: 100%;
+    max-width: 100vw;
 }
 
 /* Animated Background - Gradient Mesh */
@@ -1953,8 +1958,11 @@ function handleMenuClickOutside(event) {
 .app-header {
     background: #0e7490;
     color: white;
-    padding: 0 20px;
+    padding: 0;
+    padding-inline-start: calc(20px + env(safe-area-inset-inline-start, 0px));
+    padding-inline-end: calc(20px + env(safe-area-inset-inline-end, 0px));
     height: 56px;
+    min-height: 56px;
     position: fixed;
     top: 0;
     left: 0;
@@ -2132,6 +2140,8 @@ function handleMenuClickOutside(event) {
     min-height: 0;
     position: relative;
     z-index: 1;
+    width: 100%;
+    max-width: 100%;
 }
 
 .sidebar {
@@ -2424,6 +2434,7 @@ function handleMenuClickOutside(event) {
     background-color: transparent;
     position: relative;
     min-height: 0;
+    min-width: 0;
     z-index: 1;
     overflow: hidden;
 }
@@ -2485,6 +2496,8 @@ function handleMenuClickOutside(event) {
     flex: 1;
     padding: 24px;
     overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
     background: linear-gradient(180deg, 
@@ -2495,7 +2508,6 @@ function handleMenuClickOutside(event) {
     position: relative;
     gap: 16px;
     min-height: 0;
-    position: relative;
     z-index: 1;
 }
 
@@ -2621,6 +2633,9 @@ function handleMenuClickOutside(event) {
 .input-form {
     display: flex;
     padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(16px + env(safe-area-inset-left, 0px));
+    padding-right: calc(16px + env(safe-area-inset-right, 0px));
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.98) 100%);
     border-top: 1px solid rgba(226, 232, 240, 0.6);
     gap: 10px;
@@ -2630,6 +2645,7 @@ function handleMenuClickOutside(event) {
     z-index: 10;
     box-shadow: 0 -12px 35px rgba(15, 23, 42, 0.1);
     backdrop-filter: blur(16px);
+    flex-shrink: 0;
 }
 
 
@@ -3624,6 +3640,11 @@ function handleMenuClickOutside(event) {
 
 /* ——— موبایل (زیر ۷۶۸) drawer از راست ——— */
 @media (max-width: 768px) {
+    .chat-app {
+        --header-h: 52px;
+        padding-top: calc(52px + env(safe-area-inset-top, 0px));
+    }
+
     .chat-header .header-content {
         flex-wrap: wrap;
         gap: 8px;
@@ -3635,12 +3656,9 @@ function handleMenuClickOutside(event) {
         justify-content: center;
     }
 
-    .chat-app {
-        padding-top: 52px;
-    }
-
     .app-header {
         height: 52px;
+        min-height: 52px;
     }
 
     .chat-container {
@@ -3662,10 +3680,11 @@ function handleMenuClickOutside(event) {
     /* سایدبار به صورت drawer ثابت از راست - زیر navbar */
     .sidebar.is-mobile {
         position: fixed;
-        top: 52px;
+        top: calc(52px + env(safe-area-inset-top, 0px));
         bottom: 0;
         inset-inline-end: 0;
         width: min(85vw, 320px);
+        max-width: 100%;
         transform: translateX(110%);
         border: none;
         box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
@@ -3688,12 +3707,13 @@ function handleMenuClickOutside(event) {
     .sidebar.is-mobile .sidebar-footer {
         background: #fff;
         border-top: 1px solid #e2e8f0;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     .sidebar-overlay {
         display: block;
         position: fixed;
-        top: 52px;
+        top: calc(52px + env(safe-area-inset-top, 0px));
         left: 0;
         right: 0;
         bottom: 0;
@@ -3706,6 +3726,7 @@ function handleMenuClickOutside(event) {
         flex: 1;
         overflow-y: auto;
         max-height: none;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     .sidebar.is-mobile .new-chat-btn {
@@ -3714,15 +3735,19 @@ function handleMenuClickOutside(event) {
 
     .messages-container {
         padding: 16px 12px;
+        padding-left: calc(12px + env(safe-area-inset-left, 0px));
+        padding-right: calc(12px + env(safe-area-inset-right, 0px));
     }
 
     .message-bubble {
-        max-width: 100%;
+        max-width: 95%;
     }
 
-    /* input form - یک ردیف در موبایل */
+    /* input form - یک ردیف در موبایل؛ حداقل 44px برای لمس */
     .input-form {
         padding: 10px 12px;
+        padding-left: calc(12px + env(safe-area-inset-left, 0px));
+        padding-right: calc(12px + env(safe-area-inset-right, 0px));
     }
 
     .text-input-area {
@@ -3742,8 +3767,10 @@ function handleMenuClickOutside(event) {
     }
 
     .input-actions button {
-        width: 38px;
-        height: 38px;
+        min-width: 44px;
+        min-height: 44px;
+        width: 44px;
+        height: 44px;
     }
 
     .nav-btn {
@@ -3773,11 +3800,12 @@ function handleMenuClickOutside(event) {
     .referral-panel {
         width: 100%;
         border-radius: 0;
-        top: 52px;
+        top: calc(52px + env(safe-area-inset-top, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     .referral-panel-backdrop {
-        top: 52px;
+        top: calc(52px + env(safe-area-inset-top, 0px));
     }
 
     .modal-backdrop {
@@ -3795,32 +3823,44 @@ function handleMenuClickOutside(event) {
 }
 
 @media (max-width: 480px) {
+    .chat-app {
+        --header-h: 48px;
+        padding-top: calc(48px + env(safe-area-inset-top, 0px));
+    }
+
     .app-header {
         height: 48px;
+        min-height: 48px;
+        padding-inline-start: calc(12px + env(safe-area-inset-inline-start, 0px));
+        padding-inline-end: calc(12px + env(safe-area-inset-inline-end, 0px));
     }
 
-    .chat-app {
-        padding-top: 48px;
+    .sidebar.is-mobile {
+        top: calc(48px + env(safe-area-inset-top, 0px));
     }
-
-    .sidebar.is-mobile,
     .sidebar-overlay,
     .referral-panel,
     .referral-panel-backdrop {
-        top: 48px;
+        top: calc(48px + env(safe-area-inset-top, 0px));
     }
 
     .messages-container {
         padding: 12px 8px;
+        padding-left: calc(8px + env(safe-area-inset-left, 0px));
+        padding-right: calc(8px + env(safe-area-inset-right, 0px));
     }
 
     .message-bubble {
         padding: 10px 12px;
         font-size: 0.9rem;
+        max-width: 92%;
     }
 
     .input-form {
         padding: 8px 10px;
+        padding-left: calc(10px + env(safe-area-inset-left, 0px));
+        padding-right: calc(10px + env(safe-area-inset-right, 0px));
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     }
 
     .text-input-area textarea {
@@ -3830,8 +3870,10 @@ function handleMenuClickOutside(event) {
     }
 
     .input-actions button {
-        width: 36px;
-        height: 36px;
+        min-width: 44px;
+        min-height: 44px;
+        width: 44px;
+        height: 44px;
     }
 
     .input-actions button svg {
@@ -3840,9 +3882,12 @@ function handleMenuClickOutside(event) {
     }
 
     .scroll-bottom-btn {
-        width: 32px;
-        height: 32px;
-        bottom: 70px;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+        inset-inline-end: calc(12px + env(safe-area-inset-inline-end, 0px));
     }
 
     .scroll-bottom-btn svg {
@@ -3854,11 +3899,17 @@ function handleMenuClickOutside(event) {
         padding: 12px 16px;
         font-size: 0.9rem;
         margin: 10px;
+        min-height: 44px;
     }
 
     .chat-item {
         padding: 10px 14px;
         font-size: 0.9rem;
+        min-height: 48px;
+    }
+
+    .empty-content {
+        padding: 24px 16px;
     }
 
     .empty-content h2 {
@@ -3871,10 +3922,52 @@ function handleMenuClickOutside(event) {
 
     .referral-panel {
         padding: 14px;
+        padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
     }
 
     .referral-card {
         padding: 12px;
+    }
+
+    .mobile-menu-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
+/* خیلی کوچک (۳۶۰ و پایین) */
+@media (max-width: 360px) {
+    .chat-app {
+        padding-inline-start: 0;
+        padding-inline-end: 0;
+    }
+
+    .app-header {
+        padding-inline-start: calc(8px + env(safe-area-inset-inline-start, 0px));
+        padding-inline-end: calc(8px + env(safe-area-inset-inline-end, 0px));
+    }
+
+    .sidebar.is-mobile {
+        width: 100vw;
+        max-width: 100%;
+    }
+
+    .messages-container {
+        padding: 10px 6px;
+    }
+
+    .message-bubble {
+        padding: 8px 10px;
+        font-size: 0.875rem;
+    }
+
+    .input-form {
+        padding: 6px 8px;
+        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .brand-text {
+        max-width: 120px;
     }
 }
 

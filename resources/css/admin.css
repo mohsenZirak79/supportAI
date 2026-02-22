@@ -424,7 +424,7 @@ table.dataTable tbody td {
 /* ------------------------------
    فاز ۳: صفحات لیست یکسان (کاربران، نقش‌ها، تیکت‌ها، گفت‌وگوها)
 ------------------------------ */
-.list-page { max-width: 1200px; margin: 0 auto; }
+.list-page { max-width: 1200px; margin: 0 auto; width: 100%; overflow-x: hidden; }
 .list-page__header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
 .list-page__header h1 { font-size: 1.75rem; font-weight: 700; color: var(--admin-text); margin: 0 0 0.25rem 0; }
 .list-page__subtitle { font-size: 0.9375rem; color: var(--admin-muted-text); margin: 0; }
@@ -589,6 +589,12 @@ table.dataTable tbody td {
     .list-filters__filter { min-width: 0; }
     .list-filters__actions { justify-content: flex-end; }
     .list-page__table thead th, .list-page__table tbody td { padding: 0.75rem; font-size: 0.875rem; }
+    .list-page__card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+@media (max-width: 480px) {
+    .list-page__header h1 { font-size: 1.35rem; }
+    .list-page__actions { flex-direction: column; }
+    .list-page__btn-primary, .list-page__btn-secondary { width: 100%; justify-content: center; }
 }
 
 /* ------------------------------

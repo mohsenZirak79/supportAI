@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('پنل مدیریت'))</title>
 
@@ -42,6 +42,7 @@
             background-attachment: fixed;
             color: var(--admin-text);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* Overlay موبایل هنگام باز بودن سایدبار */
@@ -395,10 +396,29 @@
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 1.5rem 1rem 2rem;
+            padding: 1rem;
+            padding-inline-start: calc(1rem + env(safe-area-inset-inline-start, 0px));
+            padding-inline-end: calc(1rem + env(safe-area-inset-inline-end, 0px));
+            padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
         }
         @media (min-width: 768px) {
-            .admin-content { padding: 2rem; }
+            .admin-content { padding: 2rem; padding-inline-start: calc(2rem + env(safe-area-inset-inline-start, 0px)); padding-inline-end: calc(2rem + env(safe-area-inset-inline-end, 0px)); padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px)); }
+        }
+
+        /* ریسپانسیو موبایل پنل */
+        @media (max-width: 992px) {
+            .admin-main { margin-right: 0; }
+            .admin-content { padding: 0.875rem; padding-inline-start: calc(0.875rem + env(safe-area-inset-inline-start, 0px)); padding-inline-end: calc(0.875rem + env(safe-area-inset-inline-end, 0px)); }
+        }
+        @media (max-width: 768px) {
+            .admin-header { padding: 0.5rem 0.75rem; padding-inline-start: calc(0.75rem + env(safe-area-inset-inline-start, 0px)); padding-inline-end: calc(0.75rem + env(safe-area-inset-inline-end, 0px)); }
+            .admin-content { padding: 0.75rem; padding-inline-start: calc(0.75rem + env(safe-area-inset-inline-start, 0px)); padding-inline-end: calc(0.75rem + env(safe-area-inset-inline-end, 0px)); max-width: 100%; overflow-x: hidden; }
+            .admin-notifications__dropdown { width: min(360px, calc(100vw - 2rem)); }
+            .admin-user__dropdown { min-width: 160px; }
+        }
+        @media (max-width: 480px) {
+            .admin-header { padding: 0.5rem; padding-inline-start: calc(0.5rem + env(safe-area-inset-inline-start, 0px)); padding-inline-end: calc(0.5rem + env(safe-area-inset-inline-end, 0px)); }
+            .admin-content { padding: 0.5rem; padding-inline-start: calc(0.5rem + env(safe-area-inset-inline-start, 0px)); padding-inline-end: calc(0.5rem + env(safe-area-inset-inline-end, 0px)); }
         }
 
     </style>
