@@ -38,7 +38,10 @@ Route::get('v1/_ping-ai', function () {
     $base = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/');
     $url = $base . '/';
     try {
-        $r = \Illuminate\Support\Facades\Http::withOptions(['connect_timeout' => 5])->timeout(8)->get($url);
+        $r = \Illuminate\Support\Facades\Http::withoutVerifying()
+            ->withOptions(['connect_timeout' => 5])
+            ->timeout(8)
+            ->get($url);
         return response()->json([
             'ok' => $r->successful(),
             'url' => $url,
@@ -50,6 +53,7 @@ Route::get('v1/_ping-ai', function () {
             'ok' => false,
             'url' => $url,
             'error' => $e->getMessage(),
+            'error_class' => get_class($e),
             'message' => 'اتصال از PHP به سرویس AI برقرار نشد (مثلاً تایم‌اوت یا دسترسی شبکه)',
         ], 500);
     }

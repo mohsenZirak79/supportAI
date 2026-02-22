@@ -312,7 +312,7 @@
                 <!--                </form>-->
             </main>
 
-            <main v-else class="chat-main empty-state">
+            <main v-else class="chat-main empty-state" @click="startNewChat">
                 <div class="empty-content">
                     <h2>{{ $t('chat.startNewChat') }}</h2>
                     <p>{{ $t('chat.startNewChatDesc') }}</p>
@@ -1024,10 +1024,10 @@ const uploadVoice = async (blob) => {
         if (!uploadRes.ok) throw new Error('upload failed');
         const { file_id } = await uploadRes.json();
 
-        // 3) ارسال پیام ویسی به گفتگو
-        const messageRes = await fetch(`/api/v1/conversations/${activeChatId.value}/messages`, {
+        // 3) ارسال پیام ویسی به گفتگو (از apiFetch برای credentials و 401-handling)
+        const messageRes = await apiFetch(`/conversations/${activeChatId.value}/messages`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 content: '',
                 media_ids: [file_id],
@@ -1353,48 +1353,54 @@ const sendMessage = async () => {
         });
 
         if (res.ok) {
-            const {ai_message, conversation} = await res.json();
-
-            // آپدیت عنوان چت اگر تغییر کرده
-            const chatLocal = chats.value.find(c => c.id === activeChatId.value);
-            if (chatLocal) {
-                if (conversation.title && conversation.title !== chatLocal.title) {
-                    chatLocal.title = conversation.title;
-                }
-
-                // اضافه کردن پاسخ AI
-                // activeChat.messages.push({
-                //     id: ai_message.id,
-                //     sender: 'bot',
-                //     text: ai_message.content,
-                //     created_at: ai_message.created_at,
-                //     // فلگ‌های محافظه‌کارانه: بعداً اگر مدیا داشت lazy ست می‌کنیم
-                //     has_media: false,
-                //     has_voice: false,
-                // });
-                // await nextTick();
-                // scrollToBottom();
-                const botMsg = {
-                    id: ai_message.id,
-                    sender: 'bot',
-                    text: ai_message.content || '',
-                    created_at: ai_message.created_at,
-                    has_media: false,
-                    has_voice: false,
-                };
-                chatLocal.messages = [...chatLocal.messages, botMsg]; // ← به‌جای push
-
-                await nextTick();
-                scrollToBottom();
+            let data;
+            try {
+                data = await res.json();
+            } catch (parseErr) {
+                console.error('Failed to parse response', parseErr);
+                throw new Error('Invalid response');
             }
+            const ai_message = data?.ai_message;
+            const conversation = data?.conversation;
+
+            const chatLocal = chats.value.find(c => c.id === activeChatId.value);
+            if (!chatLocal) return;
+
+            // آپدیت عنوان چت اگر تغییر کرده (اولین پیام: chat_topic از AI برمی‌گرده)
+            if (conversation?.title && conversation.title !== chatLocal.title) {
+                chatLocal.title = conversation.title;
+            }
+
+            // اضافه کردن پاسخ AI (اگر ai_message نبود، خطای سرور را نشان بده)
+            const botMsg = {
+                id: ai_message?.id ?? 'ai-fallback-' + Date.now(),
+                sender: 'bot',
+                text: ai_message?.content ?? t('chat.sendError'),
+                created_at: ai_message?.created_at ?? new Date().toISOString(),
+                has_media: false,
+                has_voice: false,
+            };
+            chatLocal.messages = [...chatLocal.messages, botMsg];
+
+            await nextTick();
+            scrollToBottom();
         } else {
-            throw new Error('send failed');
+            let errMsg = t('chat.sendError');
+            try {
+                const errData = await res.json();
+                errMsg = errData?.error ?? errData?.message ?? errMsg;
+            } catch (_) {}
+            throw new Error(errMsg);
         }
     } catch (error) {
-        activeChat.messages.push({
-            sender: 'bot',
-            text: t('chat.sendError')
-        });
+        const chatLocal = chats.value.find(c => c.id === activeChatId.value);
+        if (chatLocal) {
+            chatLocal.messages.push({
+                sender: 'bot',
+                text: typeof error?.message === 'string' ? error.message : t('chat.sendError')
+            });
+        }
+        toast.error(t('chat.sendError'));
     } finally {
         loading.value = false;
         await nextTick();

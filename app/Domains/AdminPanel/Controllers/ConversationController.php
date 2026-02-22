@@ -218,7 +218,13 @@ class ConversationController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            \Log::error('AI API error: ' . $e->getMessage());
+            $aiUrl = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/') . '/api/ask';
+            \Log::error('AI API error', [
+                'message' => $e->getMessage(),
+                'url' => $aiUrl,
+                'exception' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
             $aiReplyText = 'خطا در ارتباط با سرویس هوش مصنوعی.';
         }
 

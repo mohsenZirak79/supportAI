@@ -290,10 +290,13 @@ class ConversationController extends Controller
                             }
                         }
                     } catch (ConnectionException|RequestException $e) {
+                        $voiceUrl = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/') . '/api/voice-to-answer';
                         Log::error('AI voice call exception', [
                             'msg'      => $e->getMessage(),
+                            'url'      => $voiceUrl,
                             'src_path' => $srcPath,
                             'converted'=> (bool)$tmpWav,
+                            'trace'    => $e->getTraceAsString(),
                         ]);
                         $aiReplyText = 'خطا در ارتباط با سرویس هوش مصنوعی.';
                     } finally {
@@ -398,6 +401,7 @@ class ConversationController extends Controller
                 'message' => $e->getMessage(),
                 'url' => $aiUrl,
                 'exception' => get_class($e),
+                'trace' => $e->getTraceAsString(),
             ]);
             $aiReplyText = 'خطا در ارتباط با سرویس هوش مصنوعی.';
         }
