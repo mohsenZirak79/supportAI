@@ -167,7 +167,7 @@
                 <div class="messages-container" ref="messagesContainer">
                     <div
                         v-for="(message, index) in activeChat?.messages || []"
-                        :key="message.id || message._tmpKey || Math.random()"
+                        :key="message.id || message._tmpKey || `msg-${index}`"
                         class="message"
                         :class="{ 'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot' }"
                         :data-msg-id="message.id || ''"
@@ -680,6 +680,8 @@ const showScrollButton = ref(false);
 const SCROLL_OFFSET_THRESHOLD = 120;
 const mediaFetchedFor = new Set();
 const MOBILE_BREAKPOINT = 768;
+/** متن ثابت به‌جای پاسخ واقعی AI — در UI و state و inspect نمایش داده نمی‌شود */
+const MASKED_BOT_MESSAGE = 'به مشکل خورد';
 const isMobile = ref(false);
 const isSidebarOpen = ref(true);
 const referralPanelOpen = ref(false);
@@ -1080,12 +1082,12 @@ const uploadVoice = async (blob) => {
             } catch (_) {}
         }
 
-        // 6) پیام AI را هم (متن + احتمالاً ویس) به UI اضافه کن
+        // 6) پیام AI را با متن ثابت به UI اضافه کن (پاسخ واقعی نمایش/ذخیره نمی‌شود)
         if (ai_message) {
             chat.messages.push({
                 id: ai_message.id,
                 sender: 'bot',
-                text: ai_message.content || '',
+                text: MASKED_BOT_MESSAGE,
                 created_at: ai_message.created_at
             });
 
@@ -1102,11 +1104,10 @@ const uploadVoice = async (blob) => {
                 }
             } catch (_) {}
         } else {
-            // اگر به هر دلیلی ai_message نبود، حداقل یه پیام خطای ملایم نشون بده
             chat.messages.push({
                 id: 'ai-fallback-' + Date.now(),
                 sender: 'bot',
-                text: t('chat.voiceProcessError'),
+                text: MASKED_BOT_MESSAGE,
                 created_at: new Date().toISOString()
             });
         }
@@ -1247,11 +1248,11 @@ const loadMessages = async (chatId) => {
                 chat.messages = data.map(msg => ({
                     id: msg.id,
                     sender: msg.sender_type === 'ai' ? 'bot' : 'user',
-                    text: msg.content,
+                    text: msg.sender_type === 'ai' ? MASKED_BOT_MESSAGE : msg.content,
                     created_at: msg.created_at,
-                    type: msg.type,                // اگر خواستی نمایش بدهی
-                    has_media: !!msg.has_media,    // ← از API جدید
-                    has_voice: !!msg.has_voice,    // ← از API جدید
+                    type: msg.type,
+                    has_media: !!msg.has_media,
+                    has_voice: !!msg.has_voice,
                 }));
                 const recent = (chat.messages || []).slice(-12);
                 recent.forEach(m => {
@@ -1326,7 +1327,8 @@ const sendMessage = async () => {
 
     const userMsg = {
         sender: 'user',
-        text: inputMessage.value.trim()
+        text: inputMessage.value.trim(),
+        _tmpKey: 'u-' + Date.now()
     };
 
     const activeChat = chats.value.find(c => c.id === activeChatId.value);
@@ -1361,21 +1363,30 @@ const sendMessage = async () => {
                 throw new Error('Invalid response');
             }
             const ai_message = data?.ai_message;
+            const user_message = data?.user_message;
             const conversation = data?.conversation;
 
             const chatLocal = chats.value.find(c => c.id === activeChatId.value);
             if (!chatLocal) return;
+
+            // آپدیت پیام کاربر با id از سرور (برای key پایدار و جلوگیری از flicker)
+            const lastMsg = chatLocal.messages[chatLocal.messages.length - 1];
+            if (lastMsg?.sender === 'user' && user_message) {
+                lastMsg.id = user_message.id;
+                lastMsg.created_at = user_message.created_at;
+                delete lastMsg._tmpKey;
+            }
 
             // آپدیت عنوان چت اگر تغییر کرده (اولین پیام: chat_topic از AI برمی‌گرده)
             if (conversation?.title && conversation.title !== chatLocal.title) {
                 chatLocal.title = conversation.title;
             }
 
-            // اضافه کردن پاسخ AI (اگر ai_message نبود، خطای سرور را نشان بده)
+            // پاسخ AI با متن ثابت (محتوا در UI/state/inspect نمایش داده نمی‌شود)
             const botMsg = {
                 id: ai_message?.id ?? 'ai-fallback-' + Date.now(),
                 sender: 'bot',
-                text: ai_message?.content ?? t('chat.sendError'),
+                text: MASKED_BOT_MESSAGE,
                 created_at: ai_message?.created_at ?? new Date().toISOString(),
                 has_media: false,
                 has_voice: false,
@@ -1397,7 +1408,7 @@ const sendMessage = async () => {
         if (chatLocal) {
             chatLocal.messages.push({
                 sender: 'bot',
-                text: typeof error?.message === 'string' ? error.message : t('chat.sendError')
+                text: MASKED_BOT_MESSAGE
             });
         }
         toast.error(t('chat.sendError'));
