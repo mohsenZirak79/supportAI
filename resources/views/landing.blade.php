@@ -309,8 +309,8 @@
         }
 
         .navbar-brand-icon {
-            width: 64px;
-            height: 64px;
+            width: 128px;
+            height: 128px;
             background: transparent;
             border-radius: var(--radius-md);
             display: flex;
@@ -1140,8 +1140,8 @@
         }
 
         .footer-brand-icon {
-            width: 64px;
-            height: 64px;
+            width: 128px;
+            height: 128px;
             background: transparent;
             border-radius: var(--radius-md);
             display: flex;
@@ -1232,8 +1232,8 @@
             }
 
             .navbar-brand-icon {
-                width: 52px;
-                height: 52px;
+                width: 104px;
+                height: 104px;
             }
 
             .navbar-actions {
@@ -1339,8 +1339,8 @@
             }
 
             .navbar-brand-icon {
-                width: 44px;
-                height: 44px;
+                width: 88px;
+                height: 88px;
             }
 
             .navbar-actions .btn {

@@ -2016,8 +2016,8 @@ function handleMenuClickOutside(event) {
 }
 
 .brand-icon {
-    width: 48px;
-    height: 48px;
+    width: 96px;
+    height: 96px;
     background: transparent;
     border-radius: 8px;
     display: flex;
@@ -2027,8 +2027,8 @@ function handleMenuClickOutside(event) {
 }
 
 .brand-icon svg {
-    width: 26px;
-    height: 26px;
+    width: 52px;
+    height: 52px;
 }
 
 .brand-text {
@@ -2078,8 +2078,8 @@ function handleMenuClickOutside(event) {
     }
 
     .brand-icon {
-        width: 42px;
-        height: 42px;
+        width: 84px;
+        height: 84px;
     }
 
     .header-nav {
@@ -2104,8 +2104,8 @@ function handleMenuClickOutside(event) {
     }
 
     .brand-icon {
-        width: 38px;
-        height: 38px;
+        width: 76px;
+        height: 76px;
     }
 
     .nav-link {

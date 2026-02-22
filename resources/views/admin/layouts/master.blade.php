@@ -97,8 +97,8 @@
             border-radius: 0 0 0 1rem;
         }
         .admin-sidebar__logo {
-            width: 56px;
-            height: 56px;
+            width: 112px;
+            height: 112px;
             border-radius: 12px;
             background: transparent;
             color: #0f172a;

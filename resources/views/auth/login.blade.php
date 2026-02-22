@@ -135,8 +135,8 @@
 
         .logo-container { text-align: center; margin-bottom: 1.5rem; }
         .logo-icon {
-            width: 72px;
-            height: 72px;
+            width: 144px;
+            height: 144px;
             margin: 0 auto 0.75rem;
             background: transparent;
             border-radius: 12px;
