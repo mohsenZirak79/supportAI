@@ -3695,7 +3695,7 @@ function handleMenuClickOutside(event) {
         transition: transform 0.25s ease;
     }
     [dir="rtl"] .sidebar.is-mobile {
-        transform: translateX(-110%);
+        transform: translateX(110%);
     }
     [dir="rtl"] .sidebar.is-mobile.is-open {
         transform: translateX(0);
