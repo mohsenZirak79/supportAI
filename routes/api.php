@@ -3,10 +3,14 @@
 //use App\Domains\Auth\Controllers\AuthController;
 use App\Domains\Shared\Controllers\NotificationController;
 use App\Domains\UserPanel\Controllers\TicketController;
+use App\Http\Controllers\BaleWebhookController;
 use Illuminate\Http\Request;
 use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Route;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+
+// وب‌هوک بازوی بله (بدون احراز هویت؛ سرور بله POST می‌زند)
+Route::post('webhook/bale', [BaleWebhookController::class, 'handle'])->name('webhook.bale');
 //
 //Route::get('/user', function (Request $request) {
 //    return $request->user();
