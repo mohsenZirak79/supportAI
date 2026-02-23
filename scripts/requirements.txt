@@ -1,0 +1,3 @@
+# وابستگی‌های اسکریپت‌های TTS (tts.py, tts_chunks.py)
+# در صورت خطای 403 از Bing: pip install -U edge-tts
+edge-tts>=7.0.0

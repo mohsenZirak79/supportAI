@@ -429,9 +429,10 @@
 - تقسیم براساس ویرگول
 
 ### ۵. اسکریپت‌های Python
-- `tts.py` - تولید صوت
+- `tts.py` - تولید صوت (Microsoft Edge TTS)
 - `tts_chunks.py` - تقسیم متن
 - خروجی Base64 Data URL
+- **خطای 403 از Bing:** در صورت `403 Invalid response status` از `speech.platform.bing.com`، کتابخانه را به‌روز کنید: `pip install -U edge-tts`. وابستگی‌ها: `scripts/requirements.txt`
 
 ---
 

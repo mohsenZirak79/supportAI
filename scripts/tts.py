@@ -392,10 +392,18 @@ def main():
             }))
             sys.exit(1)
         except Exception as edge_error:
-            print(json.dumps({
-                "success": False,
-                "error": f"خطا در تولید صوت: {str(edge_error)}"
-            }))
+            err_str = str(edge_error)
+            # 403 از Bing = توکن/هدر منقضی یا مسدود بودن IP سرور؛ به‌روزرسانی edge-tts اغلب رفع می‌کند
+            if "403" in err_str or "Invalid response status" in err_str:
+                print(json.dumps({
+                    "success": False,
+                    "error": "سرویس صدای مایکروسافت درخواست را رد کرد (403). لطفا کتابخانه را به‌روز کنید: pip install -U edge-tts و در صورت ادامه، از سرور/دیتاسنتر دیگر یا سرویس TTS دیگر استفاده کنید."
+                }))
+            else:
+                print(json.dumps({
+                    "success": False,
+                    "error": f"خطا در تولید صوت: {err_str}"
+                }))
             sys.exit(1)
             
     except json.JSONDecodeError:
