@@ -78,6 +78,7 @@
     "sendingVoice": "Sending...",
     "transcript": "Transcript",
     "copyText": "Copy text",
+    "loadAndPlay": "Play voice",
     "textCopied": "Text copied",
     "handoff": "Refer to support",
     "handoffSuccess": "Referral submitted successfully.",

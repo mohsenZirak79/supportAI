@@ -78,6 +78,7 @@
     "sendingVoice": "جاري الإرسال...",
     "transcript": "النص",
     "copyText": "نسخ النص",
+    "loadAndPlay": "تشغيل الصوت",
     "textCopied": "تم نسخ النص",
     "handoff": "إحالة للدعم",
     "handoffSuccess": "تم تسجيل الإحالة بنجاح.",

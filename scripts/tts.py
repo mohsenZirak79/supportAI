@@ -324,8 +324,10 @@ def main():
             text = text[:4997] + '...'
         
         # Use Microsoft Edge TTS (FREE, no API key required)
+        last_error = None
         try:
             async def generate_speech():
+                nonlocal last_error
                 # Use language-specific voices
                 voices = [
                     (lang_config["tts_voice"], "primary"),
@@ -350,6 +352,7 @@ def main():
                         if audio_data and len(audio_data) > 0:
                             return audio_data
                     except Exception as e:
+                        last_error = str(e)
                         continue
                 
                 return None
@@ -373,9 +376,12 @@ def main():
                     "gender": gender
                 }))
             else:
+                err_msg = "تولید صوت ناموفق بود"
+                if last_error:
+                    err_msg += " (" + last_error + ")"
                 print(json.dumps({
                     "success": False,
-                    "error": "تولید صوت ناموفق بود"
+                    "error": err_msg
                 }))
                 sys.exit(1)
                 

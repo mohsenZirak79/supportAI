@@ -188,11 +188,14 @@
                                     <span class="transcript-text">{{ message.text }}</span>
                                 </div>
 
-                                <!-- اگر نه ویس داره نه متن -->
+                                <!-- ویس دارد ولی هنوز URL لود نشده: با کلیک روی حباب لود و پخش می‌شود -->
+                                <div v-else-if="(message.has_voice || message.has_media) && !message.voiceUrl" class="voice-player voice-player--loading" @click.stop="onBubbleClick(message)">
+                                    <span class="voice-player-label">{{ $t('chat.loadAndPlay') }}</span>
+                                </div>
                                 <span v-else-if="!message.voiceUrl">‌</span>
                             </template>
 
-                            <!-- پخش صدا -->
+                            <!-- پخش صدا (وقتی voiceUrl آماده است) -->
                             <div v-if="message.voiceUrl" class="voice-player" @click.stop="playVoice(message.id)">
                                 <audio :ref="el => registerAudioRef(message.id, el)" :src="message.voiceUrl"
                                        preload="none" controls></audio>
@@ -882,13 +885,17 @@ async function ensureMediaLoaded(msg) {
     mediaFetchedFor.add(msg.id);
     try {
         const r = await apiFetch(`/messages/${msg.id}/media`);
-        if (!r.ok) return;
+        if (!r.ok) {
+            mediaFetchedFor.delete(msg.id); // امکان تلاش مجدد
+            return;
+        }
         const {data: media} = await r.json();
         msg.media = media || [];
         const voice = msg.media.find(m => m.collection === 'message_voices' || (m.mime || '').startsWith('audio/'));
         if (voice) msg.voiceUrl = voice.url;
+        else mediaFetchedFor.delete(msg.id);
     } catch (e) {
-        // بی‌صدا رد شو
+        mediaFetchedFor.delete(msg.id); // امکان تلاش مجدد
     }
 }
 
@@ -1534,7 +1541,11 @@ const handleHandoffSubmit = async (data) => {
 const audioRefs = ref({});
 let currentlyPlayingId = null;
 const registerAudioRef = (id, el) => {
-    if (el) audioRefs.value[id] = el;
+    if (el) {
+        audioRefs.value[id] = el;
+    } else {
+        delete audioRefs.value[id];
+    }
 };
 const playVoice = async (id) => {
     const el = audioRefs.value[id];
@@ -1601,6 +1612,8 @@ const onBubbleClick = async (message) => {
 
     if (!message.voiceUrl && (message.has_voice || message.has_media)) {
         await ensureMediaLoaded(message);
+        // بعد از ست شدن voiceUrl، المان audio در DOM رندر می‌شود؛ ref بعد از nextTick ثبت می‌شود
+        await nextTick();
     }
 
     if (message.voiceUrl) {
@@ -2922,6 +2935,25 @@ function handleMenuClickOutside(event) {
     max-width: 280px;
     height: 36px;
     border-radius: 18px;
+}
+
+.voice-player--loading {
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: rgba(14, 116, 144, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    border: 1px dashed rgba(14, 116, 144, 0.35);
+}
+
+.voice-player--loading:hover {
+    background: rgba(14, 116, 144, 0.15);
+}
+
+.voice-player-label {
+    font-size: 0.9rem;
+    color: var(--color-primary, #0e7490);
+    font-weight: 500;
 }
 
 /* --- حالت ضبط صدا --- */
