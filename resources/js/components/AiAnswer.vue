@@ -89,11 +89,23 @@ function renderMiniMd(src) {
     for (let raw of lines) {
         const line = raw.trim();
 
-        // Heading ###
+        // Headings: ترتیب مهم است – اول ###، بعد ##، بعد #
         if (/^###\s+/.test(line)) {
             flushP(); closeLists();
             const h = line.replace(/^###\s+/, '');
-            out.push(`<h3>${inlineFormat(escapeHtml(h))}</h3>`);
+            out.push(`<h3 class="md-h3">${inlineFormat(escapeHtml(h))}</h3>`);
+            continue;
+        }
+        if (/^##\s+/.test(line)) {
+            flushP(); closeLists();
+            const h = line.replace(/^##\s+/, '');
+            out.push(`<h2 class="md-h2">${inlineFormat(escapeHtml(h))}</h2>`);
+            continue;
+        }
+        if (/^#\s+/.test(line)) {
+            flushP(); closeLists();
+            const h = line.replace(/^#\s+/, '');
+            out.push(`<h1 class="md-h1">${inlineFormat(escapeHtml(h))}</h1>`);
             continue;
         }
 
@@ -450,8 +462,9 @@ onBeforeUnmount(() => stop());
 }
 
 /* Headings - زیباتر و کوچکتر */
-.answer-text :deep(h3) {
-    font-size: 0.95rem;
+.answer-text :deep(h1.md-h1),
+.answer-text :deep(h2.md-h2),
+.answer-text :deep(h3.md-h3) {
     font-weight: 600;
     color: #0f172a;
     margin: 14px 0 8px 0;
@@ -462,7 +475,13 @@ onBeforeUnmount(() => stop());
     gap: 6px;
 }
 
-.answer-text :deep(h3)::before {
+.answer-text :deep(h1.md-h1) { font-size: 1.05rem; }
+.answer-text :deep(h2.md-h2) { font-size: 1rem; }
+.answer-text :deep(h3.md-h3) { font-size: 0.95rem; }
+
+.answer-text :deep(h3)::before,
+.answer-text :deep(h2.md-h2)::before,
+.answer-text :deep(h1.md-h1)::before {
     content: '';
     display: inline-block;
     width: 4px;
