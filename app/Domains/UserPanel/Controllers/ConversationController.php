@@ -332,7 +332,7 @@ class ConversationController extends Controller
                 \Log::info('AI API request', ['url' => $askUrl]);
                 $resp = Http::withoutVerifying()
                     ->withOptions(['connect_timeout' => 10])
-                    ->timeout(120)
+                    ->timeout((int) config('services.python_ai.timeout', 60))
                     ->post($askUrl, [
                         'question' => $validated['content'] ?? '',
                         'user_type' => 'new',

@@ -197,7 +197,7 @@ class ConversationController extends Controller
                 $aiBaseUrl = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/');
                 $askUrl = $aiBaseUrl . '/api/ask';
                 \Log::info('AI API request', ['url' => $askUrl]);
-                $resp = Http::withoutVerifying()->withOptions(['connect_timeout' => 10])->timeout(120)->post($askUrl, [
+                $resp = Http::withoutVerifying()->withOptions(['connect_timeout' => 10])->timeout((int) config('services.python_ai.timeout', 60))->post($askUrl, [
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
                     'first_message' => $isFirstMessage,

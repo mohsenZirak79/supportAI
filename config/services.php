@@ -36,6 +36,7 @@ return [
     ],
     'python_ai' => [
         'url' => env('PYTHON_AI_URL', 'http://127.0.0.1:5000'),
+        'timeout' => (int) env('PYTHON_AI_TIMEOUT', 60), // ثانیه؛ برای پاسخ سریع‌تر در حالت تعاون (فقط یک درخواست به Gemini) ۶۰ کافی است
     ],
 
     'bale' => [

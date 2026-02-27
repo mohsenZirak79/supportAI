@@ -19,7 +19,7 @@
 
 - در **ConversationController** (هم UserPanel هم AdminPanel):
   - `Http::withoutVerifying()` برای رفع خطای SSL.
-  - `->timeout(120)` (نه ۴۵).
+  - `->timeout(config('services.python_ai.timeout', 60))` (پیش‌فرض ۶۰ ثانیه؛ قابل تغییر با `PYTHON_AI_TIMEOUT` در `.env`).
   - `->withOptions(['connect_timeout' => 10])`.
 - در **config/services.php**: پیش‌فرض `PYTHON_AI_URL` برابر `http://127.0.0.1:5000` (نه localhost).
 - در **.env** مقدار `PYTHON_AI_URL=http://127.0.0.1:5000` (بدون فاصله، بدون `/` در آخر).
@@ -87,7 +87,8 @@ sudo systemctl start voice-assistant.service
 |------|-----|
 | curl از شل جواب می‌دهد، Laravel نه | اتصال از **محیط PHP** به همان آدرس را چک کن با `GET /api/v1/_ping-ai`. اگر آنجا خطا داد، آدرس یا شبکه برای PHP مشکل دارد (مثلاً Docker یا فایروال). |
 | خطای SSL برای ai.mokhtal.xyz | در کد `withoutVerifying()` اضافه شده؛ اگر هنوز خطا می‌بینی، از `http://127.0.0.1:5000` استفاده کن. |
-| تایم‌اوت ۴۵ ثانیه | در کد timeout به ۱۲۰ ثانیه و connect_timeout به ۱۰ ثانیه تغییر داده شده؛ کد به‌روز را روی سرور بریز و config:clear بزن. |
+| تایم‌اوت | timeout از config خوانده می‌شود (پیش‌فرض ۶۰ ثانیه؛ `PYTHON_AI_TIMEOUT` در `.env`). connect_timeout برابر ۱۰ ثانیه است. |
+| پاسخ AI کند است | در سرویس Python (kish-Ai) در **config.json** مقدار `taavon_mode: true` بگذار تا فقط یک درخواست به Gemini زده شود (بدون RAG و بدون chat_topic). برای سرعت بیشتر می‌توانی `taavon_fast_model: "gemini-2.0-flash"` هم بگذاری. |
 | لاگ دقیق خطا | در catch همان `url` و `message` و `exception` لاگ می‌شود؛ با `tail` روی `storage/logs/laravel.log` می‌توانی ببینی دقیقاً به چه آدرسی درخواست رفته و چه خطایی برگشته. |
 
 در نهایت اگر `_ping-ai` از طرف همان سرور (یا مرورگر با دامنه) **ok: true** برگرداند و در لاگ هنگام ارسال پیام **url** برابر `http://127.0.0.1:5000/api/ask` باشد، درخواست از Laravel به API باید برسد؛ در غیر این صورت با همان لاگ و خروجی `_ping-ai` می‌توان مرحله بعد را مشخص کرد.
