@@ -1,5 +1,4 @@
 <template>
-
     <HandoffModal
         :is-open="isHandoffModalOpen"
         :roles="availableRoles"
@@ -7,465 +6,374 @@
         @submit="handleHandoffSubmit"
     />
 
-    <div class="chat-app" :dir="direction">
-        <!-- Animated Background -->
-        <div class="animated-bg" aria-hidden="true">
-            <div class="bg-orb bg-orb--1"></div>
-            <div class="bg-orb bg-orb--2"></div>
-            <div class="bg-orb bg-orb--3"></div>
-            <div class="bg-orb bg-orb--4"></div>
-            <div class="bg-grid"></div>
-            <div class="bg-sparkles">
-                <div class="sparkle"></div>
-                <div class="sparkle"></div>
-                <div class="sparkle"></div>
-                <div class="sparkle"></div>
-                <div class="sparkle"></div>
-                <div class="sparkle"></div>
-                <div class="sparkle"></div>
-                <div class="sparkle"></div>
-            </div>
-        </div>
+    <div class="cg-app" :dir="direction">
+        <ChatHeader
+            :title="activeChat?.title || $t('chat.title')"
+            :show-menu-toggle="isMobile"
+            :sidebar-open="isSidebarOpen"
+            :menu-label="$t('chat.openSidebar')"
+            :settings-label="$t('chat.settingsTitle')"
+            @toggle-sidebar="toggleSidebar"
+            @open-settings="settingsModalOpen = true"
+        >
+            <template #notifications>
+                <NotificationBell @select="handleNotificationSelect" />
+            </template>
+        </ChatHeader>
 
-        <!-- Unified Header -->
-        <header class="app-header">
-            <div class="header-inner">
-                <div class="header-brand">
-                    <button
-                        v-if="isMobile"
-                        class="mobile-menu-btn"
-                        type="button"
-                        @click="toggleSidebar"
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="3" y1="12" x2="21" y2="12"/>
-                            <line x1="3" y1="6" x2="21" y2="6"/>
-                            <line x1="3" y1="18" x2="21" y2="18"/>
-                        </svg>
-                    </button>
-                    <span class="brand-text">{{ activeChat?.title || $t('chat.title') }}</span>
-                </div>
-                <nav class="header-nav">
-                    <NotificationBell @select="handleNotificationSelect" />
-                    <select :value="locale" class="lang-select" @change="onLanguageChange">
-                        <option value="fa">فارسی</option>
-                        <option value="en">EN</option>
-                        <option value="ar">ع</option>
-                    </select>
-                </nav>
-            </div>
-        </header>
+        <div class="cg-body">
+            <ChatSidebar
+                v-model:search-query="sidebarSearch"
+                :chats="filteredChats"
+                :active-chat-id="activeChatId"
+                :is-open="isSidebarOpen"
+                :is-mobile="isMobile"
+                :new-chat-text="$t('chat.newChat')"
+                :new-chat-label="$t('chat.startNewChat')"
+                :search-placeholder="$t('chat.searchConversations')"
+                :search-label="$t('common.search')"
+                :actions-label="$t('chat.chatSettings')"
+                :user-name="currentUser.name || $t('nav.profile')"
+                :user-avatar="currentUser.avatar"
+                :account-label="$t('chat.settingsTitle')"
+                :referral-dot="hasPublicReferralResponses"
+                @new-chat="startNewChat"
+                @select="setActiveChat($event)"
+                @open-actions="openChatActionsModal"
+                @open-settings="settingsModalOpen = true"
+            />
 
-        <div class="chat-container">
-            <!-- سایدبار چت‌ها -->
-            <aside class="sidebar" :class="{ 'is-mobile': isMobile, 'is-open': isSidebarOpen }">
-                <div class="new-chat-btn" @click="startNewChat">
-                    {{ $t('chat.newChat') }}
-                </div>
-                <div class="chat-list">
-                    <div
-                        v-for="chat in chats"
-                        :key="chat.id"
-                        class="chat-item"
-                        :class="{ active: chat.id === activeChatId }"
-                        @click="setActiveChat(chat.id)"
-                    >
-                        <span class="chat-item__title">{{ chat.title }}</span>
-                        <button
-                            class="chat-menu-btn"
-                            type="button"
-                            :aria-label="$t('chat.chatSettings')"
-                            @click.stop="toggleChatMenu(chat.id)"
-                        >
-                            <svg viewBox="0 0 24 24" aria-hidden="true" class="chat-menu-icon">
-                                <circle cx="12" cy="5" r="1.5" />
-                                <circle cx="12" cy="12" r="1.5" />
-                                <circle cx="12" cy="19" r="1.5" />
-                            </svg>
-                        </button>
-                        <div v-if="chatMenuOpenId === chat.id" class="chat-menu">
-                            <button type="button" @click.stop="openRenameModal(chat)">{{ $t('chat.renameChat') }}</button>
-                            <button
-                                type="button"
-                                @click.stop="openReferralPanelForChat(chat)"
-                            >
-                                {{ $t('nav.referrals') }}
-                            </button>
-                            <button
-                                type="button"
-                                class="danger"
-                                :disabled="deletingChatId === chat.id"
-                                @click.stop="deleteChat(chat.id)"
-                            >
-                                {{ $t('chat.deleteChat') }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="sidebar-footer">
-                    <button
-                        type="button"
-                        class="sidebar-user-trigger"
-                        :aria-expanded="userMenuOpen"
-                        aria-haspopup="true"
-                        @click="userMenuOpen = !userMenuOpen"
-                    >
-                        <img
-                            v-if="currentUser.avatar"
-                            :src="currentUser.avatar"
-                            :alt="currentUser.name"
-                            class="sidebar-user-avatar"
-                        />
-                        <div v-else class="sidebar-user-avatar sidebar-user-avatar--placeholder">
-                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                            </svg>
-                        </div>
-                        <span class="sidebar-user-name">{{ currentUser.name || $t('nav.profile') }}</span>
-                        <span class="sidebar-footer__dot sidebar-footer__dot--on-trigger" v-if="hasPublicReferralResponses && !userMenuOpen"></span>
-                    </button>
-                    <div v-if="userMenuOpen" class="sidebar-user-menu" ref="userMenuRef">
-                        <button
-                            type="button"
-                            class="sidebar-user-menu__item"
-                            :disabled="!activeChatId"
-                            @click="userMenuOpen = false; toggleReferralPanel()"
-                        >
-                            <span class="sidebar-footer__dot" v-if="hasPublicReferralResponses"></span>
-                            {{ $t('nav.referrals') }}
-                        </button>
-                        <button type="button" class="sidebar-user-menu__item" @click="userMenuOpen = false; goToTickets()">
-                            {{ $t('nav.tickets') }}
-                        </button>
-                        <button type="button" class="sidebar-user-menu__item" @click="userMenuOpen = false; goToProfile()">
-                            {{ $t('nav.profile') }}
-                        </button>
-                        <button
-                            type="button"
-                            class="sidebar-user-menu__item sidebar-user-menu__item--danger"
-                            :disabled="loggingOut"
-                            @click="userMenuOpen = false; logout()"
-                        >
-                            {{ loggingOut ? '...' : $t('nav.logout') }}
-                        </button>
-                    </div>
-                </div>
-            </aside>
             <div
                 v-if="isMobile && isSidebarOpen"
-                class="sidebar-overlay"
+                class="cg-drawer-backdrop"
+                role="presentation"
+                aria-hidden="true"
                 @click="closeSidebar"
-            ></div>
+            />
 
-            <!-- ناحیه چت اصلی -->
-            <main class="chat-main" v-if="activeChatId">
-                <div class="messages-container" ref="messagesContainer">
-                    <div
-                        v-for="(message, index) in activeChat?.messages || []"
-                        :key="message.id || message._tmpKey || `msg-${index}`"
-                        class="message"
-                        :class="{ 'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot' }"
-                        :data-msg-id="message.id || ''"
+            <div class="cg-main">
+                <template v-if="activeChatId">
+                    <div ref="messagesContainer" class="cg-thread-scroll">
+                        <div class="cg-thread">
+                            <div
+                                v-for="(message, index) in activeChat?.messages || []"
+                                :key="message.id || message._tmpKey || `msg-${index}`"
+                                class="cg-msg"
+                                :class="{ 'cg-msg--user': message.sender === 'user', 'cg-msg--bot': message.sender === 'bot' }"
+                                :data-msg-id="message.id || ''"
+                            >
+                                <div class="cg-msg-inner">
+                                    <div class="cg-msg-bubble" @click="onBubbleClick(message)">
+                                        <template v-if="message.sender === 'bot' && message.text">
+                                            <AiAnswer :text="message.text" :lang="locale" :gender="userVoiceGender" />
+                                        </template>
+                                        <template v-else>
+                                            <div v-if="message.isSending" class="cg-msg-sending">
+                                                <span class="cg-msg-dot" aria-hidden="true" />
+                                                {{ $t('chat.sendingVoice') }}
+                                            </div>
+                                            <div v-if="message.text && message.text.trim()" class="cg-msg-transcript">
+                                                <span>{{ message.text }}</span>
+                                            </div>
+                                            <div
+                                                v-else-if="(message.has_voice || message.has_media) && !message.voiceUrl"
+                                                class="cg-voice-placeholder"
+                                                @click.stop="onBubbleClick(message)"
+                                            >
+                                                {{ $t('chat.loadAndPlay') }}
+                                            </div>
+                                            <span v-else-if="!message.voiceUrl">‌</span>
+                                        </template>
+                                        <div v-if="message.voiceUrl" class="cg-voice-wrap" @click.stop="playVoice(message.id)">
+                                            <audio :ref="(el) => registerAudioRef(message.id, el)" :src="message.voiceUrl" preload="none" controls />
+                                        </div>
+                                        <div class="cg-msg-toolbar">
+                                            <span class="cg-msg-time">{{ formatDate(message.created_at) }}</span>
+                                            <div class="cg-msg-actions">
+                                                <button
+                                                    type="button"
+                                                    class="cg-icon-btn"
+                                                    :aria-label="$t('chat.copyText')"
+                                                    :title="$t('chat.copyText')"
+                                                    @click.stop="copyText(message.text)"
+                                                >
+                                                    <svg viewBox="0 0 24 24" class="cg-icon" aria-hidden="true">
+                                                        <path
+                                                            d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="cg-icon-btn"
+                                                    :aria-label="$t('chat.handoff')"
+                                                    :title="$t('chat.handoff')"
+                                                    @click.stop="showHandoffModal(message)"
+                                                >
+                                                    <svg viewBox="0 0 24 24" class="cg-icon" aria-hidden="true">
+                                                        <path d="M4 12v8h16v-8h2v10H2V12h2zm8-9 6 6h-4v6h-4V9H6l6-6z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="loading" class="cg-msg cg-msg--bot">
+                                <div class="cg-msg-inner">
+                                    <div class="cg-msg-bubble cg-msg-bubble--typing">
+                                        <ChatTypingIndicator :label="$t('chat.thinking')" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        v-if="showScrollButton"
+                        type="button"
+                        class="cg-scroll-to-bottom"
+                        :aria-label="$t('chat.scrollToBottom')"
+                        @click="scrollToBottom"
                     >
-                        <div class="message-bubble" @click="onBubbleClick(message)">
-
-                            <!-- بات: متن + دکمه‌های پخش -->
-                            <template v-if="message.sender === 'bot' && message.text">
-                                <AiAnswer :text="message.text" :lang="locale" :gender="userVoiceGender"/>
-                            </template>
-
-                            <!-- کاربر: پیام صوتی با ترنسکریپت -->
-                            <template v-else>
-                                <!-- نمایش وضعیت ارسال -->
-                                <div v-if="message.isSending" class="sending-indicator">
-                                    <span class="sending-dot"></span>
-                                    {{ $t('chat.sendingVoice') }}
-                                </div>
-
-                                <!-- ترنسکریپت متن صوتی -->
-                                <div v-if="message.text && message.text.trim()" class="voice-transcript">
-<!--                                    <span class="transcript-label">{{ $t('chat.transcript') }}:</span>-->
-                                    <span class="transcript-text">{{ message.text }}</span>
-                                </div>
-
-                                <!-- ویس دارد ولی هنوز URL لود نشده: با کلیک روی حباب لود و پخش می‌شود -->
-                                <div v-else-if="(message.has_voice || message.has_media) && !message.voiceUrl" class="voice-player voice-player--loading" @click.stop="onBubbleClick(message)">
-                                    <span class="voice-player-label">{{ $t('chat.loadAndPlay') }}</span>
-                                </div>
-                                <span v-else-if="!message.voiceUrl">‌</span>
-                            </template>
-
-                            <!-- پخش صدا (وقتی voiceUrl آماده است) -->
-                            <div v-if="message.voiceUrl" class="voice-player" @click.stop="playVoice(message.id)">
-                                <audio :ref="el => registerAudioRef(message.id, el)" :src="message.voiceUrl"
-                                       preload="none" controls></audio>
-                            </div>
-
-                            <div class="message-meta">
-                                <span class="timestamp">{{ formatDate(message.created_at) }}</span>
-                                <div class="msg-actions">
-                                    <button
-                                        class="msg-action copy"
-                                        @click="copyText(message.text)"
-                                        :aria-label="$t('chat.copyText')"
-                                        :title="$t('chat.copyText')"
-                                    >
-                                        <!-- Copy Icon -->
-                                        <svg viewBox="0 0 24 24" class="icon">
-                                            <path
-                                                d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-                                        </svg>
-                                    </button>
-
-                                    <button
-                                        class="msg-action handoff"
-                                        @click="showHandoffModal(message)"
-                                        :aria-label="$t('chat.handoff')"
-                                        :title="$t('chat.handoff')"
-                                    >
-                                        <!-- آیکن ارجاع/ارسال -->
-                                        <svg viewBox="0 0 24 24" class="icon">
-                                            <path d="M4 12v8h16v-8h2v10H2V12h2zm8-9 6 6h-4v6h-4V9H6l6-6z"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div v-if="loading" class="message bot-message">
-                        <div class="message-bubble loading">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
-                </div>
-                <button
-                    v-if="showScrollButton"
-                    class="scroll-bottom-btn"
-                    type="button"
-                    :aria-label="$t('chat.scrollToBottom')"
-                    @click="scrollToBottom"
-                >
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 16.5a1 1 0 0 1-.7-.29l-6-6a1 1 0 0 1 1.4-1.42L12 14.09l5.3-5.3a1 1 0 1 1 1.4 1.42l-6 6a1 1 0 0 1-.7.29Z"/>
-                    </svg>
-                </button>
-
-
-                <!-- فرم ارسال پیام -->
-                <form @submit.prevent="sendMessage" class="input-form">
-                    <!-- حالت ضبط صدا -->
-                    <div v-if="isRecording" class="recording-ui">
-                        <div class="waveform">
-                            <div v-for="n in 20" :key="n" class="bar" :style="{ height: getBarHeight(n) + 'px' }"></div>
-                        </div>
-                        <div class="recording-controls">
-                            <button type="button" @click="cancelRecording" class="cancel-btn">✕</button>
-                            <button type="button" @click="sendRecording" class="send-btn">✓</button>
-                        </div>
-                        <div class="recording-timer">{{ formatTimer(recordingTime) }}</div>
-                    </div>
-
-                    <!-- حالت متنی -->
-                    <div v-else class="text-input-area">
-                    <textarea
-                        ref="msgInput"
+                        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                            <path
+                                d="M12 16.5a1 1 0 0 1-.7-.29l-6-6a1 1 0 0 1 1.4-1.42L12 14.09l5.3-5.3a1 1 0 1 1 1.4 1.42l-6 6a1 1 0 0 1-.7.29Z"
+                            />
+                        </svg>
+                    </button>
+                    <ChatComposer
+                        ref="composerRef"
                         v-model="inputMessage"
-                        class="chat-input"
+                        :disabled="loading"
+                        :is-recording="isRecording"
+                        :recording-time="recordingTime"
                         :placeholder="$t('chat.inputPlaceholder')"
-                        rows="1"
-                        @input="autoGrow"
+                        :mic-label="$t('chat.recordVoice')"
+                        :send-label="$t('chat.send')"
+                        :send-voice-label="$t('chat.send')"
+                        :cancel-label="$t('common.cancel')"
+                        :bar-height-fn="getBarHeight"
+                        @submit="sendMessage"
+                        @start-recording="startRecording"
+                        @cancel-recording="cancelRecording"
+                        @send-recording="sendRecording"
                         @keydown="onKeydown"
                     />
-                        <div class="input-actions">
-                            <button type="button" @click="startRecording" class="mic-btn" :disabled="loading" :title="$t('chat.recordVoice')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                                    <line x1="12" y1="19" x2="12" y2="23"/>
-                                    <line x1="8" y1="23" x2="16" y2="23"/>
-                                </svg>
-                            </button>
-                            <button type="submit" class="send-btn" :disabled="loading || !inputMessage.trim()" :title="$t('chat.send')">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-                <!--          <textarea-->
-                <!--              v-model="inputMessage"-->
-                <!--              placeholder="پیام خود را بنویسید..."-->
-                <!--              rows="1"-->
-                <!--              @input="autoResize"-->
-                <!--              ref="textarea"-->
-                <!--              :disabled="loading"-->
-                <!--          ></textarea>-->
-                <!--                    <button type="submit" :disabled="!inputMessage.trim() || loading">-->
-                <!--                        ارسال-->
-                <!--                    </button>-->
-                <!--                </form>-->
-            </main>
-
-            <main v-else class="chat-main empty-state" @click="startNewChat">
-                <div class="empty-content">
+                </template>
+                <div
+                    v-else
+                    class="cg-empty"
+                    role="button"
+                    tabindex="0"
+                    @click="startNewChat"
+                    @keydown.enter.prevent="startNewChat"
+                >
                     <h2>{{ $t('chat.startNewChat') }}</h2>
                     <p>{{ $t('chat.startNewChatDesc') }}</p>
                 </div>
-            </main>
-        </div>
-        <transition name="fade">
-            <div
-                v-if="referralPanelOpen"
-                class="referral-panel-backdrop"
-                @click="closeReferralPanel"
-            ></div>
-        </transition>
-
-        <transition name="slide-panel">
-            <section
-                v-if="referralPanelOpen"
-                class="referral-panel"
-                :class="{ 'is-mobile': isMobile }"
-                :aria-label="$t('referral.title')"
-            >
-                <div class="referral-panel__header">
-                    <div>
-                        <p class="referral-panel__eyebrow">{{ $t('referral.title') }}</p>
-                        <h3>{{ activeChat?.title || $t('referral.currentChat') }}</h3>
-                    </div>
-                    <div class="panel-actions">
-                        <button
-                            class="panel-icon-btn"
-                            type="button"
-                            :disabled="referralsLoading"
-                            @click="refreshCurrentReferrals"
-                            :aria-label="$t('referral.refresh')"
-                        >
-                            ↻
-                        </button>
-                        <button class="panel-icon-btn" type="button" @click="closeReferralPanel" :aria-label="$t('referral.closePanel')">
-                            ✕
-                        </button>
-                    </div>
-                </div>
-                <div class="referral-panel__body">
-                    <div v-if="referralsLoading" class="referral-panel__placeholder">
-                        <div class="spinner"></div>
-                        <p>{{ $t('referral.loading') }}</p>
-                    </div>
-                    <div v-else-if="referralsError" class="referral-panel__placeholder error">
-                        <p>{{ referralsError }}</p>
-                        <button type="button" class="panel-retry" @click="refreshCurrentReferrals">{{ $t('common.retry') }}</button>
-                    </div>
-                    <div v-else-if="!currentReferrals.length" class="referral-panel__placeholder">
-                        <p>{{ $t('referral.noReferrals') }}</p>
-                        <small class="text-muted">{{ $t('referral.noReferralsHint') }}</small>
-                    </div>
-                    <div v-else class="referral-card-list">
-                        <article v-for="referral in currentReferrals" :key="referral.id" class="referral-card">
-                            <div class="referral-card__header">
-                                <div>
-                                    <p class="referral-card__eyebrow">{{ $t('referral.referTo') }} {{ referral.assigned_role || $t('referral.support') }}</p>
-                                    <h4>{{ activeChat?.title || $t('referral.currentChat') }}</h4>
-                                </div>
-                                <span class="referral-status" :class="'referral-status--' + referral.status">
-                                    {{ referralStatusLabel(referral.status) }}
-                                </span>
-                            </div>
-
-                            <div class="referral-card__section">
-                                <div class="section-title">{{ $t('referral.referredMessage') }}</div>
-                                <p class="section-body" v-if="referral.trigger_message?.content">
-                                    {{ referral.trigger_message.content }}
-                                </p>
-                                <p class="section-body muted" v-else>
-                                    {{ $t('referral.messageVoiceOrFile') }}
-                                </p>
-                                <div class="section-footer">
-                                    <span>{{ formatDate(referral.trigger_message?.created_at) }}</span>
-                                    <button
-                                        type="button"
-                                        class="section-link"
-                                        @click="scrollToReferredMessage(referral.trigger_message_id)"
-                                    >
-                                        {{ $t('referral.viewInChat') }}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div v-if="referral.description" class="referral-card__section">
-                                <div class="section-title">{{ $t('referral.yourNote') }}</div>
-                                <p class="section-body">{{ referral.description }}</p>
-                            </div>
-
-                            <div v-if="referral.response" class="referral-card__section response">
-                                <div class="section-title">{{ $t('referral.supportResponse') }}</div>
-                                <p class="section-body">{{ referral.response.text }}</p>
-                                <div class="section-footer">
-                                    <span>{{ formatDate(referral.response.created_at) }}</span>
-                                </div>
-                                <div v-if="referral.response.files?.length" class="referral-files">
-                                    <a
-                                        v-for="file in referral.response.files"
-                                        :key="file.id"
-                                        :href="file.url"
-                                        target="_blank"
-                                        rel="noopener"
-                                        class="file-chip file-chip-link"
-                                    >
-                                        <span>{{ getFileEmoji(file.mime) }}</span>
-                                        <span class="truncate">{{ file.name || $t('common.file') }}</span>
-                                    </a>
-                                </div>
-                            </div>
-                            <div v-else class="referral-card__section muted">
-                                <div class="section-title">{{ $t('referral.supportResponse') }}</div>
-                                <p class="section-body">{{ $t('referral.noResponse') }}</p>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-            </section>
-        </transition>
-
-        <transition name="fade">
-            <div v-if="renameModal.open" class="modal-backdrop" @click.self="closeRenameModal">
-                <form class="rename-modal" @submit.prevent="submitRename">
-                    <h3>{{ $t('chat.renameChatTitle') }}</h3>
-                    <p class="modal-desc">{{ $t('chat.renameChatDesc') }}</p>
-                    <input
-                        type="text"
-                        ref="renameInputRef"
-                        v-model="renameModal.title"
-                        class="rename-input"
-                        maxlength="100"
-                        :placeholder="$t('chat.newTitlePlaceholder')"
-                        :disabled="renameModal.loading"
-                    />
-                    <div class="modal-actions">
-                        <button type="button" class="modal-btn ghost" @click="closeRenameModal" :disabled="renameModal.loading">
-                            {{ $t('common.cancel') }}
-                        </button>
-                        <button type="submit" class="modal-btn primary" :disabled="renameModal.loading">
-                            {{ renameModal.loading ? $t('chat.savingTitle') : $t('chat.saveTitle') }}
-                        </button>
-                    </div>
-                </form>
             </div>
-        </transition>
+        </div>
+
+        <BaseModal v-model:open="referralPanelOpen" :title="activeChat?.title || $t('referral.currentChat')" size="xl">
+            <p class="cg-modal-eyebrow">{{ $t('referral.title') }}</p>
+            <div class="cg-referral-toolbar">
+                <button type="button" class="cg-btn-secondary" :disabled="referralsLoading" @click="refreshCurrentReferrals">
+                    {{ $t('referral.refresh') }}
+                </button>
+            </div>
+            <div v-if="referralsLoading" class="cg-referral-placeholder">
+                <div class="cg-spinner" />
+                <p>{{ $t('referral.loading') }}</p>
+            </div>
+            <div v-else-if="referralsError" class="cg-referral-placeholder cg-referral-placeholder--error">
+                <p>{{ referralsError }}</p>
+                <button type="button" class="cg-btn-secondary" @click="refreshCurrentReferrals">{{ $t('common.retry') }}</button>
+            </div>
+            <div v-else-if="!currentReferrals.length" class="cg-referral-placeholder">
+                <p>{{ $t('referral.noReferrals') }}</p>
+                <small class="cg-muted">{{ $t('referral.noReferralsHint') }}</small>
+            </div>
+            <div v-else class="cg-referral-list">
+                <article v-for="referral in currentReferrals" :key="referral.id" class="cg-referral-card">
+                    <div class="cg-referral-card-head">
+                        <div>
+                            <p class="cg-modal-eyebrow">{{ $t('referral.referTo') }} {{ referral.assigned_role || $t('referral.support') }}</p>
+                            <h4>{{ activeChat?.title || $t('referral.currentChat') }}</h4>
+                        </div>
+                        <span class="cg-referral-status" :class="'cg-referral-status--' + referral.status">
+                            {{ referralStatusLabel(referral.status) }}
+                        </span>
+                    </div>
+                    <div class="cg-referral-block">
+                        <div class="cg-referral-label">{{ $t('referral.referredMessage') }}</div>
+                        <p v-if="referral.trigger_message?.content" class="cg-referral-text">{{ referral.trigger_message.content }}</p>
+                        <p v-else class="cg-referral-text cg-muted">{{ $t('referral.messageVoiceOrFile') }}</p>
+                        <div class="cg-referral-foot">
+                            <span>{{ formatDate(referral.trigger_message?.created_at) }}</span>
+                            <button type="button" class="cg-link-btn" @click="scrollToReferredMessage(referral.trigger_message_id)">
+                                {{ $t('referral.viewInChat') }}
+                            </button>
+                        </div>
+                    </div>
+                    <div v-if="referral.description" class="cg-referral-block">
+                        <div class="cg-referral-label">{{ $t('referral.yourNote') }}</div>
+                        <p class="cg-referral-text">{{ referral.description }}</p>
+                    </div>
+                    <div v-if="referral.response" class="cg-referral-block cg-referral-block--response">
+                        <div class="cg-referral-label">{{ $t('referral.supportResponse') }}</div>
+                        <p class="cg-referral-text">{{ referral.response.text }}</p>
+                        <div class="cg-referral-foot">
+                            <span>{{ formatDate(referral.response.created_at) }}</span>
+                        </div>
+                        <div v-if="referral.response.files?.length" class="cg-referral-files">
+                            <a
+                                v-for="file in referral.response.files"
+                                :key="file.id"
+                                :href="file.url"
+                                target="_blank"
+                                rel="noopener"
+                                class="cg-file-chip"
+                            >
+                                <span class="truncate">{{ file.name || $t('common.file') }}</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div v-else class="cg-referral-block cg-muted">
+                        <div class="cg-referral-label">{{ $t('referral.supportResponse') }}</div>
+                        <p class="cg-referral-text">{{ $t('referral.noResponse') }}</p>
+                    </div>
+                </article>
+            </div>
+        </BaseModal>
+
+        <BaseModal
+            :open="renameModal.open"
+            :title="$t('chat.renameChatTitle')"
+            size="md"
+            @update:open="(v) => { if (!v) closeRenameModal(); }"
+        >
+            <p class="cg-muted">{{ $t('chat.renameChatDesc') }}</p>
+            <form class="cg-rename-form" @submit.prevent="submitRename">
+                <input
+                    ref="renameInputRef"
+                    v-model="renameModal.title"
+                    type="text"
+                    class="cg-input"
+                    maxlength="100"
+                    :placeholder="$t('chat.newTitlePlaceholder')"
+                    :disabled="renameModal.loading"
+                />
+                <div class="cg-modal-actions">
+                    <button type="button" class="cg-btn-secondary" :disabled="renameModal.loading" @click="closeRenameModal">
+                        {{ $t('common.cancel') }}
+                    </button>
+                    <button type="submit" class="cg-btn-primary" :disabled="renameModal.loading">
+                        {{ renameModal.loading ? $t('chat.savingTitle') : $t('chat.saveTitle') }}
+                    </button>
+                </div>
+            </form>
+        </BaseModal>
+
+        <BaseModal v-model:open="chatActionsOpen" :title="$t('chat.chatSettings')" size="sm">
+            <div v-if="chatActionsChat" class="cg-actions-stack">
+                <button type="button" class="cg-actions-row" @click="fromChatActionsRename">
+                    {{ $t('chat.renameChat') }}
+                </button>
+                <button type="button" class="cg-actions-row" @click="fromChatActionsReferrals">
+                    {{ $t('nav.referrals') }}
+                </button>
+                <button
+                    type="button"
+                    class="cg-actions-row cg-actions-row--danger"
+                    :disabled="deletingChatId === chatActionsChat.id"
+                    @click="fromChatActionsDelete"
+                >
+                    {{ $t('chat.deleteChat') }}
+                </button>
+            </div>
+        </BaseModal>
+
+        <BaseModal
+            v-model:open="deleteConfirm.open"
+            :title="$t('chat.deleteChatConfirmTitle')"
+            variant="danger"
+            size="sm"
+            :close-on-backdrop="false"
+        >
+            <p>{{ $t('chat.confirmDelete') }}</p>
+            <template #footer>
+                <button type="button" class="cg-btn-secondary" @click="deleteConfirm.open = false">
+                    {{ $t('common.cancel') }}
+                </button>
+                <button type="button" class="cg-btn-danger" :disabled="deletingChatId !== null" @click="executeDeleteChat">
+                    {{ $t('common.delete') }}
+                </button>
+            </template>
+        </BaseModal>
+
+        <BaseModal v-model:open="settingsModalOpen" :title="$t('chat.settingsTitle')" size="lg">
+            <div class="cg-settings">
+                <section class="cg-settings-block">
+                    <h3 class="cg-settings-heading">{{ $t('chat.languageSection') }}</h3>
+                    <p class="cg-muted">{{ $t('chat.languageHint') }}</p>
+                    <label class="cg-label" for="cg-settings-lang-select">{{ $t('chat.interfaceLanguage') }}</label>
+                    <select id="cg-settings-lang-select" class="cg-select" :value="locale" @change="onLanguageChange">
+                        <option value="fa">فارسی</option>
+                        <option value="en">English</option>
+                        <option value="ar">العربية</option>
+                    </select>
+                </section>
+                <section class="cg-settings-block">
+                    <h3 class="cg-settings-heading">{{ $t('chat.appearanceSection') }}</h3>
+                    <p class="cg-muted">{{ $t('chat.appearanceHint') }}</p>
+                </section>
+                <section class="cg-settings-block">
+                    <h3 class="cg-settings-heading">{{ $t('nav.referrals') }}</h3>
+                    <button
+                        type="button"
+                        class="cg-btn-secondary cg-btn-block"
+                        :disabled="!activeChatId"
+                        @click="settingsModalOpen = false; toggleReferralPanel()"
+                    >
+                        {{ $t('referral.title') }}
+                    </button>
+                </section>
+                <section class="cg-settings-block">
+                    <h3 class="cg-settings-heading">{{ $t('nav.tickets') }}</h3>
+                    <button type="button" class="cg-btn-secondary cg-btn-block" @click="settingsModalOpen = false; goToTickets()">
+                        {{ $t('nav.tickets') }}
+                    </button>
+                </section>
+                <section class="cg-settings-block">
+                    <h3 class="cg-settings-heading">{{ $t('nav.profile') }}</h3>
+                    <button type="button" class="cg-btn-secondary cg-btn-block" @click="settingsModalOpen = false; goToProfile()">
+                        {{ $t('nav.profile') }}
+                    </button>
+                </section>
+                <section class="cg-settings-block">
+                    <button
+                        type="button"
+                        class="cg-btn-danger cg-btn-block"
+                        :disabled="loggingOut"
+                        @click="settingsModalOpen = false; logout()"
+                    >
+                        {{ loggingOut ? '...' : $t('nav.logout') }}
+                    </button>
+                </section>
+            </div>
+        </BaseModal>
     </div>
 </template>
-
-
 <script setup>
 import {ref, computed, nextTick, onMounted, onUnmounted, reactive, watch} from 'vue';
 import HandoffModal from './HandoffModal.vue';
 import NotificationBell from './NotificationBell.vue';
-import AiAnswer from './AiAnswer.vue'
+import AiAnswer from './AiAnswer.vue';
+import BaseModal from './chat/BaseModal.vue';
+import ChatHeader from './chat/ChatHeader.vue';
+import ChatSidebar from './chat/ChatSidebar.vue';
+import ChatComposer from './chat/ChatComposer.vue';
+import ChatTypingIndicator from './chat/ChatTypingIndicator.vue';
 import {useToast} from 'vue-toast-notification'
 import {apiFetch} from '../lib/http';
 import { useLanguage } from '../i18n';
@@ -517,11 +425,14 @@ const recordingInterval = ref(null);
 const mediaRecorder = ref(null);
 const audioChunks = ref([]);
 const availableRoles = ref([]);
-const chatMenuOpenId = ref(null);
 const deletingChatId = ref(null);
 const currentUser = ref({ name: '', avatar: null });
-const userMenuOpen = ref(false);
-const userMenuRef = ref(null);
+const sidebarSearch = ref('');
+const settingsModalOpen = ref(false);
+const chatActionsOpen = ref(false);
+const chatActionsChat = ref(null);
+const deleteConfirm = reactive({ open: false, chatId: null });
+const composerRef = ref(null);
 const renameModal = reactive({
     open: false,
     chatId: null,
@@ -687,7 +598,6 @@ const chats = ref([]); // لیست چت‌ها از API
 const activeChatId = ref(null);
 const inputMessage = ref('');
 const loading = ref(false);
-const textarea = ref(null);
 const messagesContainer = ref(null);
 const showScrollButton = ref(false);
 const SCROLL_OFFSET_THRESHOLD = 120;
@@ -717,6 +627,12 @@ const referralsError = computed(() => {
 const hasPublicReferralResponses = computed(() =>
     currentReferrals.value.some((item) => !!item.response)
 );
+
+const filteredChats = computed(() => {
+    const q = sidebarSearch.value.trim().toLowerCase();
+    if (!q) return chats.value;
+    return chats.value.filter((c) => (c.title || '').toLowerCase().includes(q));
+});
 
 const updateLayoutFlags = () => {
     if (typeof window === 'undefined') return;
@@ -783,6 +699,34 @@ const closeReferralPanel = () => {
     referralPanelOpen.value = false;
 };
 
+const openChatActionsModal = (chat) => {
+    chatActionsChat.value = chat;
+    chatActionsOpen.value = true;
+};
+
+const fromChatActionsRename = () => {
+    const c = chatActionsChat.value;
+    chatActionsOpen.value = false;
+    if (c) openRenameModal(c);
+};
+
+const fromChatActionsReferrals = () => {
+    const c = chatActionsChat.value;
+    chatActionsOpen.value = false;
+    if (c) openReferralPanelForChat(c);
+};
+
+const fromChatActionsDelete = () => {
+    const c = chatActionsChat.value;
+    chatActionsOpen.value = false;
+    if (c) requestDeleteChat(c.id);
+};
+
+const requestDeleteChat = (chatId) => {
+    deleteConfirm.chatId = chatId;
+    deleteConfirm.open = true;
+};
+
 const toggleReferralPanel = async () => {
     if (!activeChatId.value) return;
     if (referralPanelOpen.value) {
@@ -794,7 +738,6 @@ const toggleReferralPanel = async () => {
 };
 
 const openReferralPanelForChat = async (chat) => {
-    closeChatMenu();
     if (activeChatId.value !== chat.id) {
         await setActiveChat(chat.id);
     }
@@ -802,28 +745,7 @@ const openReferralPanelForChat = async (chat) => {
     await loadReferrals(chat.id);
 };
 
-const handleReferralEsc = (event) => {
-    if (event.key === 'Escape') {
-        closeReferralPanel();
-    }
-};
-
-const handleRenameEsc = (event) => {
-    if (event.key === 'Escape' && renameModal.open) {
-        closeRenameModal();
-    }
-};
-
-const toggleChatMenu = (chatId) => {
-    chatMenuOpenId.value = chatMenuOpenId.value === chatId ? null : chatId;
-};
-
-const closeChatMenu = () => {
-    chatMenuOpenId.value = null;
-};
-
 const openRenameModal = (chat) => {
-    closeChatMenu();
     if (!chat) return;
     renameModal.open = true;
     renameModal.chatId = chat.id;
@@ -869,28 +791,6 @@ const handleScroll = () => {
     const distanceFromBottom = el.scrollHeight - (el.scrollTop + el.clientHeight);
     showScrollButton.value = distanceFromBottom > SCROLL_OFFSET_THRESHOLD;
 };
-
-let previousBodyOverflow = '';
-watch(referralPanelOpen, (open) => {
-    if (typeof document === 'undefined') return;
-    if (open) {
-        previousBodyOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        document.addEventListener('keydown', handleReferralEsc);
-    } else {
-        document.body.style.overflow = previousBodyOverflow || '';
-        document.removeEventListener('keydown', handleReferralEsc);
-    }
-});
-
-watch(() => renameModal.open, (open) => {
-    if (typeof document === 'undefined') return;
-    if (open) {
-        document.addEventListener('keydown', handleRenameEsc);
-    } else {
-        document.removeEventListener('keydown', handleRenameEsc);
-    }
-});
 
 async function ensureMediaLoaded(msg) {
     if (!msg?.id) return;
@@ -1176,9 +1076,6 @@ onUnmounted(() => {
         messagesContainer.value.removeEventListener('scroll', handleScroll);
     }
     if (typeof document !== 'undefined') {
-        document.removeEventListener('keydown', handleReferralEsc);
-        document.removeEventListener('keydown', handleRenameEsc);
-        document.removeEventListener('click', handleMenuClickOutside);
         document.body.style.overflow = '';
     }
     highlightTimers.forEach(timeout => clearTimeout(timeout));
@@ -1225,14 +1122,6 @@ watch(
         });
     }
 );
-const autoResize = () => {
-    const el = textarea.value;
-    if (el) {
-        el.style.height = 'auto';
-        el.style.height = Math.min(el.scrollHeight, 150) + 'px';
-    }
-};
-
 // لود چت‌ها از API
 const loadChats = async () => {
     try {
@@ -1332,7 +1221,7 @@ const startNewChat = async () => {
 
 // فعال‌سازی چت
 const setActiveChat = async (id) => {
-    closeChatMenu();
+    chatActionsOpen.value = false;
     activeChatId.value = id;
     persistActiveConversationId(id);
     await loadMessages(id);
@@ -1371,8 +1260,7 @@ const sendMessage = async () => {
     inputMessage.value = '';
     await nextTick();
     scrollToBottom();
-    inputMessage.value = ''
-    if (msgInput.value) msgInput.value.style.height = 'auto'
+    composerRef.value?.resetHeight?.();
     loading.value = true;
     await nextTick();
     scrollToBottom();
@@ -1467,16 +1355,6 @@ const renameChat = async (chatId, title) => {
         throw e;
     }
 };
-const msgInput = ref(null)
-
-// 2-2) رشد خودکار بدون اسکرول
-function autoGrow() {
-    const ta = msgInput.value
-    if (!ta) return
-    ta.style.height = 'auto'
-    ta.style.height = Math.min(ta.scrollHeight, 220) + 'px'
-}
-
 // 2-3) Enter = ارسال / Shift+Enter = خط جدید
 function onKeydown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1485,20 +1363,26 @@ function onKeydown(e) {
     }
 }
 
-// حذف چت
-const deleteChat = async (chatId) => {
-    closeChatMenu();
-    const chat = chats.value.find(c => c.id === chatId);
-    if (!chat) return;
-    if (!confirm(t('chat.confirmDelete'))) return;
+const executeDeleteChat = async () => {
+    const chatId = deleteConfirm.chatId;
+    if (!chatId) {
+        deleteConfirm.open = false;
+        return;
+    }
+    const chat = chats.value.find((c) => c.id === chatId);
+    if (!chat) {
+        deleteConfirm.open = false;
+        deleteConfirm.chatId = null;
+        return;
+    }
 
     deletingChatId.value = chatId;
     try {
-        const res = await apiFetch(`/conversations/${chatId}`, {method: 'DELETE'});
+        const res = await apiFetch(`/conversations/${chatId}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('delete failed');
 
-        const index = chats.value.findIndex(c => c.id === chatId);
-        chats.value = chats.value.filter(c => c.id !== chatId);
+        const index = chats.value.findIndex((c) => c.id === chatId);
+        chats.value = chats.value.filter((c) => c.id !== chatId);
 
         if (activeChatId.value === chatId) {
             const next = chats.value[index] || chats.value[index - 1] || chats.value[0];
@@ -1514,6 +1398,8 @@ const deleteChat = async (chatId) => {
         toast.error(t('chat.deleteError'));
     } finally {
         deletingChatId.value = null;
+        deleteConfirm.open = false;
+        deleteConfirm.chatId = null;
     }
 };
 const copyText = (text) => {
@@ -1617,12 +1503,12 @@ const focusMessageById = (messageId) => {
     const target = messagesContainer.value.querySelector(`[data-msg-id="${messageId}"]`);
     if (!target) return;
     target.scrollIntoView({behavior: 'smooth', block: 'center'});
-    target.classList.add('message-highlight');
+    target.classList.add('cg-msg--highlight');
     if (highlightTimers.has(messageId)) {
         clearTimeout(highlightTimers.get(messageId));
     }
     const timer = setTimeout(() => {
-        target.classList.remove('message-highlight');
+        target.classList.remove('cg-msg--highlight');
         highlightTimers.delete(messageId);
     }, 2200);
     highlightTimers.set(messageId, timer);
@@ -1681,9 +1567,6 @@ onMounted(() => {
         updateLayoutFlags();
         window.addEventListener('resize', updateLayoutFlags);
         window.addEventListener(EVENT_ACTIVE_CHAT_CHANGED, handleExternalConversationChange);
-    }
-    if (typeof document !== 'undefined') {
-        document.addEventListener('click', handleMenuClickOutside);
     }
 });
 
@@ -1773,826 +1656,117 @@ const stopSpeak = () => {
     currentUtter = null;
 };
 
-function handleMenuClickOutside(event) {
-    const target = event.target;
-    if (!target) return;
-    const inMenu = typeof target.closest === 'function' ? target.closest('.chat-menu') : null;
-    const inButton = typeof target.closest === 'function' ? target.closest('.chat-menu-btn') : null;
-    if (!inMenu && !inButton) {
-        closeChatMenu();
-    }
-    const inUserTrigger = typeof target.closest === 'function' ? target.closest('.sidebar-user-trigger') : null;
-    const inUserMenu = typeof target.closest === 'function' ? target.closest('.sidebar-user-menu') : null;
-    if (!inUserTrigger && !inUserMenu) {
-        userMenuOpen.value = false;
-    }
-}
 </script>
 
 <style scoped>
-/* همان استایل قبلی شما — بدون تغییر */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-.chat-app {
+.cg-app {
+    --cg-brand: #0f766e;
+    --cg-brand-2: #0ea5e9;
+    --cg-brand-muted: rgba(15, 118, 110, 0.12);
+    --cg-ink: #0f172a;
+    --cg-ink-muted: #64748b;
+    --cg-surface-0: #ffffff;
+    --cg-surface-1: #f8fafc;
+    --cg-surface-2: #f1f5f9;
+    --cg-surface-elevated: #ffffff;
+    --cg-border: rgba(148, 163, 184, 0.22);
+    --cg-shadow-soft: 0 8px 32px rgba(15, 23, 42, 0.06);
+    --cg-shadow-modal: 0 24px 64px rgba(15, 23, 42, 0.16);
+    --cg-header-h: 56px;
+    --cg-header-total: calc(var(--cg-header-h) + env(safe-area-inset-top, 0px));
+    --cg-thread-max: 768px;
     font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
-    --brand-primary: #0f766e;
-    --brand-secondary: #0ea5e9;
-    --brand-accent: #22d3ee;
-    --ink-900: #0f172a;
-    --ink-700: #334155;
-    --surface-0: #ffffff;
-    --surface-1: #f8fafc;
-    --surface-2: #eef2ff;
-    --border-soft: rgba(148, 163, 184, 0.25);
-    --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.12);
-    --shadow-strong: 0 20px 45px rgba(15, 23, 42, 0.18);
-    --header-h: 56px;
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #f0fdf4 50%, #ecfeff 75%, #faf5ff 100%);
+    color: var(--cg-ink);
+    background: var(--cg-surface-1);
     height: 100vh;
     height: 100dvh;
     min-height: -webkit-fill-available;
-    overflow: hidden;
-    overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+    overflow: hidden;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     width: 100%;
     max-width: 100vw;
 }
 
-/* Animated Background - Gradient Mesh */
-.chat-app::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(ellipse 80% 50% at 20% 40%, rgba(14, 165, 233, 0.12), transparent),
-        radial-gradient(ellipse 60% 60% at 80% 20%, rgba(168, 85, 247, 0.08), transparent),
-        radial-gradient(ellipse 70% 40% at 10% 80%, rgba(16, 185, 129, 0.1), transparent),
-        radial-gradient(ellipse 50% 70% at 90% 70%, rgba(251, 146, 60, 0.06), transparent);
-    animation: meshPulse 8s ease-in-out infinite alternate;
-    pointer-events: none;
-    z-index: 0;
+.cg-body {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    position: relative;
 }
 
-@keyframes meshPulse {
-    0% {
-        opacity: 0.6;
-        filter: blur(60px);
-    }
-    100% {
-        opacity: 1;
-        filter: blur(80px);
-    }
-}
-
-/* Animated Background Layer */
-.animated-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* Floating Orbs */
-.bg-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.5;
-    animation: floatOrb 15s ease-in-out infinite;
-}
-
-.bg-orb--1 {
-    width: 400px;
-    height: 400px;
-    background: linear-gradient(135deg, rgba(14, 165, 233, 0.4), rgba(34, 211, 238, 0.2));
-    top: 10%;
-    left: 5%;
-    animation-delay: 0s;
-    animation-duration: 18s;
-}
-
-.bg-orb--2 {
-    width: 350px;
-    height: 350px;
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(139, 92, 246, 0.2));
-    top: 60%;
-    right: 10%;
-    animation-delay: -5s;
-    animation-duration: 22s;
-}
-
-.bg-orb--3 {
-    width: 300px;
-    height: 300px;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(52, 211, 153, 0.2));
-    bottom: 20%;
-    left: 30%;
-    animation-delay: -10s;
-    animation-duration: 20s;
-}
-
-.bg-orb--4 {
-    width: 250px;
-    height: 250px;
-    background: linear-gradient(135deg, rgba(251, 146, 60, 0.25), rgba(251, 191, 36, 0.15));
-    top: 30%;
-    right: 30%;
-    animation-delay: -7s;
-    animation-duration: 16s;
-}
-
-@keyframes floatOrb {
-    0%, 100% {
-        transform: translate(0, 0) scale(1);
-    }
-    25% {
-        transform: translate(30px, -40px) scale(1.05);
-    }
-    50% {
-        transform: translate(-20px, 30px) scale(0.95);
-    }
-    75% {
-        transform: translate(40px, 20px) scale(1.02);
-    }
-}
-
-/* Subtle Grid Pattern Overlay */
-.bg-grid {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-        linear-gradient(rgba(148, 163, 184, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
-    animation: gridShift 30s linear infinite;
-    pointer-events: none;
-}
-
-@keyframes gridShift {
-    0% {
-        transform: translate(0, 0);
-    }
-    100% {
-        transform: translate(50px, 50px);
-    }
-}
-
-/* Sparkle particles */
-.bg-sparkles {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.sparkle {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.6);
-    animation: sparkle 4s ease-in-out infinite;
-}
-
-.sparkle:nth-child(1) { top: 15%; left: 25%; animation-delay: 0s; }
-.sparkle:nth-child(2) { top: 45%; left: 75%; animation-delay: 1s; }
-.sparkle:nth-child(3) { top: 70%; left: 15%; animation-delay: 2s; }
-.sparkle:nth-child(4) { top: 25%; left: 85%; animation-delay: 0.5s; }
-.sparkle:nth-child(5) { top: 80%; left: 55%; animation-delay: 1.5s; }
-.sparkle:nth-child(6) { top: 35%; left: 45%; animation-delay: 2.5s; }
-.sparkle:nth-child(7) { top: 55%; left: 35%; animation-delay: 3s; }
-.sparkle:nth-child(8) { top: 10%; left: 60%; animation-delay: 3.5s; }
-
-@keyframes sparkle {
-    0%, 100% {
-        opacity: 0;
-        transform: scale(0.5);
-    }
-    50% {
-        opacity: 0.8;
-        transform: scale(1);
-    }
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-    .chat-app::before,
-    .bg-orb,
-    .bg-grid,
-    .sparkle {
-        animation: none;
-    }
-}
-
-
-/* Unified Header – رنگ واحد، بدون گرادیان */
-.app-header {
-    background: #0e7490;
-    color: white;
-    padding: 0;
-    padding-inline-start: calc(20px + env(safe-area-inset-inline-start, 0px));
-    padding-inline-end: calc(20px + env(safe-area-inset-inline-end, 0px));
-    height: 56px;
-    min-height: 56px;
+.cg-drawer-backdrop {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.header-inner {
-    max-width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.header-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 1;
-    min-width: 0;
-}
-
-.mobile-menu-btn {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-.brand-text {
-    font-weight: 600;
-    font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.header-nav {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-    flex-wrap: nowrap;
-}
-
-.lang-select {
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: white;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-.lang-select option {
-    background: #0e7490;
-    color: white;
-}
-
-/* Header Responsive */
-@media (max-width: 640px) {
-    .app-header {
-        padding: 0 14px;
-        height: 52px;
-    }
-
-    .header-inner {
-        gap: 8px;
-    }
-
-    .brand-text {
-        display: none;
-    }
-
-    .header-nav {
-        gap: 8px;
-    }
-
-    .lang-select {
-        padding: 5px 8px;
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .app-header {
-        height: 48px;
-        padding: 0 12px;
-    }
-
-    .mobile-menu-btn {
-        width: 28px;
-        height: 28px;
-    }
-
-    .nav-link {
-        padding: 4px 6px;
-        font-size: 0.7rem;
-    }
-
-    .lang-select {
-        padding: 4px 5px;
-        font-size: 0.7rem;
-    }
-}
-
-/* Legacy header styles for compatibility */
-.chat-header h1 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    cursor: pointer;
-    color: white;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.chat-logo {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.chat-logo svg,
-.chat-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.chat-container {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-    min-height: 0;
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 100%;
-}
-
-.sidebar {
-    width: 260px;
-    min-width: 260px;
-    background: #f8fafc;
-    border-inline-start: 1px solid rgba(226, 232, 240, 0.8);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: transform .25s ease, box-shadow .25s ease;
-    position: relative;
-    z-index: 2;
-}
-
-.sidebar .chat-list {
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-}
-
-.new-chat-btn {
-    flex-shrink: 0;
-    padding: 12px 16px;
-    margin: 12px;
-    background: #0e7490;
-    color: white;
-    font-weight: 600;
-    font-size: 0.9375rem;
-    cursor: pointer;
-    text-align: center;
-    border-radius: 10px;
-    border: none;
-    transition: background 0.2s, transform 0.2s;
-}
-
-.new-chat-btn:hover {
-    background: #0d6a7a;
-}
-
-.chat-list {
-    padding: 8px 0;
-}
-
-.chat-item {
-    padding: 12px 20px;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-    color: #333;
-    transition: background 0.2s;
-    font-size: 0.95rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-}
-
-.chat-item:hover {
-    background-color: #f5f7ff;
-}
-
-/*.chat-item.active {
-    background-color: #eef2ff;
-    border-right: 3px solid #2575fc;
-    font-weight: 600;
-}*/
-.chat-item.active {
-    background-color: rgba(14, 116, 144, 0.08);
-    border-inline-start: 3px solid #0e7490;
-}
-
-.chat-item__title {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-inline-end: 8px;
-}
-
-.chat-menu-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, 0.4);
-    background: rgba(241, 245, 249, 0.8);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease;
-    position: relative;
-    z-index: 2;
-}
-
-.chat-menu-btn:hover {
-    background: rgba(226, 232, 240, 0.9);
-    border-color: rgba(148, 163, 184, 0.8);
-}
-
-.chat-menu-icon {
-    width: 16px;
-    height: 16px;
-    fill: #475569;
-}
-
-.chat-menu {
-    position: absolute;
-    top: 50%;
-    inset-inline-end: 16px;
-    transform: translateY(calc(-50% + 24px));
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.15);
-    display: flex;
-    flex-direction: column;
-    min-width: 140px;
-    z-index: 10;
-    overflow: hidden;
-}
-
-.chat-menu button {
-    text-align: right;
-    padding: 10px 14px;
-    background: none;
-    border: none;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.15s ease;
-}
-
-.chat-menu button:hover {
-    background: #f8fafc;
-}
-
-.chat-menu button.danger {
-    color: #dc2626;
-}
-
-.chat-menu button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* پایین سایدبار – کاربر (نام + آواتار) و منوی کشویی */
-.sidebar-footer {
-    flex-shrink: 0;
-    border-top: 1px solid rgba(226, 232, 240, 0.9);
-    padding: 10px 12px;
-    background: #fff;
-    position: relative;
-}
-
-.sidebar-user-trigger {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 8px 10px;
-    text-align: inherit;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #334155;
-    background: rgba(241, 245, 249, 0.8);
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-}
-
-.sidebar-user-trigger:hover {
-    background: rgba(226, 232, 240, 0.6);
-    border-color: rgba(148, 163, 184, 0.4);
-}
-
-.sidebar-user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.sidebar-user-avatar--placeholder {
-    background: linear-gradient(135deg, #0e7490, #0891b2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-}
-
-.sidebar-user-avatar--placeholder svg {
-    width: 18px;
-    height: 18px;
-}
-
-.sidebar-user-name {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.sidebar-footer__dot--on-trigger {
-    position: absolute;
-    top: 8px;
-    inset-inline-end: 8px;
-}
-
-.sidebar-user-menu {
-    position: absolute;
-    bottom: 100%;
-    left: 12px;
-    right: 12px;
-    margin-bottom: 6px;
-    padding: 6px;
-    background: #fff;
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    z-index: 100;
-}
-
-[dir="rtl"] .sidebar-user-menu {
-    left: 12px;
-    right: 12px;
-}
-
-.sidebar-user-menu__item {
-    position: relative;
-    display: block;
-    width: 100%;
-    padding: 10px 14px;
-    text-align: inherit;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #475569;
-    background: none;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-}
-
-.sidebar-user-menu__item:hover:not(:disabled) {
-    background: rgba(14, 116, 144, 0.08);
-    color: #0e7490;
-}
-
-.sidebar-user-menu__item:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.sidebar-user-menu__item--danger:hover:not(:disabled) {
-    background: rgba(220, 38, 38, 0.08);
-    color: #dc2626;
-}
-
-.sidebar-user-menu__item .sidebar-footer__dot {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    inset-inline-end: 14px;
-    width: 6px;
-    height: 6px;
-    background: #ef4444;
-    border-radius: 50%;
-}
-
-.sidebar-footer__dot {
-    position: absolute;
-    top: 10px;
-    inset-inline-end: 14px;
-    width: 6px;
-    height: 6px;
-    background: #ef4444;
-    border-radius: 50%;
-}
-
-.chat-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: transparent;
-    position: relative;
-    min-height: 0;
-    min-width: 0;
-    z-index: 1;
-    overflow: hidden;
-}
-
-.chat-main::before {
-    content: '';
-    position: absolute;
     inset: 0;
-    background: #fafbfc;
-    pointer-events: none;
+    z-index: 35;
+    background: rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(2px);
 }
 
-.empty-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: #475569;
-    padding: 24px;
-}
-
-.empty-content {
-    text-align: center;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(16px);
-    padding: 40px 48px;
-    border-radius: 24px;
-    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.1);
-    border: 1px solid rgba(226, 232, 240, 0.5);
-    animation: floatIn 0.5s ease-out;
-}
-
-@keyframes floatIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.empty-content h2 {
-    font-size: 1.5rem;
-    margin-bottom: 12px;
-    background: linear-gradient(135deg, #0f766e, #0ea5e9);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.empty-content p {
-    color: #64748b;
-    font-size: 0.95rem;
-}
-
-.messages-container {
+.cg-main {
     flex: 1;
-    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--cg-surface-0);
+}
+
+.cg-thread-scroll {
+    flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.cg-thread {
+    width: 100%;
+    max-width: var(--cg-thread-max);
+    margin-inline: auto;
+    padding: 24px 16px 120px;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(180deg, 
-        rgba(255, 255, 255, 0.4) 0%, 
-        rgba(255, 255, 255, 0.6) 50%,
-        rgba(255, 255, 255, 0.4) 100%);
-    backdrop-filter: blur(8px);
-    position: relative;
-    gap: 16px;
-    min-height: 0;
-    z-index: 1;
+    gap: 20px;
 }
 
-.message {
+.cg-msg {
     display: flex;
+    width: 100%;
+}
+
+.cg-msg--user {
     justify-content: flex-end;
 }
 
-.message.user-message {
+.cg-msg--bot {
     justify-content: flex-start;
 }
 
-.message.bot-message {
-    justify-content: flex-start;
+.cg-msg-inner {
+    max-width: min(70%, 640px);
+    min-width: 0;
 }
 
-[dir="rtl"] .message.bot-message {
-    justify-content: flex-end;
+.cg-msg-bubble {
+    border-radius: 16px;
+    padding: 14px 16px;
+    border: 1px solid transparent;
+    box-shadow: var(--cg-shadow-soft);
+    animation: cg-msg-in 0.22s ease;
 }
 
-.message.user-message {
-    justify-content: flex-end;
-}
-
-[dir="rtl"] .message.user-message {
-    justify-content: flex-start;
-}
-
-.message-bubble {
-    padding: 12px 16px;
-    border-radius: 18px;
-    max-width: 80%;
-    word-break: break-word;
-    line-height: 1.5;
-    text-align: start;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
-    animation: fadeInUp 0.3s ease;
-    transition: box-shadow .2s ease, transform .2s ease;
-    backdrop-filter: blur(12px);
-}
-
-.message-bubble:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
-}
-
-.user-message .message-bubble:hover {
-    box-shadow: 0 12px 32px rgba(14, 165, 233, 0.2);
-}
-
-@keyframes fadeInUp {
+@keyframes cg-msg-in {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(6px);
     }
     to {
         opacity: 1;
@@ -2600,1426 +1774,450 @@ function handleMenuClickOutside(event) {
     }
 }
 
-
-.user-message .message-bubble {
-    background: linear-gradient(140deg, rgba(14, 165, 233, 0.25), rgba(34, 211, 238, 0.35));
-    color: var(--ink-900);
-    border: 1px solid rgba(14, 116, 144, 0.2);
-    border-bottom-right-radius: 4px;
-    box-shadow: 0 8px 24px rgba(14, 165, 233, 0.15);
+.cg-msg--user .cg-msg-bubble {
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(14, 165, 233, 0.1));
+    border-color: rgba(15, 118, 110, 0.18);
+    color: var(--cg-ink);
 }
 
-[dir="rtl"] .user-message .message-bubble {
-    border-bottom-right-radius: 18px;
-    border-bottom-left-radius: 4px;
+.cg-msg--bot .cg-msg-bubble {
+    background: var(--cg-surface-2);
+    border-color: var(--cg-border);
 }
 
-.bot-message .message-bubble {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
-    color: var(--ink-900);
-    border-bottom-left-radius: 4px;
-    border: 1px solid rgba(226, 232, 240, 0.7);
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+.cg-msg-bubble--typing {
+    padding-block: 12px;
 }
 
-[dir="rtl"] .bot-message .message-bubble {
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 4px;
-}
-
-.loading {
+.cg-msg-sending {
     display: flex;
     align-items: center;
-    gap: 4px;
-    background: #f1f5f9 !important;
-    color: #666;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: var(--cg-ink-muted);
 }
 
-.loading span {
+.cg-msg-dot {
     width: 8px;
     height: 8px;
-    background-color: #94a3b8;
     border-radius: 50%;
-    display: inline-block;
-    animation: bounce 1.4s infinite ease-in-out both;
+    background: var(--cg-brand);
+    animation: cg-pulse 1s ease infinite;
 }
 
-.loading span:nth-child(1) {
-    animation-delay: -0.32s;
-}
-
-.loading span:nth-child(2) {
-    animation-delay: -0.16s;
-}
-
-@keyframes bounce {
-    0%, 80%, 100% {
-        transform: scale(0);
-    }
-    40% {
-        transform: scale(1);
+@keyframes cg-pulse {
+    50% {
+        opacity: 0.4;
     }
 }
 
-.input-form {
-    display: flex;
-    padding: 12px 16px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    padding-left: calc(16px + env(safe-area-inset-left, 0px));
-    padding-right: calc(16px + env(safe-area-inset-right, 0px));
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.98) 100%);
-    border-top: 1px solid rgba(226, 232, 240, 0.6);
-    gap: 10px;
-    flex-direction: column;
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-    box-shadow: 0 -12px 35px rgba(15, 23, 42, 0.1);
-    backdrop-filter: blur(16px);
-    flex-shrink: 0;
-}
-
-
-.text-input-area {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.text-input-area textarea {
-    flex: 1;
-    padding: 10px 14px;
-    border: 1px solid rgba(148, 163, 184, 0.3);
-    border-radius: 20px;
-    resize: none;
+.cg-msg-transcript {
     font-size: 0.95rem;
-    font-family: inherit;
-    outline: none;
-    max-height: 120px;
-    min-height: 42px;
-    background: rgba(248, 250, 252, 0.9);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    line-height: 1.65;
 }
 
-.input-actions {
-    display: flex;
-    gap: 6px;
-    flex-shrink: 0;
-}
-
-.input-form textarea:focus {
-    border-color: #0891b2;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.15);
-}
-
-.input-actions button {
-    width: 42px;
-    height: 42px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.input-actions .mic-btn {
-    background: #f1f5f9;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
-}
-
-.input-actions .mic-btn:hover {
-    background: #e2e8f0;
-    color: #475569;
-}
-
-.input-actions .send-btn {
-    background: linear-gradient(135deg, #0f766e, #0ea5e9);
-    color: white;
-}
-
-.input-actions .send-btn:hover:not(:disabled) {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
-}
-
-.input-actions button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.input-actions button svg {
-    width: 20px;
-    height: 20px;
-}
-
-.input-actions .mic-btn svg {
-    width: 18px;
-    height: 18px;
-}
-
-.input-actions .send-btn svg {
-    width: 20px;
-    height: 20px;
-    margin-inline-start: 2px;
-}
-
-[dir="rtl"] .input-actions .send-btn svg {
-    transform: scaleX(-1);
-}
-
-.scroll-bottom-btn {
-    position: absolute;
-    inset-inline-end: 24px;
-    bottom: 80px;
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
-    border: none;
-    background: linear-gradient(135deg, #0f766e, #0ea5e9);
-    box-shadow: 0 10px 22px rgba(14, 116, 144, 0.3);
-    color: #fff;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    z-index: 5;
-}
-
-.scroll-bottom-btn svg {
-    width: 22px;
-    height: 22px;
-    fill: currentColor;
-}
-
-.scroll-bottom-btn:hover {
-    transform: translateY(1px);
-    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
-}
-
-.scroll-bottom-btn:focus-visible {
-    outline: 3px solid rgba(14, 116, 144, 0.35);
-    outline-offset: 2px;
-}
-
-.mobile-sidebar-toggle {
-    display: none;
-    background: rgba(255, 255, 255, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    color: #fff;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.mobile-sidebar-toggle:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.6);
-    outline-offset: 2px;
-}
-
-.sidebar-overlay {
-    display: none;
-}
-
-/* --- حالت ضبط صدا --- */
-.recording-ui {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    gap: 12px;
-}
-
-.waveform {
-    display: flex;
-    gap: 2px;
-    height: 40px;
-    align-items: flex-end;
-    justify-content: center;
-    width: 100%;
-}
-
-/*.bar {
-    width: 6px;
-    background: linear-gradient(to top, #0891b2, #0e7490);
-    border-radius: 3px;
-    transition: height 0.1s ease;
-}*/
-.bar {
-    background: linear-gradient(to top, #0891b2, #0e7490);
-    box-shadow: 0 0 8px rgba(14, 116, 144, 0.4);
-}
-
-.recording-controls {
-    display: flex;
-    gap: 20px;
-}
-
-.recording-controls button {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid #e2e8f0;
-    background: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.cancel-btn {
-    color: #ef4444;
-    border-color: #fecaca;
-}
-
-.send-btn {
-    color: #10b981;
-    border-color: #bbf7d0;
-}
-
-.recording-timer {
+.cg-voice-placeholder {
     font-size: 0.875rem;
-    color: #64748b;
-}
-
-.input-form button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.message-meta {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 6px;
-    font-size: 0.75rem;
-    color: #666;
-}
-
-.message-actions button {
-    background: none;
-    border: none;
+    color: var(--cg-brand);
     cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s;
+    margin-top: 8px;
 }
 
-.message-bubble:hover .message-actions button {
-    opacity: 1;
+.cg-voice-wrap audio {
+    width: 100%;
+    margin-top: 10px;
+    max-height: 40px;
 }
 
-/* --- Voice Message Styles --- */
-.sending-indicator {
+.cg-msg-toolbar {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: #64748b;
-    font-size: 0.85rem;
-    padding: 4px 0;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(148, 163, 184, 0.15);
 }
 
-.sending-dot {
-    width: 8px;
-    height: 8px;
-    background: #0ea5e9;
-    border-radius: 50%;
-    animation: pulse 1.2s ease-in-out infinite;
+.cg-msg-time {
+    font-size: 0.72rem;
+    color: var(--cg-ink-muted);
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.4; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1); }
-}
-
-.voice-transcript {
+.cg-msg-actions {
     display: flex;
-    flex-direction: column;
     gap: 4px;
-    padding: 8px 0;
 }
 
-.transcript-label {
-    font-size: 0.7rem;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.transcript-text {
-    font-size: 0.9rem;
-    color: #334155;
-    line-height: 1.5;
-}
-
-.voice-player {
-    margin-top: 8px;
-}
-
-.voice-player audio {
-    width: 100%;
-    max-width: 280px;
-    height: 36px;
-    border-radius: 18px;
-}
-
-.voice-player--loading {
-    margin-top: 8px;
-    padding: 10px 14px;
-    background: rgba(14, 116, 144, 0.1);
-    border-radius: 12px;
-    cursor: pointer;
-    border: 1px dashed rgba(14, 116, 144, 0.35);
-}
-
-.voice-player--loading:hover {
-    background: rgba(14, 116, 144, 0.15);
-}
-
-.voice-player-label {
-    font-size: 0.9rem;
-    color: var(--color-primary, #0e7490);
-    font-weight: 500;
-}
-
-/* --- حالت ضبط صدا --- */
-.recording-ui {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    gap: 12px;
-}
-
-.waveform {
-    display: flex;
-    gap: 2px;
-    height: 40px;
-    align-items: flex-end;
-    justify-content: center;
-    width: 100%;
-}
-
-.bar {
-    width: 6px;
-    background: linear-gradient(to top, #0891b2, #0e7490);
-    border-radius: 3px;
-    transition: height 0.1s ease;
-}
-
-.recording-controls {
-    display: flex;
-    gap: 20px;
-}
-
-.recording-controls button {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid #e2e8f0;
-    background: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.cancel-btn {
-    color: #ef4444;
-    border-color: #fecaca;
-}
-
-.send-btn {
-    color: #10b981;
-    border-color: #bbf7d0;
-}
-
-.recording-timer {
-    font-size: 0.875rem;
-    color: #64748b;
-}
-
-/* Bot avatar - displayed as a small badge */
-.bot-message .message-bubble {
-    position: relative;
-}
-
-.bot-message .message-bubble::before {
-    content: "AI";
-    position: absolute;
-    top: -8px;
-    inset-inline-start: -8px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    background: white;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-}
-
-:global(.v-toast__item.welcome-toast) {
-    background: linear-gradient(135deg, rgba(15, 118, 110, 0.95), rgba(14, 165, 233, 0.95));
-    color: #fff;
-    border-radius: 16px;
-    padding: 14px 18px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    box-shadow: 0 18px 35px rgba(15, 23, 42, 0.2);
-    font-weight: 600;
-    letter-spacing: 0.1px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-:global(.v-toast__item.welcome-toast::before) {
-    content: none;
-    display: none;
-}
-
-:global(.v-toast__item.welcome-toast .v-toast__text) {
-    display: inline-flex;
-    align-items: center;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.nav-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 6px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.nav-btn.ghost {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #f8fafc;
-    position: relative;
-    padding-inline-start: 32px;
-}
-
-.nav-btn.ghost:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.nav-btn__dot {
-    position: absolute;
-    inset-inline-start: 12px;
-    top: 50%;
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: #f97316;
-    transform: translateY(-50%);
-    box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.25);
-}
-
-.nav-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-}
-
-.nav-btn.danger {
-    background: rgba(248, 113, 113, 0.2);
-    border-color: rgba(248, 113, 113, 0.55);
-    color: #fee2e2;
-}
-
-.nav-btn.danger:hover {
-    background: rgba(248, 113, 113, 0.35);
-}
-
-.lang-selector {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 8px 32px 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    margin-inline-start: 8px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    min-width: 100px;
-}
-
-[dir="ltr"] .lang-selector {
-    padding: 8px 32px 8px 14px;
-    background-position: right 10px center;
-}
-
-[dir="rtl"] .lang-selector {
-    padding: 8px 14px 8px 32px;
-    background-position: left 10px center;
-}
-
-.lang-selector:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-}
-
-.lang-selector:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
-}
-
-.lang-selector option {
-    background: #0e7490;
-    color: white;
-    padding: 8px;
-}
-
-
-.msg-actions {
-    display: inline-flex;
-    gap: 8px;
-    opacity: 0;
-    transform: translateY(2px);
-    transition: opacity .18s ease, transform .18s ease;
-}
-
-/* نمایش هنگام هاور روی حباب پیام */
-.message-bubble:hover .msg-actions {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* دکمه‌ها: کپسولی با افکت شیشه‌ای سبک */
-.msg-action {
-    --bg: rgba(241, 245, 249, .9); /* slate-100/90 */
-    --bd: rgba(203, 213, 225, .9); /* slate-300/90 */
-    --fg: #334155; /* slate-700 */
-    --hover: rgba(226, 232, 240, 1); /* slate-200 */
-    --ring: rgba(99, 102, 241, .25); /* indigo ring */
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
+.cg-icon-btn {
+    width: 32px;
     height: 32px;
-    border-radius: 999px;
-    border: 1px solid var(--bd);
-    background: var(--bg);
-    color: var(--fg);
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--cg-ink-muted);
     cursor: pointer;
-    transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
-    box-shadow: 0 2px 6px rgba(15, 23, 42, .06);
-    backdrop-filter: blur(4px);
-}
-
-.msg-action:hover {
-    background: var(--hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(15, 23, 42, .10);
-}
-
-.msg-action:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(15, 23, 42, .06);
-}
-
-.msg-action:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 4px var(--ring);
-}
-
-/* آیکن‌ها */
-.msg-action .icon {
-    width: 18px;
-    height: 18px;
-    fill: currentColor;
-    display: block;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity .2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-
-.slide-panel-enter-active,
-.slide-panel-leave-active {
-    transition: transform .3s ease;
-}
-
-.slide-panel-enter-from,
-.slide-panel-leave-to {
-    transform: translateX(110%);
-}
-
-.referral-panel-backdrop {
-    position: fixed;
-    top: 56px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(15, 23, 42, 0.45);
-    z-index: 75;
-}
-
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    z-index: 90;
+    transition: background 0.12s ease, color 0.12s ease;
 }
 
-.rename-modal {
-    width: 100%;
-    max-width: 420px;
-    background: #fff;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.2);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.cg-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--cg-brand);
 }
 
-.rename-input {
-    width: 100%;
-    border: 1px solid #d1d5db;
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 0.95rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+.cg-icon-btn:focus-visible {
+    outline: 2px solid var(--cg-brand);
+    outline-offset: 2px;
 }
 
-.rename-input:focus {
-    border-color: #0891b2;
-    box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.25);
-    outline: none;
+.cg-icon {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
 }
 
-.modal-desc {
-    color: #64748b;
-    font-size: 0.9rem;
-    line-height: 1.7;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 8px;
-}
-
-.modal-btn {
-    border-radius: 999px;
-    padding: 10px 20px;
-    border: 1px solid transparent;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.modal-btn.primary {
-    background: linear-gradient(135deg, #0e7490, #0891b2);
-    color: #fff;
-    box-shadow: 0 10px 20px rgba(14, 116, 144, 0.25);
-}
-
-.modal-btn.primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
-.modal-btn.ghost {
-    background: transparent;
-    border-color: #cbd5f5;
-    color: #475569;
-}
-
-.modal-btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-}
-
-.referral-panel {
+.cg-scroll-to-bottom {
     position: fixed;
-    top: 56px;
-    bottom: 0;
-    right: 0;
-    width: min(420px, 92vw);
-    background: #fff;
-    box-shadow: -10px 0 35px rgba(15, 23, 42, 0.25);
-    border-top-left-radius: 18px;
-    border-bottom-left-radius: 0;
-    z-index: 80;
+    bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+    inset-inline-end: max(20px, env(safe-area-inset-inline-end));
+    z-index: 15;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid var(--cg-border);
+    background: var(--cg-surface-elevated);
+    box-shadow: var(--cg-shadow-soft);
+    color: var(--cg-brand);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.12s ease, box-shadow 0.15s ease;
+}
+
+.cg-scroll-to-bottom:hover {
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
+}
+
+.cg-scroll-to-bottom:active {
+    transform: scale(0.96);
+}
+
+.cg-empty {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-[dir="ltr"] .referral-panel {
-    right: auto;
-    left: 0;
-    border-top-left-radius: 0;
-    border-top-right-radius: 18px;
-    box-shadow: 10px 0 35px rgba(15, 23, 42, 0.25);
-}
-
-.referral-panel.is-mobile {
-    width: 100%;
-    right: 0;
-    left: 0;
-    border-radius: 0;
-    top: 56px;
-}
-
-.referral-panel.is-mobile.slide-panel-enter-from,
-.referral-panel.is-mobile.slide-panel-leave-to {
-    transform: translateY(100%);
-}
-
-.referral-panel__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
     gap: 12px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--cg-ink-muted);
+}
+
+.cg-empty h2 {
+    font-size: 1.15rem;
+    color: var(--cg-ink);
+}
+
+.cg-empty p {
+    max-width: 320px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.cg-modal-eyebrow {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--cg-ink-muted);
+    margin-bottom: 6px;
+}
+
+.cg-muted {
+    color: var(--cg-ink-muted);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    margin-bottom: 12px;
+}
+
+.cg-referral-toolbar {
     margin-bottom: 16px;
 }
 
-.referral-panel__eyebrow {
-    font-size: 0.8rem;
-    color: #94a3b8;
-    margin-bottom: 2px;
-}
-
-.panel-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.panel-icon-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 999px;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    color: #475569;
-    cursor: pointer;
-    transition: all .2s ease;
-}
-
-.panel-icon-btn:hover:not(:disabled) {
-    background: #e2e8f0;
-}
-
-.panel-icon-btn:disabled {
-    opacity: .5;
-    cursor: not-allowed;
-}
-
-.referral-panel__body {
-    overflow-y: auto;
-    flex: 1;
-}
-
-.referral-panel__placeholder {
+.cg-referral-placeholder {
     text-align: center;
-    color: #475569;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    padding: 40px 12px;
+    padding: 32px 16px;
+    color: var(--cg-ink-muted);
 }
 
-.referral-panel__placeholder.error {
-    color: #dc2626;
+.cg-referral-placeholder--error {
+    color: #b91c1c;
 }
 
-.spinner {
+.cg-spinner {
     width: 32px;
     height: 32px;
-    border-radius: 999px;
-    border: 3px solid #e2e8f0;
-    border-top-color: #0891b2;
-    animation: spin .8s linear infinite;
+    margin: 0 auto 12px;
+    border: 3px solid var(--cg-border);
+    border-top-color: var(--cg-brand);
+    border-radius: 50%;
+    animation: cg-spin 0.8s linear infinite;
 }
 
-.referral-card-list {
+@keyframes cg-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.cg-referral-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
-.referral-card {
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 16px;
-    background: #fff;
-    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.06);
+.cg-referral-card {
+    border: 1px solid var(--cg-border);
+    border-radius: 14px;
+    padding: 14px;
+    background: var(--cg-surface-1);
 }
 
-.referral-card__header {
+.cg-referral-card-head {
     display: flex;
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 12px;
 }
 
-.referral-card__eyebrow {
-    font-size: 0.8rem;
-    color: #94a3b8;
+.cg-referral-status {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: var(--cg-surface-2);
+}
+
+.cg-referral-block {
+    margin-top: 10px;
+}
+
+.cg-referral-block--response {
+    border-top: 1px solid var(--cg-border);
+    padding-top: 10px;
+}
+
+.cg-referral-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--cg-ink-muted);
     margin-bottom: 4px;
 }
 
-.referral-status {
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    background: #e2e8f0;
-    color: #475569;
+.cg-referral-text {
+    font-size: 0.9rem;
+    line-height: 1.55;
 }
 
-.referral-status--pending { background: #fef3c7; color: #92400e; }
-.referral-status--assigned { background: #dbeafe; color: #1d4ed8; }
-.referral-status--responded { background: #dcfce7; color: #15803d; }
-.referral-status--closed { background: #e2e8f0; color: #475569; }
-
-.referral-card__section {
-    border: 1px solid #f1f5f9;
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 10px;
-    background: #f8fafc;
-}
-
-.referral-card__section.response {
-    border-color: #c7d2fe;
-    background: #eef2ff;
-}
-
-.referral-card__section.muted {
-    background: #fef2f2;
-    border-color: #fecaca;
-}
-
-.section-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #475569;
-    margin-bottom: 6px;
-}
-
-.section-body {
-    color: #0f172a;
-    line-height: 1.6;
-    white-space: pre-wrap;
-}
-
-.section-body.muted {
-    color: #94a3b8;
-}
-
-.section-footer {
-    margin-top: 8px;
+.cg-referral-foot {
     display: flex;
     justify-content: space-between;
-    font-size: 0.78rem;
-    color: #94a3b8;
-    flex-wrap: wrap;
-    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--cg-ink-muted);
 }
 
-.section-link {
+.cg-link-btn {
+    border: 0;
     background: none;
-    border: none;
-    color: #2563eb;
-    cursor: pointer;
+    color: var(--cg-brand);
+    font: inherit;
     font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
-.referral-files {
-    margin-top: 10px;
+.cg-referral-files {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    margin-top: 8px;
 }
 
-.file-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-    max-width: 220px;
-    padding: .35rem .6rem;
-    border-radius: 9999px;
-    font-size: .78rem;
-    line-height: 1;
-    background: #f1f5f9;
-    color: #334155;
-    border: 1px solid #e2e8f0;
+.cg-file-chip {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--cg-surface-0);
+    border: 1px solid var(--cg-border);
+    font-size: 0.8rem;
+    color: var(--cg-brand);
+    text-decoration: none;
+    max-width: 100%;
 }
 
-.file-chip-link {
-    background: #eef2ff;
-    color: #4338ca;
-    border-color: #c7d2fe;
-}
-
-.file-chip .truncate {
-    max-width: 140px;
+.truncate {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: inline-block;
+    max-width: 220px;
 }
 
-.panel-retry {
-    border: 1px solid #e2e8f0;
-    border-radius: 999px;
-    padding: 6px 18px;
-    background: #fff;
-    color: #1d4ed8;
-    cursor: pointer;
-}
-
-.message.message-highlight .message-bubble {
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
-    transform: translateY(-2px);
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* واریانت‌ها (در صورت نیاز به تفاوت رنگی) */
-.msg-action.copy {
-    --fg: #0f172a; /* تیره‌تر برای کپی */
-}
-
-.msg-action.handoff {
-    --fg: #4338ca; /* ایندیگو */
-    --bd: rgba(165, 180, 252, .7);
-    --bg: rgba(238, 242, 255, .85);
-    --hover: rgba(224, 231, 255, 1);
-}
-
-.chat-input {
+.cg-input {
     width: 100%;
-    min-height: 56px; /* اندازه اولیه */
-    max-height: 220px; /* محدودیت رشد */
-    overflow: hidden; /* بدون اسکرول عمودی */
-    resize: none; /* کاربر نتواند دستی تغییر دهد */
-    line-height: 1.6;
-    border-radius: 14px;
     padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--cg-border);
+    font: inherit;
+    margin-bottom: 16px;
 }
 
-/* ——— تبلت و پایین‌تر (تا ۱۰۲۴) ——— */
-@media (max-width: 1024px) {
-    .chat-container {
-        flex-direction: column;
-    }
-
-    /* فقط وقتی موبایل نیست (تبلت افقی و…)
-       سایدبار بالای صفحه قرار بگیرد */
-    .sidebar:not(.is-mobile) {
-        width: 100%;
-        max-height: 240px;
-        border-left: none;
-        border-bottom: 1px solid #eaeaea;
-        flex-direction: row;
-    }
-
-    .chat-list {
-        flex: 1;
-        max-height: 200px;
-        overflow-y: auto;
-    }
-
-    .messages-container {
-        padding: 20px;
-    }
+.cg-input:focus {
+    outline: none;
+    border-color: var(--cg-brand);
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
 }
 
-/* ——— موبایل (زیر ۷۶۸) drawer از راست ——— */
+.cg-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.cg-btn-primary,
+.cg-btn-secondary,
+.cg-btn-danger {
+    padding: 10px 18px;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    border: 0;
+    transition: opacity 0.15s ease, transform 0.12s ease;
+}
+
+.cg-btn-primary {
+    background: linear-gradient(135deg, var(--cg-brand), var(--cg-brand-2));
+    color: #fff;
+}
+
+.cg-btn-secondary {
+    background: var(--cg-surface-2);
+    color: var(--cg-ink);
+    border: 1px solid var(--cg-border);
+}
+
+.cg-btn-danger {
+    background: #dc2626;
+    color: #fff;
+}
+
+.cg-btn-block {
+    width: 100%;
+    justify-content: center;
+}
+
+.cg-actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cg-actions-row {
+    width: 100%;
+    text-align: inherit;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--cg-surface-1);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.cg-actions-row:hover {
+    background: var(--cg-surface-2);
+}
+
+.cg-actions-row--danger {
+    color: #b91c1c;
+}
+
+.cg-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cg-settings-block {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--cg-border);
+}
+
+.cg-settings-block:last-child {
+    border-bottom: 0;
+}
+
+.cg-settings-heading {
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    color: var(--cg-ink);
+}
+
+.cg-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--cg-ink-muted);
+}
+
+.cg-select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--cg-border);
+    font: inherit;
+    background: var(--cg-surface-0);
+}
+
+:deep(.cg-app) {
+    --cg-surface-elevated: #fff;
+}
+
+:deep([class^='cg-modal']) {
+    --cg-surface-elevated: #fff;
+    --cg-ink: #0f172a;
+    --cg-border: rgba(148, 163, 184, 0.22);
+    --cg-brand: #0f766e;
+    --cg-brand-2: #0ea5e9;
+}
+
+.cg-msg.cg-msg--highlight .cg-msg-bubble {
+    box-shadow: 0 0 0 2px var(--cg-brand), var(--cg-shadow-soft);
+    transition: box-shadow 0.2s ease;
+}
+
 @media (max-width: 768px) {
-    .chat-app {
-        --header-h: 52px;
-        padding-top: calc(52px + env(safe-area-inset-top, 0px));
+    .cg-thread {
+        padding-inline: 12px;
+        padding-bottom: 100px;
     }
 
-    .chat-header .header-content {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .mobile-sidebar-toggle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .app-header {
-        height: 52px;
-        min-height: 52px;
-    }
-
-    .chat-container {
-        position: relative;
-        overflow: hidden;
-        flex-direction: column;
-        flex: 1;
-        min-height: 0;
-    }
-
-    .chat-main {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    /* سایدبار به صورت drawer ثابت از راست - زیر navbar */
-    .sidebar.is-mobile {
-        position: fixed;
-        top: calc(52px + env(safe-area-inset-top, 0px));
-        bottom: 0;
-        inset-inline-end: 0;
-        width: min(85vw, 320px);
-        max-width: 100%;
-        transform: translateX(110%);
-        border: none;
-        box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
-        z-index: 90;
-        background: #f8fafc;
-        display: flex;
-        flex-direction: column;
-        transition: transform 0.25s ease;
-    }
-    [dir="rtl"] .sidebar.is-mobile {
-        transform: translateX(110%);
-    }
-    [dir="rtl"] .sidebar.is-mobile.is-open {
-        transform: translateX(0);
-    }
-
-    .sidebar.is-mobile.is-open {
-        transform: translateX(0);
-    }
-    .sidebar.is-mobile .sidebar-footer {
-        background: #fff;
-        border-top: 1px solid #e2e8f0;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    .sidebar-overlay {
-        display: block;
-        position: fixed;
-        top: calc(52px + env(safe-area-inset-top, 0px));
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(15, 23, 42, 0.45);
-        z-index: 85;
-    }
-
-    /* chat list باید تمام فضای موجود رو بگیره */
-    .sidebar.is-mobile .chat-list {
-        flex: 1;
-        overflow-y: auto;
-        max-height: none;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    .sidebar.is-mobile .new-chat-btn {
-        flex-shrink: 0;
-    }
-
-    .messages-container {
-        padding: 16px 12px;
-        padding-left: calc(12px + env(safe-area-inset-left, 0px));
-        padding-right: calc(12px + env(safe-area-inset-right, 0px));
-    }
-
-    .message-bubble {
-        max-width: 95%;
-    }
-
-    /* input form - یک ردیف در موبایل؛ حداقل 44px برای لمس */
-    .input-form {
-        padding: 10px 12px;
-        padding-left: calc(12px + env(safe-area-inset-left, 0px));
-        padding-right: calc(12px + env(safe-area-inset-right, 0px));
-    }
-
-    .text-input-area {
-        flex-direction: row;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .text-input-area textarea {
-        min-height: 40px;
-        padding: 8px 12px;
-        font-size: 0.9rem;
-    }
-
-    .input-actions {
-        gap: 6px;
-    }
-
-    .input-actions button {
-        min-width: 44px;
-        min-height: 44px;
-        width: 44px;
-        height: 44px;
-    }
-
-    .nav-btn {
-        width: 100%;
-        text-align: center;
-    }
-
-    .sidebar.is-mobile .chat-item {
-        flex-direction: row;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .sidebar.is-mobile .delete-btn {
-        opacity: 1;
-        margin-right: 0;
-        margin-left: 8px;
-    }
-
-    .scroll-bottom-btn {
-        inset-inline-end: 12px;
-        bottom: 70px;
-        width: 36px;
-        height: 36px;
-    }
-
-    .referral-panel {
-        width: 100%;
-        border-radius: 0;
-        top: calc(52px + env(safe-area-inset-top, 0px));
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    .referral-panel-backdrop {
-        top: calc(52px + env(safe-area-inset-top, 0px));
-    }
-
-    .modal-backdrop {
-        padding: 10px;
-    }
-
-    .rename-modal {
-        padding: 18px;
-        border-radius: 14px;
-    }
-
-    .voice-player audio {
-        max-width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .chat-app {
-        --header-h: 48px;
-        padding-top: calc(48px + env(safe-area-inset-top, 0px));
-    }
-
-    .app-header {
-        height: 48px;
-        min-height: 48px;
-        padding-inline-start: calc(12px + env(safe-area-inset-inline-start, 0px));
-        padding-inline-end: calc(12px + env(safe-area-inset-inline-end, 0px));
-    }
-
-    .sidebar.is-mobile {
-        top: calc(48px + env(safe-area-inset-top, 0px));
-    }
-    .sidebar-overlay,
-    .referral-panel,
-    .referral-panel-backdrop {
-        top: calc(48px + env(safe-area-inset-top, 0px));
-    }
-
-    .messages-container {
-        padding: 12px 8px;
-        padding-left: calc(8px + env(safe-area-inset-left, 0px));
-        padding-right: calc(8px + env(safe-area-inset-right, 0px));
-    }
-
-    .message-bubble {
-        padding: 10px 12px;
-        font-size: 0.9rem;
+    .cg-msg-inner {
         max-width: 92%;
     }
 
-    .input-form {
-        padding: 8px 10px;
-        padding-left: calc(10px + env(safe-area-inset-left, 0px));
-        padding-right: calc(10px + env(safe-area-inset-right, 0px));
-        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-    }
-
-    .text-input-area textarea {
-        min-height: 36px;
-        padding: 7px 10px;
-        font-size: 0.85rem;
-    }
-
-    .input-actions button {
-        min-width: 44px;
-        min-height: 44px;
-        width: 44px;
-        height: 44px;
-    }
-
-    .input-actions button svg {
-        width: 18px;
-        height: 18px;
-    }
-
-    .scroll-bottom-btn {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
-        min-height: 36px;
-        bottom: calc(70px + env(safe-area-inset-bottom, 0px));
-        inset-inline-end: calc(12px + env(safe-area-inset-inline-end, 0px));
-    }
-
-    .scroll-bottom-btn svg {
-        width: 18px;
-        height: 18px;
-    }
-
-    .new-chat-btn {
-        padding: 12px 16px;
-        font-size: 0.9rem;
-        margin: 10px;
-        min-height: 44px;
-    }
-
-    .chat-item {
-        padding: 10px 14px;
-        font-size: 0.9rem;
-        min-height: 48px;
-    }
-
-    .empty-content {
-        padding: 24px 16px;
-    }
-
-    .empty-content h2 {
-        font-size: 1.1rem;
-    }
-
-    .empty-content p {
-        font-size: 0.85rem;
-    }
-
-    .referral-panel {
-        padding: 14px;
-        padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-    }
-
-    .referral-card {
-        padding: 12px;
-    }
-
-    .mobile-menu-btn {
-        min-width: 44px;
-        min-height: 44px;
+    .cg-scroll-to-bottom {
+        bottom: calc(100px + env(safe-area-inset-bottom, 0px));
     }
 }
-
-/* خیلی کوچک (۳۶۰ و پایین) */
-@media (max-width: 360px) {
-    .chat-app {
-        padding-inline-start: 0;
-        padding-inline-end: 0;
-    }
-
-    .app-header {
-        padding-inline-start: calc(8px + env(safe-area-inset-inline-start, 0px));
-        padding-inline-end: calc(8px + env(safe-area-inset-inline-end, 0px));
-    }
-
-    .sidebar.is-mobile {
-        width: 100vw;
-        max-width: 100%;
-    }
-
-    .messages-container {
-        padding: 10px 6px;
-    }
-
-    .message-bubble {
-        padding: 8px 10px;
-        font-size: 0.875rem;
-    }
-
-    .input-form {
-        padding: 6px 8px;
-        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
-    }
-
-    .brand-text {
-        max-width: 120px;
-    }
-}
-
-
 </style>
