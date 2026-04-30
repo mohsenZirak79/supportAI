@@ -27,7 +27,7 @@
         body {
             font-family: 'Vazirmatn', 'Inter', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
-            background: #0f172a;
+            background: #f8fafc;
         }
         
         #app {

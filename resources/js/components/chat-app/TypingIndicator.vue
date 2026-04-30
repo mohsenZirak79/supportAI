@@ -1,6 +1,6 @@
 <template>
     <div class="cg-msg-row cg-msg-row--bot cg-typing" role="status" aria-live="polite">
-        <div class="cg-msg-bubble cg-typing__bubble">
+        <div class="cg-typing-plain">
             <span class="cg-typing__dot" />
             <span class="cg-typing__dot" />
             <span class="cg-typing__dot" />
@@ -9,14 +9,12 @@
 </template>
 
 <style scoped>
-.cg-typing__bubble {
-    display: inline-flex;
+.cg-typing-plain {
+    width: 100%;
+    display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 14px 18px;
-    background: var(--cg-surface-2, #f1f5f9);
-    border: 1px solid var(--cg-border, rgba(15, 23, 42, 0.08));
-    box-shadow: none;
+    gap: 6px;
+    padding: 6px 0 10px;
 }
 
 .cg-typing__dot {

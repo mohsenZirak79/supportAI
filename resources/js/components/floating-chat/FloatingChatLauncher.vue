@@ -44,14 +44,13 @@ defineEmits(['toggle']);
 }
 
 .floating-chat-launcher:hover {
-    transform: translateY(-2px);
     box-shadow:
         0 22px 48px rgba(14, 116, 144, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .floating-chat-launcher:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
 }
 
 .floating-chat-launcher:focus-visible {

@@ -453,7 +453,30 @@
 }
 
 [dir='rtl'] .cg-msg-row--bot {
-    justify-content: flex-end;
+    justify-content: flex-start;
+}
+
+/* پاسخ مدل: بدون کارت؛ عرض = ستون چت (همان max-width نوار ارسال) */
+.cg-msg-assistant {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 100%;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    line-height: 1.65;
+    word-break: break-word;
+    text-align: start;
+    animation: cg-fade-in 0.28s ease;
+}
+
+.cg-msg-assistant .cg-msg-meta {
+    margin-top: var(--cg-space-2);
+    padding-top: 0;
 }
 
 .cg-msg-bubble {
@@ -479,7 +502,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cg-msg-bubble {
+    .cg-msg-bubble,
+    .cg-msg-assistant {
         animation: none;
     }
 }
@@ -493,17 +517,6 @@
 [dir='rtl'] .cg-msg-row--user .cg-msg-bubble {
     border-end-end-radius: 16px;
     border-end-start-radius: 4px;
-}
-
-.cg-msg-row--bot .cg-msg-bubble {
-    background: var(--cg-surface);
-    border: 1px solid var(--cg-border);
-    border-end-start-radius: 4px;
-}
-
-[dir='rtl'] .cg-msg-row--bot .cg-msg-bubble {
-    border-end-start-radius: 16px;
-    border-end-end-radius: 4px;
 }
 
 .cg-msg-meta {
@@ -569,6 +582,14 @@
 .cg-root .cg-msg-row.cg-msg-highlight .cg-msg-bubble {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.28);
     transition: box-shadow 0.25s ease;
+}
+
+.cg-root .cg-msg-row.cg-msg-highlight .cg-msg-assistant {
+    box-shadow: none;
+    border-radius: 8px;
+    outline: 2px solid rgba(99, 102, 241, 0.45);
+    outline-offset: 4px;
+    transition: outline 0.25s ease;
 }
 
 /* Scroll to bottom */

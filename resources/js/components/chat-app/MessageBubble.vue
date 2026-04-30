@@ -4,7 +4,11 @@
         :class="message.sender === 'user' ? 'cg-msg-row--user' : 'cg-msg-row--bot'"
         :data-msg-id="message.id || ''"
     >
-        <div class="message-bubble cg-msg-bubble" @click="handleBubbleClick(message)">
+        <div
+            class="message-bubble"
+            :class="message.sender === 'user' ? 'cg-msg-bubble' : 'cg-msg-assistant'"
+            @click="handleBubbleClick(message)"
+        >
             <template v-if="message.sender === 'bot' && message.text">
                 <AiAnswer :text="message.text" :lang="locale" :gender="userVoiceGender" />
             </template>

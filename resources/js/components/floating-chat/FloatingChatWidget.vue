@@ -466,21 +466,15 @@ const openFullChat = async () => {
         return;
     }
 
-    let conversationId = activeConversationId.value;
-    if (!conversationId) {
-        try {
-            conversationId = await ensureConversation();
-        } catch {
-            conversationId = null;
-        }
-    }
-    if (!conversationId) {
-        window.location.href = config.openChatPath || '/chat';
-        return;
+    /** همیشه چت تازه در صفحهٔ کامل؛ بدون ادامهٔ همان گفتگوی ویجت */
+    try {
+        window.localStorage?.removeItem(ACTIVE_CHAT_STORAGE_KEY);
+    } catch {
+        /* ignore */
     }
     const base = config.openChatPath || '/chat';
     const params = new URLSearchParams();
-    params.set('conversation', String(conversationId));
+    params.set('newFromFloating', '1');
     window.location.href = `${base}?${params.toString()}`;
 };
 
@@ -545,16 +539,16 @@ onUnmounted(() => {
 .floating-chat-root {
     position: fixed;
     z-index: 2140;
-    right: 20px;
-    bottom: 20px;
-    left: auto;
+    left: max(20px, env(safe-area-inset-left, 0px));
+    right: auto;
+    bottom: max(20px, env(safe-area-inset-bottom, 0px));
     pointer-events: none;
 }
 
 .floating-chat-stack {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: flex-start;
     gap: 10px;
     width: max-content;
     max-width: min(380px, calc(100vw - 40px));
@@ -581,8 +575,8 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
     .floating-chat-root {
-        right: 8px;
-        bottom: 8px;
+        left: max(8px, env(safe-area-inset-left, 0px));
+        bottom: max(8px, env(safe-area-inset-bottom, 0px));
     }
 
     .floating-chat-stack {

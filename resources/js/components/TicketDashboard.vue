@@ -50,25 +50,20 @@
                     <span class="brand-text">{{ $t('ticket.title') }}</span>
                 </div>
                 <nav class="header-nav">
-                    <NotificationBell tone="dark" @select="handleNotificationSelect" />
-                    <select :value="locale" class="lang-select" @change="onLanguageChange">
-                        <option value="fa">فارسی</option>
-                        <option value="en">EN</option>
-                        <option value="ar">ع</option>
-                    </select>
-                    <button @click="goToChat" class="nav-link">{{ $t('nav.chat') }}</button>
-                    <button @click="goToProfile" class="nav-link">{{ $t('nav.profile') }}</button>
-                    <button @click="showNewTicketForm = true" class="nav-link primary">
+                    <button type="button" @click="goToChat" class="nav-link">{{ $t('nav.chat') }}</button>
+                    <button type="button" @click="goToProfile" class="nav-link">{{ $t('nav.profile') }}</button>
+                    <button type="button" @click="showNewTicketForm = true" class="nav-link primary">
                         + {{ $t('ticket.newTicket') }}
                     </button>
-                    <button @click="logout" class="nav-link danger" :disabled="loggingOut">
+                    <button type="button" @click="logout" class="nav-link danger" :disabled="loggingOut">
                         {{ loggingOut ? '...' : $t('nav.logout') }}
                     </button>
                 </nav>
             </div>
         </header>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main class="ticket-main">
+            <div class="ticket-main-inner">
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
                 <!-- Total Tickets -->
@@ -259,7 +254,8 @@
                     </div>
                 </div>
             </div>
-        </div>
+            </div>
+        </main>
 
         <!-- Thread Modal -->
         <!-- Thread Modal -->
@@ -412,8 +408,7 @@
                                 <button
                                     type="submit"
                                     :disabled="isSubmittingReply || !threadReplyMessage.trim()"
-                                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
-                     text-white px-5 py-2 rounded-lg font-medium disabled:opacity-50"
+                                    class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg font-medium disabled:opacity-50"
                                 >
                                     {{ isSubmittingReply ? $t('common.sending') : $t('ticket.sendReply') }}
                                 </button>
@@ -551,7 +546,7 @@
                                 <button
                                     type="submit"
                                     :disabled="isSubmittingTicket"
-                                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                                    class="bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
                                 >
                                     <span v-if="!isSubmittingTicket">ثبت تیکت</span>
                                     <span v-else>در حال ثبت...</span>
@@ -568,11 +563,10 @@
 <script setup>
 import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
 import axios from 'axios';
-import NotificationBell from './NotificationBell.vue';
 import { useLanguage } from '../i18n';
 
 // --- i18n - CSP-safe, no vue-i18n ---
-const { locale, setLocale, direction, initLocale, t } = useLanguage();
+const { locale, direction, initLocale, t } = useLanguage();
 
 // --- State ---
 import {useToast} from 'vue-toast-notification'
@@ -994,7 +988,12 @@ const getStatusClass = (status) => {
 };
 
 const getPriorityLabel = (priority) => {
-    return t(`ticket.priorities.${priority}`) || priority;
+    const p = String(priority || 'normal').toLowerCase();
+    const label = t(`ticket.priorities.${p}`);
+    if (label && label !== `ticket.priorities.${p}`) {
+        return label;
+    }
+    return t('ticket.priorities.normal');
 };
 
 const getPriorityClass = (priority) => {
@@ -1048,23 +1047,8 @@ const goToChat = () => {
     window.location.href = '/chat';
 };
 
-const handleNotificationSelect = async (notification) => {
-    if (!notification) return;
-    if (notification.category === 'ticket' && notification.ticket_id) {
-        await viewThread(notification.ticket_id);
-    } else if (notification.category === 'referral') {
-        goToChat();
-    }
-};
-
 const goToProfile = () => {
     window.location.href = '/user/profile';
-};
-
-// --- Language ---
-const onLanguageChange = (event) => {
-    const newLocale = event.target.value;
-    setLocale(newLocale);
 };
 
 // --- Lifecycle ---
@@ -1081,12 +1065,25 @@ onMounted(() => {
 <style scoped>
 .ticket-app {
     font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
-    background: radial-gradient(circle at 20% 0%, rgba(59, 130, 246, 0.25), transparent 40%),
-        radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.25), transparent 35%),
-        #f4f6fb;
+    background: #f8fafc;
     min-height: 100vh;
     position: relative;
-    overflow: hidden;
+}
+
+.ticket-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+.ticket-main-inner {
+    width: 100%;
+}
+
+@media (max-width: 640px) {
+    .ticket-main {
+        padding: 16px 12px;
+    }
 }
 
 .ticket-welcome-overlay {
@@ -1204,30 +1201,11 @@ onMounted(() => {
 
 /* ---------- Cards (glossy + gradient edge) ---------- */
 .glossy {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.92));
+    background: #fff;
     border-radius: 16px;
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    box-shadow: 0 10px 30px rgba(17, 24, 39, 0.05);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
     position: relative;
-}
-
-.glossy::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: 16px;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(99, 102, 241, 0.35), rgba(16, 185, 129, 0.35));
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: .0;
-    transition: opacity .25s ease;
-}
-
-.glossy:hover::before {
-    opacity: .7;
 }
 
 .borderless-gradient {
@@ -1264,25 +1242,25 @@ onMounted(() => {
 
 .badge-pending {
     color: #92400e;
-    background: linear-gradient(135deg, #fff7ed, #fffbeb);
+    background: #fffbeb;
     border-color: #fcd34d99;
 }
 
 .badge-answered {
     color: #065f46;
-    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    background: #ecfdf5;
     border-color: #34d39999;
 }
 
 .badge-closed {
     color: #334155;
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    background: #f1f5f9;
     border-color: #cbd5e199;
 }
 
 .badge-muted {
     color: #334155;
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    background: #f8fafc;
     border-color: #e2e8f099;
 }
 
@@ -1384,7 +1362,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
     overflow: visible;
 }
 
@@ -1397,10 +1375,10 @@ onMounted(() => {
 }
 
 .brand-icon {
-    width: 96px;
-    height: 96px;
-    background: transparent;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1408,8 +1386,8 @@ onMounted(() => {
 }
 
 .brand-icon svg {
-    width: 52px;
-    height: 52px;
+    width: 20px;
+    height: 20px;
 }
 
 .brand-text {
@@ -1429,21 +1407,6 @@ onMounted(() => {
     justify-content: flex-end;
     position: relative;
     overflow: visible;
-}
-
-.lang-select {
-    background: rgba(255,255,255,0.15);
-    border: none;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-.lang-select option {
-    background: #0e7490;
-    color: white;
 }
 
 .nav-link {
@@ -1519,8 +1482,13 @@ onMounted(() => {
     }
 
     .brand-icon {
-        width: 80px;
-        height: 80px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .brand-icon svg {
+        width: 18px;
+        height: 18px;
     }
 
     .brand-text {
@@ -1535,11 +1503,6 @@ onMounted(() => {
         padding: 4px 8px;
         font-size: 0.75rem;
     }
-
-    .lang-select {
-        padding: 4px 6px;
-        font-size: 0.75rem;
-    }
 }
 
 @media (max-width: 480px) {
@@ -1547,52 +1510,6 @@ onMounted(() => {
         padding: 4px 6px;
         font-size: 0.7rem;
     }
-}
-
-/* Language Selector */
-.lang-selector {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 8px 32px 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    margin-inline-start: 8px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    min-width: 100px;
-}
-
-[dir="ltr"] .lang-selector {
-    padding: 8px 32px 8px 14px;
-    background-position: right 10px center;
-}
-
-[dir="rtl"] .lang-selector {
-    padding: 8px 14px 8px 32px;
-    background-position: left 10px center;
-}
-
-.lang-selector:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-}
-
-.lang-selector:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
-}
-
-.lang-selector option {
-    background: #0e7490;
-    color: white;
-    padding: 8px;
 }
 
 .close-btn {

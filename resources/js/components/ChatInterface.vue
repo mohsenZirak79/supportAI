@@ -9,7 +9,7 @@
 
     <div class="cg-root chat-app" :dir="direction">
         <div class="cg-corner-notif">
-            <NotificationBell align-dropdown-start @select="handleNotificationSelect" />
+            <NotificationBell @select="handleNotificationSelect" />
         </div>
         <div class="cg-body chat-container">
             <aside
@@ -1679,6 +1679,15 @@ onMounted(async () => {
 
     await loadChats();
     await tryImportFloatingTranscript();
+    if (typeof window !== 'undefined' && typeof window.history?.replaceState === 'function') {
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('newFromFloating') === '1') {
+            url.searchParams.delete('newFromFloating');
+            const qs = url.searchParams.toString();
+            window.history.replaceState({}, '', url.pathname + (qs ? `?${qs}` : '') + url.hash);
+            await startNewChat();
+        }
+    }
     fetchDepartments();
     fetchUserPreferences();
     fetchCurrentUser();

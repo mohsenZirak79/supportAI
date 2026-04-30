@@ -214,6 +214,7 @@
     "priorities": {
       "low": "Low",
       "medium": "Medium",
+      "normal": "Normal",
       "high": "High",
       "urgent": "Urgent"
     },

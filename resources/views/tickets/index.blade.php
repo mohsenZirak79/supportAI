@@ -20,6 +20,9 @@
     <title>تیکت‌ها</title>
     @vite(['resources/css/app.css', 'resources/css/user.css', 'resources/js/tickets.js'])
     <style>
+        body {
+            background: #f8fafc;
+        }
         /* RTL font family */
         html[dir="rtl"] body {
             font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;

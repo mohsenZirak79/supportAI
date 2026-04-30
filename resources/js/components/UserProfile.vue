@@ -13,9 +13,9 @@
                     <span class="brand-text">{{ t('profile.title') }}</span>
                 </div>
                 <nav class="header-nav">
-                    <button @click="goToChat" class="nav-link">{{ t('nav.chat') }}</button>
-                    <button @click="goToTickets" class="nav-link">{{ t('nav.tickets') }}</button>
-                    <button @click="logout" class="nav-link danger" :disabled="loggingOut">
+                    <button type="button" @click="goToChat" class="nav-link">{{ t('nav.chat') }}</button>
+                    <button type="button" @click="goToTickets" class="nav-link">{{ t('nav.tickets') }}</button>
+                    <button type="button" @click="logout" class="nav-link danger" :disabled="loggingOut">
                         {{ loggingOut ? '...' : t('nav.logout') }}
                     </button>
                 </nav>
@@ -315,7 +315,7 @@ import { useToast } from 'vue-toast-notification';
 import { useLanguage } from '../i18n';
 
 const toast = useToast();
-const { locale, direction, setLocale, t } = useLanguage();
+const { locale, direction, setLocale, initLocale, t } = useLanguage();
 
 // State
 const loading = ref(true);
@@ -454,6 +454,7 @@ const logout = async () => {
 
 // Lifecycle
 onMounted(() => {
+    initLocale();
     fetchProfile();
 });
 </script>
@@ -481,12 +482,13 @@ onMounted(() => {
 }
 
 .header-inner {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     overflow: visible;
 }
 
@@ -494,47 +496,41 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
+    flex-shrink: 1;
 }
 
 .brand-icon {
-    width: 96px;
-    height: 96px;
-    background: transparent;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .brand-icon svg {
-    width: 52px;
-    height: 52px;
+    width: 20px;
+    height: 20px;
 }
 
 .brand-text {
     font-weight: 600;
     font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .header-nav {
     display: flex;
     align-items: center;
     gap: 6px;
-}
-
-.lang-select {
-    background: rgba(255,255,255,0.15);
-    border: none;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-.lang-select option {
-    background: #0e7490;
-    color: white;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .language-select-row {
@@ -968,8 +964,13 @@ onMounted(() => {
     }
     
     .brand-icon {
-        width: 80px;
-        height: 80px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .brand-icon svg {
+        width: 18px;
+        height: 18px;
     }
     
     .header-nav {

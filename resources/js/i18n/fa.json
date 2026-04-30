@@ -214,6 +214,7 @@
     "priorities": {
       "low": "کم",
       "medium": "متوسط",
+      "normal": "معمولی",
       "high": "بالا",
       "urgent": "فوری"
     },
