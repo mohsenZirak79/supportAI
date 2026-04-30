@@ -13,11 +13,6 @@
                     <span class="brand-text">{{ t('profile.title') }}</span>
                 </div>
                 <nav class="header-nav">
-                    <select :value="locale" class="lang-select" @change="onLanguageChange">
-                        <option value="fa">فارسی</option>
-                        <option value="en">EN</option>
-                        <option value="ar">ع</option>
-                    </select>
                     <button @click="goToChat" class="nav-link">{{ t('nav.chat') }}</button>
                     <button @click="goToTickets" class="nav-link">{{ t('nav.tickets') }}</button>
                     <button @click="logout" class="nav-link danger" :disabled="loggingOut">
@@ -97,6 +92,33 @@
 
                     <!-- Right Column - Edit Form -->
                     <div class="profile-forms">
+                        <!-- Interface language -->
+                        <div class="form-card">
+                            <div class="card-header">
+                                <div class="header-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10"/>
+                                    </svg>
+                                </div>
+                                <h3>{{ t('profile.interfaceLanguage') }}</h3>
+                            </div>
+                            <p class="settings-description">{{ t('profile.interfaceLanguageDesc') }}</p>
+                            <div class="language-select-row">
+                                <select
+                                    id="profile-ui-lang"
+                                    :value="locale"
+                                    class="profile-lang-select"
+                                    :aria-label="t('profile.interfaceLanguage')"
+                                    @change="onLanguageChange"
+                                >
+                                    <option value="fa">فارسی</option>
+                                    <option value="en">English</option>
+                                    <option value="ar">العربية</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- Personal Information -->
                         <div class="form-card">
                             <div class="card-header">
@@ -455,6 +477,7 @@ onMounted(() => {
     position: sticky;
     top: 0;
     z-index: 100;
+    overflow: visible;
 }
 
 .header-inner {
@@ -464,6 +487,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    overflow: visible;
 }
 
 .header-brand {
@@ -511,6 +535,28 @@ onMounted(() => {
 .lang-select option {
     background: #0e7490;
     color: white;
+}
+
+.language-select-row {
+    margin-top: 8px;
+}
+
+.profile-lang-select {
+    width: 100%;
+    max-width: 320px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.95rem;
+    background: #fff;
+    color: #0f172a;
+    cursor: pointer;
+}
+
+.profile-lang-select:focus {
+    outline: none;
+    border-color: #0e7490;
+    box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.2);
 }
 
 .nav-link {
@@ -889,11 +935,6 @@ onMounted(() => {
         font-size: 0.8rem;
     }
     
-    .lang-select {
-        padding: 5px 8px;
-        font-size: 0.8rem;
-    }
-    
     .profile-main {
         padding: 20px 16px;
     }
@@ -937,11 +978,6 @@ onMounted(() => {
     
     .nav-link {
         padding: 4px 8px;
-        font-size: 0.75rem;
-    }
-    
-    .lang-select {
-        padding: 4px 6px;
         font-size: 0.75rem;
     }
     

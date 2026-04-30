@@ -27,7 +27,7 @@
 
 .referral-panel-backdrop {
     position: fixed;
-    top: var(--cg-header-h, 56px);
+    top: env(safe-area-inset-top, 0px);
     inset-inline: 0;
     bottom: 0;
     background: rgba(15, 23, 42, 0.45);
@@ -118,7 +118,7 @@
 
 .referral-panel {
     position: fixed;
-    top: var(--cg-header-h, 56px);
+    top: env(safe-area-inset-top, 0px);
     bottom: 0;
     inset-inline-end: 0;
     width: min(420px, 92vw);
@@ -374,12 +374,12 @@
 
 @media (max-width: 768px) {
     .referral-panel {
-        top: calc(52px + env(safe-area-inset-top, 0px));
+        top: env(safe-area-inset-top, 0px);
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     .referral-panel-backdrop {
-        top: calc(52px + env(safe-area-inset-top, 0px));
+        top: env(safe-area-inset-top, 0px);
     }
 
     .modal-backdrop {
@@ -395,7 +395,7 @@
 @media (max-width: 480px) {
     .referral-panel,
     .referral-panel-backdrop {
-        top: calc(48px + env(safe-area-inset-top, 0px));
+        top: env(safe-area-inset-top, 0px);
     }
 
     .referral-panel {

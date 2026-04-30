@@ -1,5 +1,5 @@
 <template>
-    <div class="notification-bell" ref="container">
+    <div class="notification-bell" :class="`notification-bell--${tone}`" ref="container">
         <button
             type="button"
             class="bell-trigger"
@@ -59,6 +59,11 @@ import {ref, computed, onMounted, onBeforeUnmount} from 'vue';
 import {apiFetch} from '../lib/http';
 import {useToast} from 'vue-toast-notification';
 import {useLanguage} from '../i18n';
+
+const props = defineProps({
+    /** light: روشن (هدر چت جدید) — dark: هدر فیروزه‌ای تیکت */
+    tone: { type: String, default: 'light' },
+});
 
 const emit = defineEmits(['select']);
 const toast = useToast();
@@ -196,27 +201,46 @@ onBeforeUnmount(() => {
     height: 40px;
     border: none;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
+    background: rgba(15, 23, 42, 0.06);
+    color: #475569;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform .2s ease;
+    transition: transform 0.2s ease, background 0.15s ease, color 0.15s ease;
 }
 .bell-trigger:hover {
     transform: translateY(-1px);
+    background: rgba(15, 23, 42, 0.1);
+    color: #0f172a;
 }
+.bell-trigger:focus-visible {
+    outline: 2px solid #0e7490;
+    outline-offset: 2px;
+}
+
+.notification-bell--dark .bell-trigger {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+.notification-bell--dark .bell-trigger:hover {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+}
+.notification-bell--dark .bell-trigger:focus-visible {
+    outline-color: rgba(255, 255, 255, 0.9);
+}
+
 .bell-trigger svg {
     width: 20px;
     height: 20px;
-    stroke: currentColor;
-    fill: none;
+    fill: currentColor;
+    stroke: none;
 }
 .badge {
     position: absolute;
     top: 4px;
-    right: 4px;
+    inset-inline-end: 4px;
     background: #ef4444;
     color: white;
     font-size: 0.65rem;
@@ -225,15 +249,17 @@ onBeforeUnmount(() => {
 }
 .dropdown {
     position: absolute;
-    top: 48px;
-    right: 0;
-    width: 320px;
-    max-height: 420px;
+    top: calc(100% + 8px);
+    inset-inline-end: 0;
+    inset-inline-start: auto;
+    width: min(320px, calc(100vw - 24px));
+    max-height: min(420px, 70vh);
     background: #ffffff;
     border-radius: 16px;
-    box-shadow: 0 25px 45px rgba(15, 23, 42, 0.25);
+    box-shadow: 0 25px 45px rgba(15, 23, 42, 0.18);
+    border: 1px solid rgba(15, 23, 42, 0.08);
     overflow: hidden;
-    z-index: 200;
+    z-index: 250;
     display: flex;
     flex-direction: column;
 }
@@ -276,7 +302,7 @@ onBeforeUnmount(() => {
     align-items: flex-start;
     justify-content: space-between;
     flex-direction: column;
-    text-align: right;
+    text-align: start;
     cursor: pointer;
 }
 .notification-item.unread .notification-link {

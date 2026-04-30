@@ -8,45 +8,21 @@
     />
 
     <div class="cg-root chat-app" :dir="direction">
-        <header class="cg-topbar app-header" role="banner">
-            <div class="cg-topbar__start header-brand">
-                <button
-                    v-if="isMobile"
-                    type="button"
-                    class="cg-icon-btn mobile-menu-btn"
-                    :aria-label="$t('chat.openSidebar')"
-                    @click="toggleSidebar"
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <line x1="3" y1="12" x2="21" y2="12"/>
-                        <line x1="3" y1="6" x2="21" y2="6"/>
-                        <line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <span class="cg-topbar__title brand-text">{{ activeChat?.title || $t('chat.title') }}</span>
-            </div>
-            <div class="cg-topbar__actions header-nav">
-                <NotificationBell @select="handleNotificationSelect" />
-                <select :value="locale" class="cg-lang-select lang-select" @change="onLanguageChange" :aria-label="$t('chat.title')">
-                    <option value="fa">فارسی</option>
-                    <option value="en">EN</option>
-                    <option value="ar">ع</option>
-                </select>
-            </div>
-        </header>
-
         <div class="cg-body chat-container">
             <aside
                 class="cg-sidebar sidebar"
                 :class="{ 'is-mobile': isMobile, 'is-open': isSidebarOpen }"
             >
-                <div class="cg-sidebar__search">
-                    <input
-                        v-model="chatSearchQuery"
-                        type="search"
-                        autocomplete="off"
-                        :placeholder="$t('chat.searchChats')"
-                    />
+                <div class="cg-sidebar__search-row">
+                    <div class="cg-sidebar__search">
+                        <input
+                            v-model="chatSearchQuery"
+                            type="search"
+                            autocomplete="off"
+                            :placeholder="$t('chat.searchChats')"
+                        />
+                    </div>
+                    <NotificationBell class="cg-sidebar-notif" @select="handleNotificationSelect" />
                 </div>
                 <button type="button" class="cg-new-chat new-chat-btn" @click="startNewChat">
                     {{ $t('chat.newChat') }}
@@ -149,6 +125,21 @@
             />
 
             <main v-if="activeChatId" class="cg-main chat-main">
+                <div v-if="isMobile" class="cg-mobile-chat-top">
+                    <button
+                        type="button"
+                        class="cg-icon-btn mobile-menu-btn"
+                        :aria-label="$t('chat.openSidebar')"
+                        @click="toggleSidebar"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                    <span class="cg-mobile-chat-top__title">{{ activeChat?.title || $t('chat.title') }}</span>
+                </div>
                 <div ref="messagesContainer" class="cg-msg-scroll messages-container">
                     <div class="cg-msg-feed">
                         <MessageBubble
@@ -242,10 +233,34 @@
                 </form>
             </main>
 
-            <main v-else class="cg-main cg-main--empty chat-main empty-state" role="button" tabindex="0" @click="startNewChat" @keydown.enter.prevent="startNewChat">
-                <div class="cg-empty-card empty-content">
-                    <h2>{{ $t('chat.startNewChat') }}</h2>
-                    <p>{{ $t('chat.startNewChatDesc') }}</p>
+            <main
+                v-else
+                class="cg-main cg-main--empty chat-main empty-state"
+                role="button"
+                tabindex="0"
+                @click="startNewChat"
+                @keydown.enter.prevent="startNewChat"
+            >
+                <div v-if="isMobile" class="cg-mobile-chat-top">
+                    <button
+                        type="button"
+                        class="cg-icon-btn mobile-menu-btn"
+                        :aria-label="$t('chat.openSidebar')"
+                        @click.stop="toggleSidebar"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                    <span class="cg-mobile-chat-top__title">{{ $t('chat.title') }}</span>
+                </div>
+                <div class="cg-empty-wrap">
+                    <div class="cg-empty-card empty-content">
+                        <h2>{{ $t('chat.startNewChat') }}</h2>
+                        <p>{{ $t('chat.startNewChatDesc') }}</p>
+                    </div>
                 </div>
             </main>
         </div>
@@ -406,7 +421,7 @@ import {apiFetch} from '../lib/http';
 import { useLanguage } from '../i18n';
 
 // i18n setup - CSP-safe, no vue-i18n
-const { locale, setLocale, direction, isRtl, initLocale, t } = useLanguage();
+const { locale, direction, isRtl, initLocale, t } = useLanguage();
 
 const toast = useToast();
 const logoutUrl = window?.AppConfig?.logoutUrl || '/logout';
@@ -1593,12 +1608,6 @@ const onBubbleClick = async (message) => {
     if (message.voiceUrl) {
         playVoice(message.id);
     }
-};
-
-const onLanguageChange = (event) => {
-    // Update language using the i18n system
-    const newLocale = event.target.value;
-    setLocale(newLocale);
 };
 
 // --- Lifecycle ---

@@ -50,7 +50,7 @@
                     <span class="brand-text">{{ $t('ticket.title') }}</span>
                 </div>
                 <nav class="header-nav">
-                    <NotificationBell @select="handleNotificationSelect" />
+                    <NotificationBell tone="dark" @select="handleNotificationSelect" />
                     <select :value="locale" class="lang-select" @change="onLanguageChange">
                         <option value="fa">فارسی</option>
                         <option value="en">EN</option>
@@ -1374,6 +1374,7 @@ onMounted(() => {
     position: sticky;
     top: 0;
     z-index: 100;
+    overflow: visible;
 }
 
 .header-inner {
@@ -1384,6 +1385,7 @@ onMounted(() => {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+    overflow: visible;
 }
 
 .header-brand {
@@ -1425,6 +1427,8 @@ onMounted(() => {
     flex-shrink: 0;
     flex-wrap: wrap;
     justify-content: flex-end;
+    position: relative;
+    overflow: visible;
 }
 
 .lang-select {

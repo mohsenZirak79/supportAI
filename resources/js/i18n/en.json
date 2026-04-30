@@ -249,6 +249,8 @@
   },
   "profile": {
     "title": "User Profile",
+    "interfaceLanguage": "Interface language",
+    "interfaceLanguageDesc": "Language for the app (chat, menus, and messages). After changing, you can return to chat to use it everywhere.",
     "guest": "Guest User",
     "memberSince": "Member Since",
     "accountInfo": "Account Information",
