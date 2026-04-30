@@ -40,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'jwt.cookie' => JwtFromCookie::class,
             'ensure.jwt.cookie' => \App\Http\Middleware\EnsureJwtCookie::class,
             'checkPermissionForRoute' => \App\Http\Middleware\CheckPermissionForRoute::class,
+            'admin.web' => \App\Http\Middleware\EnsureCanAccessAdminWeb::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

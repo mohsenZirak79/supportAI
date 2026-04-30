@@ -51,6 +51,15 @@
     box-sizing: border-box;
 }
 
+/* نوتیفیکیشن: گوشهٔ بالا-چپ viewport (بدون navbar) */
+.cg-corner-notif {
+    position: fixed;
+    top: max(10px, env(safe-area-inset-top, 0px));
+    left: max(12px, env(safe-area-inset-left, 0px));
+    z-index: 96;
+    pointer-events: auto;
+}
+
 .cg-icon-btn {
     display: inline-flex;
     align-items: center;
@@ -105,26 +114,9 @@
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.cg-sidebar__search-row {
-    display: flex;
-    align-items: center;
-    gap: var(--cg-space-2);
+.cg-sidebar__search {
     padding: var(--cg-space-3) var(--cg-space-4);
     flex-shrink: 0;
-}
-
-.cg-sidebar__search {
-    flex: 1;
-    min-width: 0;
-}
-
-.cg-sidebar-notif {
-    flex-shrink: 0;
-}
-
-.cg-sidebar-notif .bell-trigger {
-    width: 38px;
-    height: 38px;
 }
 
 .cg-sidebar__search input {
@@ -435,8 +427,8 @@
 .cg-msg-feed {
     max-width: var(--cg-max-feed);
     margin-inline: auto;
-    padding: var(--cg-space-5) var(--cg-space-4);
-    padding-bottom: var(--cg-space-6);
+    padding: calc(var(--cg-space-6) + var(--cg-space-5) + var(--cg-space-3)) var(--cg-space-4)
+        var(--cg-space-6);
     display: flex;
     flex-direction: column;
     gap: var(--cg-space-5);
@@ -858,7 +850,8 @@
     }
 
     .cg-msg-feed {
-        padding: var(--cg-space-4) var(--cg-space-3);
+        padding: calc(var(--cg-space-5) + var(--cg-space-4) + var(--cg-space-3)) var(--cg-space-3)
+            var(--cg-space-5);
     }
 
     .cg-msg-bubble {

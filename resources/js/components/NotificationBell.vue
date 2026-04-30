@@ -15,7 +15,7 @@
             <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
         </button>
 
-        <div v-if="open" class="dropdown">
+        <div v-if="open" class="dropdown" :class="{ 'dropdown--from-inline-start': alignDropdownStart }">
             <div class="dropdown-header">
                 <span>{{ t('notifications.title') }}</span>
                 <div class="dropdown-actions">
@@ -63,6 +63,8 @@ import {useLanguage} from '../i18n';
 const props = defineProps({
     /** light: روشن (هدر چت جدید) — dark: هدر فیروزه‌ای تیکت */
     tone: { type: String, default: 'light' },
+    /** وقتی آیکون گوشهٔ چپ است، پنل به سمت راست باز شود و از صفحه بیرون نزند */
+    alignDropdownStart: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['select']);
@@ -262,6 +264,11 @@ onBeforeUnmount(() => {
     z-index: 250;
     display: flex;
     flex-direction: column;
+}
+
+.dropdown.dropdown--from-inline-start {
+    inset-inline-end: auto;
+    inset-inline-start: 0;
 }
 .dropdown-header {
     padding: 12px 16px;

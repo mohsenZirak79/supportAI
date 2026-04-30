@@ -92,6 +92,7 @@ Route::prefix('v1')
     ->group(function () {
         Route::get('conversations', [ConversationController::class, 'index']);
         Route::post('conversations', [ConversationController::class, 'store']);
+        Route::post('conversations/import-floating', [ConversationController::class, 'importFloatingTranscript']);
         Route::patch('conversations/{conversation}/title', [ConversationController::class, 'updateTitle']);
         Route::delete('conversations/{conversation}', [ConversationController::class, 'destroy']);
         Route::post('conversations/{conversation}/messages', [ConversationController::class, 'sendMessage']);

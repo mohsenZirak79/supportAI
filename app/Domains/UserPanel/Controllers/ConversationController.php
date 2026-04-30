@@ -533,6 +533,72 @@ class ConversationController extends Controller
         return response()->json($conversation, 201);
     }
 
+    /**
+     * وارد کردن گفتگوی ذخیره‌شدهٔ ویجت شناور (قبل از ورود) به حساب کاربر پس از لاگین.
+     * بدون فراخوانی سرویس AI — فقط درج رکوردها در دیتابیس.
+     */
+    public function importFloatingTranscript(Request $request)
+    {
+        $user = $request->user();
+        abort_unless($user, 403);
+
+        $bucketKey = 'floating_import_user:' . $user->id;
+        if (RateLimiter::tooManyAttempts($bucketKey, 15)) {
+            return response()->json([
+                'message' => 'تعداد وارد کردن گفتگو از این حساب موقتاً محدود شده است.',
+            ], 429);
+        }
+
+        $validated = $request->validate([
+            'title' => 'nullable|string|max:100',
+            'messages' => 'required|array|min:1|max:80',
+            'messages.*.sender' => 'required|string|in:user,bot',
+            'messages.*.text' => 'nullable|string|max:16000',
+        ]);
+
+        return DB::transaction(function () use ($user, $validated, $bucketKey) {
+            $rawTitle = isset($validated['title']) ? trim((string) $validated['title']) : '';
+            $title = $rawTitle !== '' ? $rawTitle : 'چت جدید';
+
+            $conversation = Conversation::create([
+                'user_id' => $user->id,
+                'title' => $title,
+                'status' => 'ai',
+            ]);
+
+            $inserted = 0;
+            foreach ($validated['messages'] as $row) {
+                $isUser = ($row['sender'] ?? '') === 'user';
+                $text = isset($row['text']) ? trim((string) $row['text']) : '';
+                if ($isUser && $text === '') {
+                    continue;
+                }
+                if (!$isUser && $text === '') {
+                    continue;
+                }
+
+                Message::create([
+                    'conversation_id' => $conversation->id,
+                    'sender_type' => $isUser ? 'user' : 'ai',
+                    'sender_id' => $isUser ? $user->id : null,
+                    'type' => 'text',
+                    'content' => $text,
+                ]);
+                $inserted++;
+            }
+
+            if ($inserted === 0) {
+                $conversation->delete();
+
+                return response()->json(['message' => 'پیامی برای وارد کردن وجود ندارد.'], 422);
+            }
+
+            RateLimiter::hit($bucketKey, 3600);
+
+            return response()->json(['conversation' => $conversation->fresh()], 201);
+        });
+    }
+
     public function messages(Request $request, Conversation $conversation)
     {
         $user = $request->user();

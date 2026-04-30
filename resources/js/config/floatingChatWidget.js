@@ -5,6 +5,7 @@ const defaults = {
     greetingVisibleMs: 5200,
     assistantName: 'دستیار هوشمند',
     openChatPath: '/chat',
+    loginPath: '/login',
 };
 
 const runtimeConfig = typeof window !== 'undefined' ? (window.SupportAIConfig || {}) : {};

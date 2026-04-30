@@ -8,21 +8,21 @@
     />
 
     <div class="cg-root chat-app" :dir="direction">
+        <div class="cg-corner-notif">
+            <NotificationBell align-dropdown-start @select="handleNotificationSelect" />
+        </div>
         <div class="cg-body chat-container">
             <aside
                 class="cg-sidebar sidebar"
                 :class="{ 'is-mobile': isMobile, 'is-open': isSidebarOpen }"
             >
-                <div class="cg-sidebar__search-row">
-                    <div class="cg-sidebar__search">
-                        <input
-                            v-model="chatSearchQuery"
-                            type="search"
-                            autocomplete="off"
-                            :placeholder="$t('chat.searchChats')"
-                        />
-                    </div>
-                    <NotificationBell class="cg-sidebar-notif" @select="handleNotificationSelect" />
+                <div class="cg-sidebar__search">
+                    <input
+                        v-model="chatSearchQuery"
+                        type="search"
+                        autocomplete="off"
+                        :placeholder="$t('chat.searchChats')"
+                    />
                 </div>
                 <button type="button" class="cg-new-chat new-chat-btn" @click="startNewChat">
                     {{ $t('chat.newChat') }}
@@ -481,6 +481,7 @@ const renameModal = reactive({
 const renameInputRef = ref(null);
 const WELCOME_STORAGE_KEY = 'supportAI:welcome-session';
 const ACTIVE_CHAT_STORAGE_KEY = 'supportAI:active-conversation-id';
+const FLOATING_IMPORT_STORAGE_KEY = 'supportAI:floating-import-v1';
 const EVENT_ACTIVE_CHAT_CHANGED = 'supportAI:active-chat-changed';
 const getPreferredConversationId = () => {
     if (typeof window === 'undefined') return null;
@@ -1212,6 +1213,61 @@ const loadChats = async () => {
     }
 };
 
+/** گفتگوی ویجت شناور (مهمان) پس از ورود به چت کامل وارد دیتابیس می‌شود */
+const tryImportFloatingTranscript = async () => {
+    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
+        return;
+    }
+    const raw = sessionStorage.getItem(FLOATING_IMPORT_STORAGE_KEY);
+    if (!raw) {
+        return;
+    }
+    let bundle;
+    try {
+        bundle = JSON.parse(raw);
+    } catch {
+        sessionStorage.removeItem(FLOATING_IMPORT_STORAGE_KEY);
+        return;
+    }
+    const rows = bundle?.messages;
+    if (!Array.isArray(rows) || rows.length === 0) {
+        sessionStorage.removeItem(FLOATING_IMPORT_STORAGE_KEY);
+        return;
+    }
+    sessionStorage.removeItem(FLOATING_IMPORT_STORAGE_KEY);
+    try {
+        const res = await apiFetch('/conversations/import-floating', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                title: typeof bundle.title === 'string' ? bundle.title : 'چت جدید',
+                messages: rows,
+            }),
+        });
+        if (!res.ok) {
+            toast.error(t('chat.importFloatingError'));
+            return;
+        }
+        const data = await res.json();
+        const conv = data?.conversation;
+        if (!conv?.id) {
+            toast.error(t('chat.importFloatingError'));
+            return;
+        }
+        await loadChats();
+        await setActiveChat(conv.id);
+        toast.success(t('chat.importFloatingSuccess'));
+        if (typeof window.history?.replaceState === 'function') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('conversation');
+            window.history.replaceState({}, '', url.pathname + url.search);
+        }
+    } catch (e) {
+        console.error('import floating transcript', e);
+        toast.error(t('chat.importFloatingError'));
+    }
+};
+
 // لود پیام‌ها
 const loadMessages = async (chatId) => {
     try {
@@ -1611,7 +1667,7 @@ const onBubbleClick = async (message) => {
 };
 
 // --- Lifecycle ---
-onMounted(() => {
+onMounted(async () => {
     // Initialize i18n and apply direction to document
     initLocale();
 
@@ -1621,7 +1677,8 @@ onMounted(() => {
         speechSynthesis.onvoiceschanged = loadVoices;
     }
 
-    loadChats();
+    await loadChats();
+    await tryImportFloatingTranscript();
     fetchDepartments();
     fetchUserPreferences();
     fetchCurrentUser();

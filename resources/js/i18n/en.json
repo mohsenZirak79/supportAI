@@ -121,7 +121,18 @@
     "micNotFound": "No microphone was found.",
     "micNotReadable": "Microphone is unavailable or in use by another app.",
     "micNotSupported": "Your browser does not support audio recording.",
-    "micUnknownError": "There was a problem accessing the microphone."
+    "micUnknownError": "There was a problem accessing the microphone.",
+    "importFloatingSuccess": "Your floating assistant chat was imported into your chats.",
+    "importFloatingError": "Could not import the saved chat. Please try again."
+  },
+  "floating": {
+    "guestNeedLoginForAi": "Sign in to get AI replies. Your messages are kept here; use “Open full chat” after login to save them to your main chat.",
+    "guestVoiceDisabled": "Voice messages are available after you sign in, in the full chat.",
+    "openFullChat": "Open full chat",
+    "onlineStatus": "Online",
+    "closeChat": "Close chat",
+    "dialogLabel": "Smart assistant chat",
+    "processing": "Processing…"
   },
   "notifications": {
     "title": "Notifications",
