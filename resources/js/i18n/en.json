@@ -70,6 +70,8 @@
     "welcomeToast": "Welcome back, {name}!",
     "welcomeNameFallback": "friend",
     "newChat": "+ New Chat",
+    "sidebarBrandName": "Pars Fanavaran Mobtaker",
+    "sidebarBrandSubtitle": "Smart support platform",
     "searchChats": "Search chats…",
     "startNewChat": "Start a new chat",
     "startNewChatDesc": "Click \"New Chat\" to start a conversation.",

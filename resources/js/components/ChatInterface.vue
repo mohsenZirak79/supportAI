@@ -16,6 +16,33 @@
                 class="cg-sidebar sidebar"
                 :class="{ 'is-mobile': isMobile, 'is-open': isSidebarOpen }"
             >
+                <div class="cg-sidebar__brand" role="banner">
+                    <div class="cg-sidebar__brand-logo" aria-hidden="true">
+                        <img
+                            v-if="!sidebarBrandLogoFailed"
+                            src="/images/logo.png"
+                            alt=""
+                            class="cg-sidebar__brand-img"
+                            @error="sidebarBrandLogoFailed = true"
+                        />
+                        <svg
+                            v-else
+                            class="cg-sidebar__brand-logo-fallback"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.75"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                        >
+                            <path d="M4 5.5A3.5 3.5 0 0 1 7.5 2h9A3.5 3.5 0 0 1 20 5.5v6A3.5 3.5 0 0 1 16.5 15H11l-4.25 3.45A1 1 0 0 1 5 17.67V15.9A3.5 3.5 0 0 1 4 13V5.5Z" />
+                        </svg>
+                    </div>
+                    <div class="cg-sidebar__brand-text">
+                        <strong class="cg-sidebar__brand-name">{{ $t('chat.sidebarBrandName') }}</strong>
+                        <span class="cg-sidebar__brand-sub">{{ $t('chat.sidebarBrandSubtitle') }}</span>
+                    </div>
+                </div>
                 <div class="cg-sidebar__search">
                     <input
                         v-model="chatSearchQuery"
@@ -479,6 +506,7 @@ const renameModal = reactive({
     loading: false
 });
 const renameInputRef = ref(null);
+const sidebarBrandLogoFailed = ref(false);
 const WELCOME_STORAGE_KEY = 'supportAI:welcome-session';
 const ACTIVE_CHAT_STORAGE_KEY = 'supportAI:active-conversation-id';
 const FLOATING_IMPORT_STORAGE_KEY = 'supportAI:floating-import-v1';
@@ -1214,25 +1242,26 @@ const loadChats = async () => {
 };
 
 /** گفتگوی ویجت شناور (مهمان) پس از ورود به چت کامل وارد دیتابیس می‌شود */
+/** @returns {Promise<boolean>} true if a conversation was imported and activated */
 const tryImportFloatingTranscript = async () => {
     if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
-        return;
+        return false;
     }
     const raw = sessionStorage.getItem(FLOATING_IMPORT_STORAGE_KEY);
     if (!raw) {
-        return;
+        return false;
     }
     let bundle;
     try {
         bundle = JSON.parse(raw);
     } catch {
         sessionStorage.removeItem(FLOATING_IMPORT_STORAGE_KEY);
-        return;
+        return false;
     }
     const rows = bundle?.messages;
     if (!Array.isArray(rows) || rows.length === 0) {
         sessionStorage.removeItem(FLOATING_IMPORT_STORAGE_KEY);
-        return;
+        return false;
     }
     sessionStorage.removeItem(FLOATING_IMPORT_STORAGE_KEY);
     try {
@@ -1246,13 +1275,13 @@ const tryImportFloatingTranscript = async () => {
         });
         if (!res.ok) {
             toast.error(t('chat.importFloatingError'));
-            return;
+            return false;
         }
         const data = await res.json();
         const conv = data?.conversation;
         if (!conv?.id) {
             toast.error(t('chat.importFloatingError'));
-            return;
+            return false;
         }
         await loadChats();
         await setActiveChat(conv.id);
@@ -1262,9 +1291,11 @@ const tryImportFloatingTranscript = async () => {
             url.searchParams.delete('conversation');
             window.history.replaceState({}, '', url.pathname + url.search);
         }
+        return true;
     } catch (e) {
         console.error('import floating transcript', e);
         toast.error(t('chat.importFloatingError'));
+        return false;
     }
 };
 
@@ -1678,15 +1709,21 @@ onMounted(async () => {
     }
 
     await loadChats();
-    await tryImportFloatingTranscript();
+
+    let newFromFloating = false;
     if (typeof window !== 'undefined' && typeof window.history?.replaceState === 'function') {
         const url = new URL(window.location.href);
         if (url.searchParams.get('newFromFloating') === '1') {
+            newFromFloating = true;
             url.searchParams.delete('newFromFloating');
             const qs = url.searchParams.toString();
             window.history.replaceState({}, '', url.pathname + (qs ? `?${qs}` : '') + url.hash);
-            await startNewChat();
         }
+    }
+
+    const imported = await tryImportFloatingTranscript();
+    if (newFromFloating && !imported) {
+        await startNewChat();
     }
     fetchDepartments();
     fetchUserPreferences();

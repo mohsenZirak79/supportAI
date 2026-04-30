@@ -466,7 +466,15 @@ const openFullChat = async () => {
         return;
     }
 
-    /** همیشه چت تازه در صفحهٔ کامل؛ بدون ادامهٔ همان گفتگوی ویجت */
+    /** همان گفتگوی ویجت روی سرور؛ بدون ادامهٔ چت قدیمیِ ذخیره‌شده در localStorage */
+    let conversationId = activeConversationId.value;
+    if (!conversationId) {
+        try {
+            conversationId = await ensureConversation();
+        } catch {
+            conversationId = null;
+        }
+    }
     try {
         window.localStorage?.removeItem(ACTIVE_CHAT_STORAGE_KEY);
     } catch {
@@ -474,7 +482,11 @@ const openFullChat = async () => {
     }
     const base = config.openChatPath || '/chat';
     const params = new URLSearchParams();
-    params.set('newFromFloating', '1');
+    if (conversationId) {
+        params.set('conversation', String(conversationId));
+    } else {
+        params.set('newFromFloating', '1');
+    }
     window.location.href = `${base}?${params.toString()}`;
 };
 
@@ -548,7 +560,8 @@ onUnmounted(() => {
 .floating-chat-stack {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    /* وسط‌چین تا با باز شدن پنل عریض‌تر، دکمهٔ لانچر در صفحات RTL جابه‌جا نشود */
+    align-items: center;
     gap: 10px;
     width: max-content;
     max-width: min(380px, calc(100vw - 40px));

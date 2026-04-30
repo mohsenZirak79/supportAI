@@ -40,7 +40,7 @@ defineEmits(['toggle']);
         inset 0 1px 0 rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease;
 }
 
 .floating-chat-launcher:hover {
@@ -49,8 +49,8 @@ defineEmits(['toggle']);
         inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-.floating-chat-launcher:active {
-    transform: scale(0.98);
+.floating-chat-launcher:active .launcher-icon {
+    transform: scale(0.94);
 }
 
 .floating-chat-launcher:focus-visible {
@@ -62,6 +62,10 @@ defineEmits(['toggle']);
     width: 28px;
     height: 28px;
     fill: #fff;
+    display: block;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+    transform-origin: center center;
 }
 
 .launcher-glow {

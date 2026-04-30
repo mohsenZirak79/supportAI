@@ -19,7 +19,7 @@
 
         <div class="widget-messages">
             <div v-for="(msg, idx) in messages" :key="msg.id || idx" class="msg" :class="msg.sender">
-                <div class="bubble">
+                <div class="bubble" :dir="direction">
                     <AiAnswer v-if="msg.sender === 'bot' && msg.text" :text="msg.text" />
                     <template v-else>{{ msg.text || t('chat.voiceMessage') }}</template>
                 </div>
@@ -136,9 +136,12 @@ defineExpose({ focusPanel });
     display: flex;
     flex-direction: column;
     gap: 8px;
+    /* تراز فیزیکی: کاربر راست، ربات چپ — مستقل از direction صفحه (فارسی/عربی/انگلیسی) */
+    direction: ltr;
 }
 .msg {
     display: flex;
+    width: 100%;
 }
 .msg.user {
     justify-content: flex-end;
