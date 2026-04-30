@@ -11,6 +11,7 @@ import "./admin/smooth-scrollbar.min.js";
 import "./admin/soft-ui-dashboard.js";
 import "./admin/axios.min.js";
 import './bootstrap'
+import { mountFloatingChatWidget } from './floating-chat';
 
 // ✅ DataTables
 import DataTable from 'datatables.net-dt';
@@ -62,6 +63,7 @@ function makeDataTable(el, extraOptions = {}) {
 
 // وقتی صفحه لود شد
 document.addEventListener('DOMContentLoaded', () => {
+    mountFloatingChatWidget();
     const tables = document.querySelectorAll('table.datatable');
     tables.forEach((el) => makeDataTable(el));
 });

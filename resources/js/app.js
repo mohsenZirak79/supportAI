@@ -1,4 +1,5 @@
 import './bootstrap'
+import { mountFloatingChatWidget } from './floating-chat';
 
 
 // import "./admin/bootstrap.min.js";
@@ -42,3 +43,7 @@ import './bootstrap'
 //
 // // mount به #app در layout اصلی
 // app.mount('#app')
+
+document.addEventListener('DOMContentLoaded', () => {
+    mountFloatingChatWidget();
+});

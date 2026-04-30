@@ -4,6 +4,7 @@ import './bootstrap'; // برای axios و Toast
 import { i18nPlugin } from './i18n'; // CSP-safe i18n plugin
 import VueToast from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
+import { mountFloatingChatWidget } from './floating-chat';
 
 const app = createApp(TicketDashboard);
 
@@ -18,3 +19,4 @@ app.use(VueToast, {
 });
 
 app.mount('#app');
+mountFloatingChatWidget();

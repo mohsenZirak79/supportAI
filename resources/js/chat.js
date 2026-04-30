@@ -5,6 +5,7 @@ import ChatInterface from './components/ChatInterface.vue';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 import VueToast from 'vue-toast-notification';
 import { i18nPlugin } from './i18n'; // CSP-safe i18n plugin
+import { mountFloatingChatWidget } from './floating-chat';
 // Reverb setup
 // import Echo from 'laravel-echo';
 // import Pusher from 'pusher-js';
@@ -52,5 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.__toast = app.config.globalProperties.$toast;
 
     app.mount(el);
+    mountFloatingChatWidget();
 });
 

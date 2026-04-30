@@ -530,6 +530,21 @@ const renameModal = reactive({
 });
 const renameInputRef = ref(null);
 const WELCOME_STORAGE_KEY = 'supportAI:welcome-session';
+const ACTIVE_CHAT_STORAGE_KEY = 'supportAI:active-conversation-id';
+const EVENT_ACTIVE_CHAT_CHANGED = 'supportAI:active-chat-changed';
+const getPreferredConversationId = () => {
+    if (typeof window === 'undefined') return null;
+    const fromUrl = new URLSearchParams(window.location.search).get('conversation');
+    if (fromUrl) return Number(fromUrl) || fromUrl;
+    const saved = window.localStorage?.getItem(ACTIVE_CHAT_STORAGE_KEY);
+    if (!saved) return null;
+    return Number(saved) || saved;
+};
+const persistActiveConversationId = (id) => {
+    if (typeof window === 'undefined' || !id) return;
+    window.localStorage?.setItem(ACTIVE_CHAT_STORAGE_KEY, String(id));
+    window.dispatchEvent(new CustomEvent(EVENT_ACTIVE_CHAT_CHANGED, { detail: { id } }));
+};
 const fetchDepartments = async () => {  // ← این تابع رو کامل اضافه کن
     try {
         const response = await apiFetch('/support-roles');
@@ -1155,6 +1170,7 @@ onUnmounted(() => {
     }
     if (typeof window !== 'undefined') {
         window.removeEventListener('resize', updateLayoutFlags);
+        window.removeEventListener(EVENT_ACTIVE_CHAT_CHANGED, handleExternalConversationChange);
     }
     if (messagesContainer.value) {
         messagesContainer.value.removeEventListener('scroll', handleScroll);
@@ -1229,7 +1245,9 @@ const loadChats = async () => {
                 messages: []
             }));
             if (chats.value.length > 0 && !activeChatId.value) {
-                setActiveChat(chats.value[0].id);
+                const preferred = getPreferredConversationId();
+                const matched = preferred ? chats.value.find((chat) => String(chat.id) === String(preferred)) : null;
+                setActiveChat(matched?.id || chats.value[0].id);
             }
         }
     } catch (e) {
@@ -1316,9 +1334,23 @@ const startNewChat = async () => {
 const setActiveChat = async (id) => {
     closeChatMenu();
     activeChatId.value = id;
+    persistActiveConversationId(id);
     await loadMessages(id);
     await nextTick();
     scrollToBottom();
+};
+
+const handleExternalConversationChange = async (event) => {
+    const id = event?.detail?.id;
+    if (!id || String(id) === String(activeChatId.value)) return;
+    const exists = chats.value.some((chat) => String(chat.id) === String(id));
+    if (!exists) {
+        await loadChats();
+    }
+    const found = chats.value.find((chat) => String(chat.id) === String(id));
+    if (found) {
+        await setActiveChat(found.id);
+    }
 };
 
 // ارسال پیام
@@ -1648,6 +1680,7 @@ onMounted(() => {
     if (typeof window !== 'undefined') {
         updateLayoutFlags();
         window.addEventListener('resize', updateLayoutFlags);
+        window.addEventListener(EVENT_ACTIVE_CHAT_CHANGED, handleExternalConversationChange);
     }
     if (typeof document !== 'undefined') {
         document.addEventListener('click', handleMenuClickOutside);

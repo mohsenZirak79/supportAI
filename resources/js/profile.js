@@ -9,6 +9,7 @@ import { i18nPlugin } from './i18n';
 import VueToast from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 import './bootstrap';
+import { mountFloatingChatWidget } from './floating-chat';
 
 // Initialize Vue app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -29,5 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mount the app
     app.mount(el);
+    mountFloatingChatWidget();
 });
 
