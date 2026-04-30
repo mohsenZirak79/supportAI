@@ -2,7 +2,6 @@ const defaults = {
     enableFloatingChatWidget: true,
     enableGreetingSound: false,
     greetingDelayMs: 1400,
-    greetingVisibleMs: 5200,
     assistantName: 'دستیار هوشمند',
     openChatPath: '/chat',
     loginPath: '/login',

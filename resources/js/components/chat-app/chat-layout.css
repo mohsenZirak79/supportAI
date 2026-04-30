@@ -118,35 +118,36 @@
     display: flex;
     align-items: center;
     gap: var(--cg-space-3);
-    padding: var(--cg-space-4) var(--cg-space-4) var(--cg-space-3);
+    padding: var(--cg-space-3) var(--cg-space-4);
     flex-shrink: 0;
     border-bottom: 1px solid var(--cg-border);
 }
 
 .cg-sidebar__brand-logo {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--cg-brand-700), var(--cg-accent));
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    flex-shrink: 0;
-    box-shadow: var(--cg-shadow);
+    overflow: visible;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .cg-sidebar__brand-img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    padding: 5px;
+    padding: 0;
+    display: block;
 }
 
 .cg-sidebar__brand-logo-fallback {
-    width: 22px;
-    height: 22px;
-    color: #fff;
+    width: 36px;
+    height: 36px;
+    color: var(--cg-brand-700);
 }
 
 .cg-sidebar__brand-text {

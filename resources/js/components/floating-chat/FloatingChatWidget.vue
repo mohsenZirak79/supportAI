@@ -1,7 +1,5 @@
 <template>
     <div v-if="config.enableFloatingChatWidget" class="floating-chat-root" :class="{ 'is-open': isOpen }">
-        <FloatingChatGreeting :visible="showGreeting" />
-
         <div class="floating-chat-stack">
             <transition name="widget-pop">
                 <FloatingChatPanel
@@ -23,11 +21,13 @@
                 />
             </transition>
 
-            <FloatingChatLauncher
-                :pulse="launcherPulse"
-                :aria-label="isOpen ? 'بستن چت شناور' : 'باز کردن چت شناور'"
-                @toggle="toggleWidget"
-            />
+            <div class="floating-chat-launcher-anchor">
+                <FloatingChatGreeting :visible="showGreeting" :text="t('floating.greeting')" />
+                <FloatingChatLauncher
+                    :aria-label="isOpen ? 'بستن چت شناور' : 'باز کردن چت شناور'"
+                    @toggle="toggleWidget"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -52,7 +52,6 @@ const { t, initLocale } = useLanguage();
 
 const config = floatingChatWidgetConfig;
 const isOpen = ref(false);
-const launcherPulse = ref(false);
 const showGreeting = ref(false);
 const draft = ref('');
 const loading = ref(false);
@@ -70,10 +69,8 @@ const mediaRecorder = ref(null);
 const audioChunks = ref([]);
 
 const greetingDelayMs = computed(() => Number(config.greetingDelayMs || 0));
-const greetingVisibleMs = computed(() => Number(config.greetingVisibleMs || 0));
 
 let greetingOpenTimer;
-let greetingCloseTimer;
 
 const getStorage = () => {
     if (typeof window === 'undefined') return null;
@@ -389,11 +386,7 @@ const openGreeting = async () => {
     const storage = getStorage();
     if (storage?.getItem(GREETING_SHOWN_STORAGE_KEY)) return;
     showGreeting.value = true;
-    launcherPulse.value = true;
     await maybePlayGreetingSound();
-    greetingCloseTimer = window.setTimeout(() => {
-        hideGreeting();
-    }, greetingVisibleMs.value);
 };
 
 const openWidget = async () => {
@@ -402,7 +395,6 @@ const openWidget = async () => {
     }
     isOpen.value = true;
     hideGreeting();
-    launcherPulse.value = false;
     if (!isGuest.value) {
         try {
             await ensureConversation();
@@ -537,7 +529,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
     window.clearTimeout(greetingOpenTimer);
-    window.clearTimeout(greetingCloseTimer);
     document.removeEventListener('keydown', onEsc);
     window.removeEventListener(EVENT_ACTIVE_CHAT_CHANGED, onExternalActiveConversationChange);
     if (recordingInterval.value) window.clearInterval(recordingInterval.value);
@@ -565,6 +556,16 @@ onUnmounted(() => {
     gap: 10px;
     width: max-content;
     max-width: min(380px, calc(100vw - 40px));
+}
+
+/* لانچر همیشه ۶۲×۶۲؛ پیام فقط absolute بالا-راست — بدون تکان دکمه */
+.floating-chat-launcher-anchor {
+    position: relative;
+    width: 62px;
+    height: 62px;
+    flex-shrink: 0;
+    pointer-events: auto;
+    direction: ltr;
 }
 
 .floating-chat-root :deep(button),

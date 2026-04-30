@@ -1,7 +1,6 @@
 <template>
     <button
         class="floating-chat-launcher"
-        :class="{ 'is-pulsing': pulse }"
         type="button"
         :aria-label="ariaLabel"
         @click="$emit('toggle')"
@@ -16,7 +15,6 @@
 
 <script setup>
 defineProps({
-    pulse: { type: Boolean, default: false },
     ariaLabel: { type: String, default: 'باز کردن چت شناور' },
 });
 
@@ -49,10 +47,6 @@ defineEmits(['toggle']);
         inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-.floating-chat-launcher:active .launcher-icon {
-    transform: scale(0.94);
-}
-
 .floating-chat-launcher:focus-visible {
     outline: 3px solid rgba(14, 165, 233, 0.45);
     outline-offset: 2px;
@@ -64,8 +58,6 @@ defineEmits(['toggle']);
     fill: #fff;
     display: block;
     flex-shrink: 0;
-    transition: transform 0.15s ease;
-    transform-origin: center center;
 }
 
 .launcher-glow {
@@ -76,13 +68,4 @@ defineEmits(['toggle']);
     z-index: -1;
 }
 
-.is-pulsing {
-    animation: launcher-pulse 2.2s ease-out 1;
-}
-
-@keyframes launcher-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.55); }
-    70% { box-shadow: 0 0 0 16px rgba(56, 189, 248, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-}
 </style>
