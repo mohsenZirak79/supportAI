@@ -63,11 +63,9 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: (id) => {
-                    if (id.includes('auth')) return 'auth';
-                    if (id.includes('chat')) return 'chat';
-                    if (id.includes('ticket')) return 'ticket';
-                    if (id.includes('profile')) return 'profile';
-                    return 'app'; // بقیه تو app می‌رن
+                    // Keep chunking stable: only split third-party deps.
+                    // Splitting by broad app-path keywords (e.g. "chat") can create circular chunk graphs.
+                    if (id.includes('node_modules')) return 'vendor';
                 },
             },
         },
