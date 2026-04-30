@@ -70,6 +70,7 @@
     "welcomeToast": "Welcome back, {name}!",
     "welcomeNameFallback": "friend",
     "newChat": "+ New Chat",
+    "searchChats": "Search chats…",
     "startNewChat": "Start a new chat",
     "startNewChatDesc": "Click \"New Chat\" to start a conversation.",
     "inputPlaceholder": "Type your message…",

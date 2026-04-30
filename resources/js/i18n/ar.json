@@ -70,6 +70,7 @@
     "welcomeToast": "مرحبًا، {name}!",
     "welcomeNameFallback": "صديقنا",
     "newChat": "+ محادثة جديدة",
+    "searchChats": "البحث في المحادثات…",
     "startNewChat": "ابدأ محادثة جديدة",
     "startNewChatDesc": "انقر على \"محادثة جديدة\" لبدء المحادثة.",
     "inputPlaceholder": "اكتب رسالتك…",

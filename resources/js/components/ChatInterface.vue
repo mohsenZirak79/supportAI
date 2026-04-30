@@ -1,4 +1,5 @@
 <template>
+
     <HandoffModal
         :is-open="isHandoffModalOpen"
         :roles="availableRoles"
@@ -6,374 +7,400 @@
         @submit="handleHandoffSubmit"
     />
 
-    <div class="cg-app" :dir="direction">
-        <ChatHeader
-            :title="activeChat?.title || $t('chat.title')"
-            :show-menu-toggle="isMobile"
-            :sidebar-open="isSidebarOpen"
-            :menu-label="$t('chat.openSidebar')"
-            :settings-label="$t('chat.settingsTitle')"
-            @toggle-sidebar="toggleSidebar"
-            @open-settings="settingsModalOpen = true"
-        >
-            <template #notifications>
-                <NotificationBell @select="handleNotificationSelect" />
-            </template>
-        </ChatHeader>
-
-        <div class="cg-body">
-            <ChatSidebar
-                v-model:search-query="sidebarSearch"
-                :chats="filteredChats"
-                :active-chat-id="activeChatId"
-                :is-open="isSidebarOpen"
-                :is-mobile="isMobile"
-                :new-chat-text="$t('chat.newChat')"
-                :new-chat-label="$t('chat.startNewChat')"
-                :search-placeholder="$t('chat.searchConversations')"
-                :search-label="$t('common.search')"
-                :actions-label="$t('chat.chatSettings')"
-                :user-name="currentUser.name || $t('nav.profile')"
-                :user-avatar="currentUser.avatar"
-                :account-label="$t('chat.settingsTitle')"
-                :referral-dot="hasPublicReferralResponses"
-                @new-chat="startNewChat"
-                @select="setActiveChat($event)"
-                @open-actions="openChatActionsModal"
-                @open-settings="settingsModalOpen = true"
-            />
-
-            <div
-                v-if="isMobile && isSidebarOpen"
-                class="cg-drawer-backdrop"
-                role="presentation"
-                aria-hidden="true"
-                @click="closeSidebar"
-            />
-
-            <div class="cg-main">
-                <template v-if="activeChatId">
-                    <div ref="messagesContainer" class="cg-thread-scroll">
-                        <div class="cg-thread">
-                            <div
-                                v-for="(message, index) in activeChat?.messages || []"
-                                :key="message.id || message._tmpKey || `msg-${index}`"
-                                class="cg-msg"
-                                :class="{ 'cg-msg--user': message.sender === 'user', 'cg-msg--bot': message.sender === 'bot' }"
-                                :data-msg-id="message.id || ''"
-                            >
-                                <div class="cg-msg-inner">
-                                    <div class="cg-msg-bubble" @click="onBubbleClick(message)">
-                                        <template v-if="message.sender === 'bot' && message.text">
-                                            <AiAnswer :text="message.text" :lang="locale" :gender="userVoiceGender" />
-                                        </template>
-                                        <template v-else>
-                                            <div v-if="message.isSending" class="cg-msg-sending">
-                                                <span class="cg-msg-dot" aria-hidden="true" />
-                                                {{ $t('chat.sendingVoice') }}
-                                            </div>
-                                            <div v-if="message.text && message.text.trim()" class="cg-msg-transcript">
-                                                <span>{{ message.text }}</span>
-                                            </div>
-                                            <div
-                                                v-else-if="(message.has_voice || message.has_media) && !message.voiceUrl"
-                                                class="cg-voice-placeholder"
-                                                @click.stop="onBubbleClick(message)"
-                                            >
-                                                {{ $t('chat.loadAndPlay') }}
-                                            </div>
-                                            <span v-else-if="!message.voiceUrl">‌</span>
-                                        </template>
-                                        <div v-if="message.voiceUrl" class="cg-voice-wrap" @click.stop="playVoice(message.id)">
-                                            <audio :ref="(el) => registerAudioRef(message.id, el)" :src="message.voiceUrl" preload="none" controls />
-                                        </div>
-                                        <div class="cg-msg-toolbar">
-                                            <span class="cg-msg-time">{{ formatDate(message.created_at) }}</span>
-                                            <div class="cg-msg-actions">
-                                                <button
-                                                    type="button"
-                                                    class="cg-icon-btn"
-                                                    :aria-label="$t('chat.copyText')"
-                                                    :title="$t('chat.copyText')"
-                                                    @click.stop="copyText(message.text)"
-                                                >
-                                                    <svg viewBox="0 0 24 24" class="cg-icon" aria-hidden="true">
-                                                        <path
-                                                            d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    class="cg-icon-btn"
-                                                    :aria-label="$t('chat.handoff')"
-                                                    :title="$t('chat.handoff')"
-                                                    @click.stop="showHandoffModal(message)"
-                                                >
-                                                    <svg viewBox="0 0 24 24" class="cg-icon" aria-hidden="true">
-                                                        <path d="M4 12v8h16v-8h2v10H2V12h2zm8-9 6 6h-4v6h-4V9H6l6-6z" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-if="loading" class="cg-msg cg-msg--bot">
-                                <div class="cg-msg-inner">
-                                    <div class="cg-msg-bubble cg-msg-bubble--typing">
-                                        <ChatTypingIndicator :label="$t('chat.thinking')" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <button
-                        v-if="showScrollButton"
-                        type="button"
-                        class="cg-scroll-to-bottom"
-                        :aria-label="$t('chat.scrollToBottom')"
-                        @click="scrollToBottom"
-                    >
-                        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                            <path
-                                d="M12 16.5a1 1 0 0 1-.7-.29l-6-6a1 1 0 0 1 1.4-1.42L12 14.09l5.3-5.3a1 1 0 1 1 1.4 1.42l-6 6a1 1 0 0 1-.7.29Z"
-                            />
-                        </svg>
-                    </button>
-                    <ChatComposer
-                        ref="composerRef"
-                        v-model="inputMessage"
-                        :disabled="loading"
-                        :is-recording="isRecording"
-                        :recording-time="recordingTime"
-                        :placeholder="$t('chat.inputPlaceholder')"
-                        :mic-label="$t('chat.recordVoice')"
-                        :send-label="$t('chat.send')"
-                        :send-voice-label="$t('chat.send')"
-                        :cancel-label="$t('common.cancel')"
-                        :bar-height-fn="getBarHeight"
-                        @submit="sendMessage"
-                        @start-recording="startRecording"
-                        @cancel-recording="cancelRecording"
-                        @send-recording="sendRecording"
-                        @keydown="onKeydown"
-                    />
-                </template>
-                <div
-                    v-else
-                    class="cg-empty"
-                    role="button"
-                    tabindex="0"
-                    @click="startNewChat"
-                    @keydown.enter.prevent="startNewChat"
+    <div class="cg-root chat-app" :dir="direction">
+        <header class="cg-topbar app-header" role="banner">
+            <div class="cg-topbar__start header-brand">
+                <button
+                    v-if="isMobile"
+                    type="button"
+                    class="cg-icon-btn mobile-menu-btn"
+                    :aria-label="$t('chat.openSidebar')"
+                    @click="toggleSidebar"
                 >
-                    <h2>{{ $t('chat.startNewChat') }}</h2>
-                    <p>{{ $t('chat.startNewChatDesc') }}</p>
-                </div>
-            </div>
-        </div>
-
-        <BaseModal v-model:open="referralPanelOpen" :title="activeChat?.title || $t('referral.currentChat')" size="xl">
-            <p class="cg-modal-eyebrow">{{ $t('referral.title') }}</p>
-            <div class="cg-referral-toolbar">
-                <button type="button" class="cg-btn-secondary" :disabled="referralsLoading" @click="refreshCurrentReferrals">
-                    {{ $t('referral.refresh') }}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
                 </button>
+                <span class="cg-topbar__title brand-text">{{ activeChat?.title || $t('chat.title') }}</span>
             </div>
-            <div v-if="referralsLoading" class="cg-referral-placeholder">
-                <div class="cg-spinner" />
-                <p>{{ $t('referral.loading') }}</p>
+            <div class="cg-topbar__actions header-nav">
+                <NotificationBell @select="handleNotificationSelect" />
+                <select :value="locale" class="cg-lang-select lang-select" @change="onLanguageChange" :aria-label="$t('chat.title')">
+                    <option value="fa">فارسی</option>
+                    <option value="en">EN</option>
+                    <option value="ar">ع</option>
+                </select>
             </div>
-            <div v-else-if="referralsError" class="cg-referral-placeholder cg-referral-placeholder--error">
-                <p>{{ referralsError }}</p>
-                <button type="button" class="cg-btn-secondary" @click="refreshCurrentReferrals">{{ $t('common.retry') }}</button>
-            </div>
-            <div v-else-if="!currentReferrals.length" class="cg-referral-placeholder">
-                <p>{{ $t('referral.noReferrals') }}</p>
-                <small class="cg-muted">{{ $t('referral.noReferralsHint') }}</small>
-            </div>
-            <div v-else class="cg-referral-list">
-                <article v-for="referral in currentReferrals" :key="referral.id" class="cg-referral-card">
-                    <div class="cg-referral-card-head">
-                        <div>
-                            <p class="cg-modal-eyebrow">{{ $t('referral.referTo') }} {{ referral.assigned_role || $t('referral.support') }}</p>
-                            <h4>{{ activeChat?.title || $t('referral.currentChat') }}</h4>
-                        </div>
-                        <span class="cg-referral-status" :class="'cg-referral-status--' + referral.status">
-                            {{ referralStatusLabel(referral.status) }}
-                        </span>
-                    </div>
-                    <div class="cg-referral-block">
-                        <div class="cg-referral-label">{{ $t('referral.referredMessage') }}</div>
-                        <p v-if="referral.trigger_message?.content" class="cg-referral-text">{{ referral.trigger_message.content }}</p>
-                        <p v-else class="cg-referral-text cg-muted">{{ $t('referral.messageVoiceOrFile') }}</p>
-                        <div class="cg-referral-foot">
-                            <span>{{ formatDate(referral.trigger_message?.created_at) }}</span>
-                            <button type="button" class="cg-link-btn" @click="scrollToReferredMessage(referral.trigger_message_id)">
-                                {{ $t('referral.viewInChat') }}
+        </header>
+
+        <div class="cg-body chat-container">
+            <aside
+                class="cg-sidebar sidebar"
+                :class="{ 'is-mobile': isMobile, 'is-open': isSidebarOpen }"
+            >
+                <div class="cg-sidebar__search">
+                    <input
+                        v-model="chatSearchQuery"
+                        type="search"
+                        autocomplete="off"
+                        :placeholder="$t('chat.searchChats')"
+                    />
+                </div>
+                <button type="button" class="cg-new-chat new-chat-btn" @click="startNewChat">
+                    {{ $t('chat.newChat') }}
+                </button>
+                <div class="cg-chat-list chat-list">
+                    <div
+                        v-for="chat in filteredChats"
+                        :key="chat.id"
+                        class="cg-chat-item chat-item"
+                        :class="{ 'is-active': chat.id === activeChatId, active: chat.id === activeChatId }"
+                        @click="setActiveChat(chat.id)"
+                    >
+                        <span class="cg-chat-item__title chat-item__title">{{ chat.title }}</span>
+                        <button
+                            type="button"
+                            class="cg-chat-menu-btn chat-menu-btn"
+                            :aria-label="$t('chat.chatSettings')"
+                            @click.stop="toggleChatMenu(chat.id)"
+                        >
+                            <svg viewBox="0 0 24 24" aria-hidden="true" class="chat-menu-icon">
+                                <circle cx="12" cy="5" r="1.5" />
+                                <circle cx="12" cy="12" r="1.5" />
+                                <circle cx="12" cy="19" r="1.5" />
+                            </svg>
+                        </button>
+                        <div v-if="chatMenuOpenId === chat.id" class="cg-chat-menu chat-menu">
+                            <button type="button" @click.stop="openRenameModal(chat)">{{ $t('chat.renameChat') }}</button>
+                            <button type="button" @click.stop="openReferralPanelForChat(chat)">
+                                {{ $t('nav.referrals') }}
+                            </button>
+                            <button
+                                type="button"
+                                class="danger"
+                                :disabled="deletingChatId === chat.id"
+                                @click.stop="deleteChat(chat.id)"
+                            >
+                                {{ $t('chat.deleteChat') }}
                             </button>
                         </div>
                     </div>
-                    <div v-if="referral.description" class="cg-referral-block">
-                        <div class="cg-referral-label">{{ $t('referral.yourNote') }}</div>
-                        <p class="cg-referral-text">{{ referral.description }}</p>
-                    </div>
-                    <div v-if="referral.response" class="cg-referral-block cg-referral-block--response">
-                        <div class="cg-referral-label">{{ $t('referral.supportResponse') }}</div>
-                        <p class="cg-referral-text">{{ referral.response.text }}</p>
-                        <div class="cg-referral-foot">
-                            <span>{{ formatDate(referral.response.created_at) }}</span>
-                        </div>
-                        <div v-if="referral.response.files?.length" class="cg-referral-files">
-                            <a
-                                v-for="file in referral.response.files"
-                                :key="file.id"
-                                :href="file.url"
-                                target="_blank"
-                                rel="noopener"
-                                class="cg-file-chip"
-                            >
-                                <span class="truncate">{{ file.name || $t('common.file') }}</span>
-                            </a>
-                        </div>
-                    </div>
-                    <div v-else class="cg-referral-block cg-muted">
-                        <div class="cg-referral-label">{{ $t('referral.supportResponse') }}</div>
-                        <p class="cg-referral-text">{{ $t('referral.noResponse') }}</p>
-                    </div>
-                </article>
-            </div>
-        </BaseModal>
-
-        <BaseModal
-            :open="renameModal.open"
-            :title="$t('chat.renameChatTitle')"
-            size="md"
-            @update:open="(v) => { if (!v) closeRenameModal(); }"
-        >
-            <p class="cg-muted">{{ $t('chat.renameChatDesc') }}</p>
-            <form class="cg-rename-form" @submit.prevent="submitRename">
-                <input
-                    ref="renameInputRef"
-                    v-model="renameModal.title"
-                    type="text"
-                    class="cg-input"
-                    maxlength="100"
-                    :placeholder="$t('chat.newTitlePlaceholder')"
-                    :disabled="renameModal.loading"
-                />
-                <div class="cg-modal-actions">
-                    <button type="button" class="cg-btn-secondary" :disabled="renameModal.loading" @click="closeRenameModal">
-                        {{ $t('common.cancel') }}
-                    </button>
-                    <button type="submit" class="cg-btn-primary" :disabled="renameModal.loading">
-                        {{ renameModal.loading ? $t('chat.savingTitle') : $t('chat.saveTitle') }}
-                    </button>
                 </div>
-            </form>
-        </BaseModal>
+                <div class="cg-sidebar-footer sidebar-footer">
+                    <button
+                        type="button"
+                        class="cg-user-trigger sidebar-user-trigger"
+                        :aria-expanded="userMenuOpen"
+                        aria-haspopup="true"
+                        @click="userMenuOpen = !userMenuOpen"
+                    >
+                        <img
+                            v-if="currentUser.avatar"
+                            :src="currentUser.avatar"
+                            :alt="currentUser.name"
+                            class="cg-user-avatar sidebar-user-avatar"
+                        />
+                        <div v-else class="cg-user-avatar cg-user-avatar--ph sidebar-user-avatar sidebar-user-avatar--placeholder">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                        <span class="cg-user-name sidebar-user-name">{{ currentUser.name || $t('nav.profile') }}</span>
+                        <span
+                            v-if="hasPublicReferralResponses && !userMenuOpen"
+                            class="cg-dot sidebar-footer__dot sidebar-footer__dot--on-trigger"
+                        />
+                    </button>
+                    <div v-if="userMenuOpen" ref="userMenuRef" class="cg-user-menu sidebar-user-menu">
+                        <button
+                            type="button"
+                            class="sidebar-user-menu__item"
+                            :disabled="!activeChatId"
+                            @click="userMenuOpen = false; toggleReferralPanel()"
+                        >
+                            <span v-if="hasPublicReferralResponses" class="sidebar-footer__dot" />
+                            {{ $t('nav.referrals') }}
+                        </button>
+                        <button type="button" class="sidebar-user-menu__item" @click="userMenuOpen = false; goToTickets()">
+                            {{ $t('nav.tickets') }}
+                        </button>
+                        <button type="button" class="sidebar-user-menu__item" @click="userMenuOpen = false; goToProfile()">
+                            {{ $t('nav.profile') }}
+                        </button>
+                        <button
+                            type="button"
+                            class="sidebar-user-menu__item sidebar-user-menu__item--danger danger"
+                            :disabled="loggingOut"
+                            @click="userMenuOpen = false; logout()"
+                        >
+                            {{ loggingOut ? '...' : $t('nav.logout') }}
+                        </button>
+                    </div>
+                </div>
+            </aside>
 
-        <BaseModal v-model:open="chatActionsOpen" :title="$t('chat.chatSettings')" size="sm">
-            <div v-if="chatActionsChat" class="cg-actions-stack">
-                <button type="button" class="cg-actions-row" @click="fromChatActionsRename">
-                    {{ $t('chat.renameChat') }}
-                </button>
-                <button type="button" class="cg-actions-row" @click="fromChatActionsReferrals">
-                    {{ $t('nav.referrals') }}
-                </button>
+            <div
+                v-if="isMobile && isSidebarOpen"
+                class="cg-sidebar-overlay sidebar-overlay"
+                role="presentation"
+                @click="closeSidebar"
+            />
+
+            <main v-if="activeChatId" class="cg-main chat-main">
+                <div ref="messagesContainer" class="cg-msg-scroll messages-container">
+                    <div class="cg-msg-feed">
+                        <MessageBubble
+                            v-for="(message, index) in activeChat?.messages || []"
+                            :key="message.id || message._tmpKey || `msg-${index}`"
+                            :message="message"
+                            :locale="locale"
+                            :user-voice-gender="userVoiceGender"
+                            :format-date="formatDate"
+                            :register-audio-ref="registerAudioRef"
+                            :on-bubble-click="onBubbleClick"
+                            @copy="copyText"
+                            @handoff="showHandoffModal"
+                            @play-voice="playVoice"
+                            @bubble-click="onBubbleClick"
+                        />
+                        <TypingIndicator v-if="loading" />
+                    </div>
+                </div>
                 <button
+                    v-if="showScrollButton"
                     type="button"
-                    class="cg-actions-row cg-actions-row--danger"
-                    :disabled="deletingChatId === chatActionsChat.id"
-                    @click="fromChatActionsDelete"
+                    class="cg-scroll-down scroll-bottom-btn"
+                    :aria-label="$t('chat.scrollToBottom')"
+                    @click="scrollToBottom"
                 >
-                    {{ $t('chat.deleteChat') }}
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 16.5a1 1 0 0 1-.7-.29l-6-6a1 1 0 0 1 1.4-1.42L12 14.09l5.3-5.3a1 1 0 1 1 1.4 1.42l-6 6a1 1 0 0 1-.7.29Z"/>
+                    </svg>
                 </button>
-            </div>
-        </BaseModal>
 
-        <BaseModal
-            v-model:open="deleteConfirm.open"
-            :title="$t('chat.deleteChatConfirmTitle')"
-            variant="danger"
-            size="sm"
-            :close-on-backdrop="false"
-        >
-            <p>{{ $t('chat.confirmDelete') }}</p>
-            <template #footer>
-                <button type="button" class="cg-btn-secondary" @click="deleteConfirm.open = false">
-                    {{ $t('common.cancel') }}
-                </button>
-                <button type="button" class="cg-btn-danger" :disabled="deletingChatId !== null" @click="executeDeleteChat">
-                    {{ $t('common.delete') }}
-                </button>
-            </template>
-        </BaseModal>
+                <form class="cg-composer input-form" @submit.prevent="sendMessage">
+                    <div class="cg-composer-inner">
+                        <div class="cg-composer-box">
+                            <div v-if="isRecording" class="cg-recording recording-ui">
+                                <div class="cg-waveform waveform">
+                                    <div
+                                        v-for="n in 20"
+                                        :key="n"
+                                        class="bar"
+                                        :style="{ height: getBarHeight(n) + 'px' }"
+                                    />
+                                </div>
+                                <div class="cg-rec-controls recording-controls">
+                                    <button type="button" class="cancel-btn" :aria-label="$t('common.cancel')" @click="cancelRecording">✕</button>
+                                    <button type="button" class="send-btn" :aria-label="$t('chat.send')" @click="sendRecording">✓</button>
+                                </div>
+                                <div class="cg-rec-timer recording-timer">{{ formatTimer(recordingTime) }}</div>
+                            </div>
+                            <div v-else class="cg-input-row text-input-area">
+                                <textarea
+                                    ref="msgInput"
+                                    v-model="inputMessage"
+                                    class="cg-textarea chat-input"
+                                    rows="1"
+                                    :placeholder="$t('chat.inputPlaceholder')"
+                                    @input="autoGrow"
+                                    @keydown="onKeydown"
+                                />
+                                <div class="cg-input-actions input-actions">
+                                    <button
+                                        type="button"
+                                        class="cg-round-btn mic-btn"
+                                        :disabled="loading"
+                                        :aria-label="$t('chat.recordVoice')"
+                                        :title="$t('chat.recordVoice')"
+                                        @click="startRecording"
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                            <line x1="12" y1="19" x2="12" y2="23"/>
+                                            <line x1="8" y1="23" x2="16" y2="23"/>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        class="cg-round-btn cg-round-btn--primary send-btn"
+                                        :disabled="loading || !inputMessage.trim()"
+                                        :aria-label="$t('chat.send')"
+                                        :title="$t('chat.send')"
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </main>
 
-        <BaseModal v-model:open="settingsModalOpen" :title="$t('chat.settingsTitle')" size="lg">
-            <div class="cg-settings">
-                <section class="cg-settings-block">
-                    <h3 class="cg-settings-heading">{{ $t('chat.languageSection') }}</h3>
-                    <p class="cg-muted">{{ $t('chat.languageHint') }}</p>
-                    <label class="cg-label" for="cg-settings-lang-select">{{ $t('chat.interfaceLanguage') }}</label>
-                    <select id="cg-settings-lang-select" class="cg-select" :value="locale" @change="onLanguageChange">
-                        <option value="fa">فارسی</option>
-                        <option value="en">English</option>
-                        <option value="ar">العربية</option>
-                    </select>
-                </section>
-                <section class="cg-settings-block">
-                    <h3 class="cg-settings-heading">{{ $t('chat.appearanceSection') }}</h3>
-                    <p class="cg-muted">{{ $t('chat.appearanceHint') }}</p>
-                </section>
-                <section class="cg-settings-block">
-                    <h3 class="cg-settings-heading">{{ $t('nav.referrals') }}</h3>
-                    <button
-                        type="button"
-                        class="cg-btn-secondary cg-btn-block"
-                        :disabled="!activeChatId"
-                        @click="settingsModalOpen = false; toggleReferralPanel()"
-                    >
-                        {{ $t('referral.title') }}
-                    </button>
-                </section>
-                <section class="cg-settings-block">
-                    <h3 class="cg-settings-heading">{{ $t('nav.tickets') }}</h3>
-                    <button type="button" class="cg-btn-secondary cg-btn-block" @click="settingsModalOpen = false; goToTickets()">
-                        {{ $t('nav.tickets') }}
-                    </button>
-                </section>
-                <section class="cg-settings-block">
-                    <h3 class="cg-settings-heading">{{ $t('nav.profile') }}</h3>
-                    <button type="button" class="cg-btn-secondary cg-btn-block" @click="settingsModalOpen = false; goToProfile()">
-                        {{ $t('nav.profile') }}
-                    </button>
-                </section>
-                <section class="cg-settings-block">
-                    <button
-                        type="button"
-                        class="cg-btn-danger cg-btn-block"
-                        :disabled="loggingOut"
-                        @click="settingsModalOpen = false; logout()"
-                    >
-                        {{ loggingOut ? '...' : $t('nav.logout') }}
-                    </button>
-                </section>
+            <main v-else class="cg-main cg-main--empty chat-main empty-state" role="button" tabindex="0" @click="startNewChat" @keydown.enter.prevent="startNewChat">
+                <div class="cg-empty-card empty-content">
+                    <h2>{{ $t('chat.startNewChat') }}</h2>
+                    <p>{{ $t('chat.startNewChatDesc') }}</p>
+                </div>
+            </main>
+        </div>
+        <transition name="fade">
+            <div
+                v-if="referralPanelOpen"
+                class="referral-panel-backdrop"
+                @click="closeReferralPanel"
+            ></div>
+        </transition>
+
+        <transition name="slide-panel">
+            <section
+                v-if="referralPanelOpen"
+                class="referral-panel"
+                :class="{ 'is-mobile': isMobile }"
+                :aria-label="$t('referral.title')"
+            >
+                <div class="referral-panel__header">
+                    <div>
+                        <p class="referral-panel__eyebrow">{{ $t('referral.title') }}</p>
+                        <h3>{{ activeChat?.title || $t('referral.currentChat') }}</h3>
+                    </div>
+                    <div class="panel-actions">
+                        <button
+                            class="panel-icon-btn"
+                            type="button"
+                            :disabled="referralsLoading"
+                            @click="refreshCurrentReferrals"
+                            :aria-label="$t('referral.refresh')"
+                        >
+                            ↻
+                        </button>
+                        <button class="panel-icon-btn" type="button" @click="closeReferralPanel" :aria-label="$t('referral.closePanel')">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+                <div class="referral-panel__body">
+                    <div v-if="referralsLoading" class="referral-panel__placeholder">
+                        <div class="spinner"></div>
+                        <p>{{ $t('referral.loading') }}</p>
+                    </div>
+                    <div v-else-if="referralsError" class="referral-panel__placeholder error">
+                        <p>{{ referralsError }}</p>
+                        <button type="button" class="panel-retry" @click="refreshCurrentReferrals">{{ $t('common.retry') }}</button>
+                    </div>
+                    <div v-else-if="!currentReferrals.length" class="referral-panel__placeholder">
+                        <p>{{ $t('referral.noReferrals') }}</p>
+                        <small class="text-muted">{{ $t('referral.noReferralsHint') }}</small>
+                    </div>
+                    <div v-else class="referral-card-list">
+                        <article v-for="referral in currentReferrals" :key="referral.id" class="referral-card">
+                            <div class="referral-card__header">
+                                <div>
+                                    <p class="referral-card__eyebrow">{{ $t('referral.referTo') }} {{ referral.assigned_role || $t('referral.support') }}</p>
+                                    <h4>{{ activeChat?.title || $t('referral.currentChat') }}</h4>
+                                </div>
+                                <span class="referral-status" :class="'referral-status--' + referral.status">
+                                    {{ referralStatusLabel(referral.status) }}
+                                </span>
+                            </div>
+
+                            <div class="referral-card__section">
+                                <div class="section-title">{{ $t('referral.referredMessage') }}</div>
+                                <p class="section-body" v-if="referral.trigger_message?.content">
+                                    {{ referral.trigger_message.content }}
+                                </p>
+                                <p class="section-body muted" v-else>
+                                    {{ $t('referral.messageVoiceOrFile') }}
+                                </p>
+                                <div class="section-footer">
+                                    <span>{{ formatDate(referral.trigger_message?.created_at) }}</span>
+                                    <button
+                                        type="button"
+                                        class="section-link"
+                                        @click="scrollToReferredMessage(referral.trigger_message_id)"
+                                    >
+                                        {{ $t('referral.viewInChat') }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div v-if="referral.description" class="referral-card__section">
+                                <div class="section-title">{{ $t('referral.yourNote') }}</div>
+                                <p class="section-body">{{ referral.description }}</p>
+                            </div>
+
+                            <div v-if="referral.response" class="referral-card__section response">
+                                <div class="section-title">{{ $t('referral.supportResponse') }}</div>
+                                <p class="section-body">{{ referral.response.text }}</p>
+                                <div class="section-footer">
+                                    <span>{{ formatDate(referral.response.created_at) }}</span>
+                                </div>
+                                <div v-if="referral.response.files?.length" class="referral-files">
+                                    <a
+                                        v-for="file in referral.response.files"
+                                        :key="file.id"
+                                        :href="file.url"
+                                        target="_blank"
+                                        rel="noopener"
+                                        class="file-chip file-chip-link"
+                                    >
+                                        <span>{{ getFileEmoji(file.mime) }}</span>
+                                        <span class="truncate">{{ file.name || $t('common.file') }}</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div v-else class="referral-card__section muted">
+                                <div class="section-title">{{ $t('referral.supportResponse') }}</div>
+                                <p class="section-body">{{ $t('referral.noResponse') }}</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </section>
+        </transition>
+
+        <transition name="fade">
+            <div v-if="renameModal.open" class="modal-backdrop" @click.self="closeRenameModal">
+                <form class="rename-modal" @submit.prevent="submitRename">
+                    <h3>{{ $t('chat.renameChatTitle') }}</h3>
+                    <p class="modal-desc">{{ $t('chat.renameChatDesc') }}</p>
+                    <input
+                        type="text"
+                        ref="renameInputRef"
+                        v-model="renameModal.title"
+                        class="rename-input"
+                        maxlength="100"
+                        :placeholder="$t('chat.newTitlePlaceholder')"
+                        :disabled="renameModal.loading"
+                    />
+                    <div class="modal-actions">
+                        <button type="button" class="modal-btn ghost" @click="closeRenameModal" :disabled="renameModal.loading">
+                            {{ $t('common.cancel') }}
+                        </button>
+                        <button type="submit" class="modal-btn primary" :disabled="renameModal.loading">
+                            {{ renameModal.loading ? $t('chat.savingTitle') : $t('chat.saveTitle') }}
+                        </button>
+                    </div>
+                </form>
             </div>
-        </BaseModal>
+        </transition>
     </div>
 </template>
+
+
 <script setup>
 import {ref, computed, nextTick, onMounted, onUnmounted, reactive, watch} from 'vue';
+import './chat-app/chat-layout.css';
+import './chat-app/chat-overlays.css';
 import HandoffModal from './HandoffModal.vue';
 import NotificationBell from './NotificationBell.vue';
-import AiAnswer from './AiAnswer.vue';
-import BaseModal from './chat/BaseModal.vue';
-import ChatHeader from './chat/ChatHeader.vue';
-import ChatSidebar from './chat/ChatSidebar.vue';
-import ChatComposer from './chat/ChatComposer.vue';
-import ChatTypingIndicator from './chat/ChatTypingIndicator.vue';
+import MessageBubble from './chat-app/MessageBubble.vue';
+import TypingIndicator from './chat-app/TypingIndicator.vue';
 import {useToast} from 'vue-toast-notification'
 import {apiFetch} from '../lib/http';
 import { useLanguage } from '../i18n';
@@ -425,14 +452,11 @@ const recordingInterval = ref(null);
 const mediaRecorder = ref(null);
 const audioChunks = ref([]);
 const availableRoles = ref([]);
+const chatMenuOpenId = ref(null);
 const deletingChatId = ref(null);
 const currentUser = ref({ name: '', avatar: null });
-const sidebarSearch = ref('');
-const settingsModalOpen = ref(false);
-const chatActionsOpen = ref(false);
-const chatActionsChat = ref(null);
-const deleteConfirm = reactive({ open: false, chatId: null });
-const composerRef = ref(null);
+const userMenuOpen = ref(false);
+const userMenuRef = ref(null);
 const renameModal = reactive({
     open: false,
     chatId: null,
@@ -595,9 +619,11 @@ const getFileEmoji = (mimeOrType = '') => {
 };
 // --- State ---
 const chats = ref([]); // لیست چت‌ها از API
+const chatSearchQuery = ref('');
 const activeChatId = ref(null);
 const inputMessage = ref('');
 const loading = ref(false);
+const textarea = ref(null);
 const messagesContainer = ref(null);
 const showScrollButton = ref(false);
 const SCROLL_OFFSET_THRESHOLD = 120;
@@ -627,12 +653,6 @@ const referralsError = computed(() => {
 const hasPublicReferralResponses = computed(() =>
     currentReferrals.value.some((item) => !!item.response)
 );
-
-const filteredChats = computed(() => {
-    const q = sidebarSearch.value.trim().toLowerCase();
-    if (!q) return chats.value;
-    return chats.value.filter((c) => (c.title || '').toLowerCase().includes(q));
-});
 
 const updateLayoutFlags = () => {
     if (typeof window === 'undefined') return;
@@ -699,34 +719,6 @@ const closeReferralPanel = () => {
     referralPanelOpen.value = false;
 };
 
-const openChatActionsModal = (chat) => {
-    chatActionsChat.value = chat;
-    chatActionsOpen.value = true;
-};
-
-const fromChatActionsRename = () => {
-    const c = chatActionsChat.value;
-    chatActionsOpen.value = false;
-    if (c) openRenameModal(c);
-};
-
-const fromChatActionsReferrals = () => {
-    const c = chatActionsChat.value;
-    chatActionsOpen.value = false;
-    if (c) openReferralPanelForChat(c);
-};
-
-const fromChatActionsDelete = () => {
-    const c = chatActionsChat.value;
-    chatActionsOpen.value = false;
-    if (c) requestDeleteChat(c.id);
-};
-
-const requestDeleteChat = (chatId) => {
-    deleteConfirm.chatId = chatId;
-    deleteConfirm.open = true;
-};
-
 const toggleReferralPanel = async () => {
     if (!activeChatId.value) return;
     if (referralPanelOpen.value) {
@@ -738,6 +730,7 @@ const toggleReferralPanel = async () => {
 };
 
 const openReferralPanelForChat = async (chat) => {
+    closeChatMenu();
     if (activeChatId.value !== chat.id) {
         await setActiveChat(chat.id);
     }
@@ -745,7 +738,28 @@ const openReferralPanelForChat = async (chat) => {
     await loadReferrals(chat.id);
 };
 
+const handleReferralEsc = (event) => {
+    if (event.key === 'Escape') {
+        closeReferralPanel();
+    }
+};
+
+const handleRenameEsc = (event) => {
+    if (event.key === 'Escape' && renameModal.open) {
+        closeRenameModal();
+    }
+};
+
+const toggleChatMenu = (chatId) => {
+    chatMenuOpenId.value = chatMenuOpenId.value === chatId ? null : chatId;
+};
+
+const closeChatMenu = () => {
+    chatMenuOpenId.value = null;
+};
+
 const openRenameModal = (chat) => {
+    closeChatMenu();
     if (!chat) return;
     renameModal.open = true;
     renameModal.chatId = chat.id;
@@ -791,6 +805,28 @@ const handleScroll = () => {
     const distanceFromBottom = el.scrollHeight - (el.scrollTop + el.clientHeight);
     showScrollButton.value = distanceFromBottom > SCROLL_OFFSET_THRESHOLD;
 };
+
+let previousBodyOverflow = '';
+watch(referralPanelOpen, (open) => {
+    if (typeof document === 'undefined') return;
+    if (open) {
+        previousBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', handleReferralEsc);
+    } else {
+        document.body.style.overflow = previousBodyOverflow || '';
+        document.removeEventListener('keydown', handleReferralEsc);
+    }
+});
+
+watch(() => renameModal.open, (open) => {
+    if (typeof document === 'undefined') return;
+    if (open) {
+        document.addEventListener('keydown', handleRenameEsc);
+    } else {
+        document.removeEventListener('keydown', handleRenameEsc);
+    }
+});
 
 async function ensureMediaLoaded(msg) {
     if (!msg?.id) return;
@@ -1076,6 +1112,9 @@ onUnmounted(() => {
         messagesContainer.value.removeEventListener('scroll', handleScroll);
     }
     if (typeof document !== 'undefined') {
+        document.removeEventListener('keydown', handleReferralEsc);
+        document.removeEventListener('keydown', handleRenameEsc);
+        document.removeEventListener('click', handleMenuClickOutside);
         document.body.style.overflow = '';
     }
     highlightTimers.forEach(timeout => clearTimeout(timeout));
@@ -1100,6 +1139,12 @@ const scrollToBottom = () => {
 const activeChat = computed(() => {
     return chats.value.find(chat => chat.id === activeChatId.value) || null;
 });
+
+const filteredChats = computed(() => {
+    const q = chatSearchQuery.value.trim().toLowerCase();
+    if (!q) return chats.value;
+    return chats.value.filter((c) => String(c.title || '').toLowerCase().includes(q));
+});
 watch(activeChatId, (newId) => {
     if (isMobile.value) {
         closeSidebar();
@@ -1122,6 +1167,14 @@ watch(
         });
     }
 );
+const autoResize = () => {
+    const el = textarea.value;
+    if (el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 150) + 'px';
+    }
+};
+
 // لود چت‌ها از API
 const loadChats = async () => {
     try {
@@ -1221,7 +1274,7 @@ const startNewChat = async () => {
 
 // فعال‌سازی چت
 const setActiveChat = async (id) => {
-    chatActionsOpen.value = false;
+    closeChatMenu();
     activeChatId.value = id;
     persistActiveConversationId(id);
     await loadMessages(id);
@@ -1260,7 +1313,8 @@ const sendMessage = async () => {
     inputMessage.value = '';
     await nextTick();
     scrollToBottom();
-    composerRef.value?.resetHeight?.();
+    inputMessage.value = ''
+    if (msgInput.value) msgInput.value.style.height = 'auto'
     loading.value = true;
     await nextTick();
     scrollToBottom();
@@ -1355,6 +1409,16 @@ const renameChat = async (chatId, title) => {
         throw e;
     }
 };
+const msgInput = ref(null)
+
+// 2-2) رشد خودکار بدون اسکرول
+function autoGrow() {
+    const ta = msgInput.value
+    if (!ta) return
+    ta.style.height = 'auto'
+    ta.style.height = Math.min(ta.scrollHeight, 220) + 'px'
+}
+
 // 2-3) Enter = ارسال / Shift+Enter = خط جدید
 function onKeydown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1363,26 +1427,20 @@ function onKeydown(e) {
     }
 }
 
-const executeDeleteChat = async () => {
-    const chatId = deleteConfirm.chatId;
-    if (!chatId) {
-        deleteConfirm.open = false;
-        return;
-    }
-    const chat = chats.value.find((c) => c.id === chatId);
-    if (!chat) {
-        deleteConfirm.open = false;
-        deleteConfirm.chatId = null;
-        return;
-    }
+// حذف چت
+const deleteChat = async (chatId) => {
+    closeChatMenu();
+    const chat = chats.value.find(c => c.id === chatId);
+    if (!chat) return;
+    if (!confirm(t('chat.confirmDelete'))) return;
 
     deletingChatId.value = chatId;
     try {
-        const res = await apiFetch(`/conversations/${chatId}`, { method: 'DELETE' });
+        const res = await apiFetch(`/conversations/${chatId}`, {method: 'DELETE'});
         if (!res.ok) throw new Error('delete failed');
 
-        const index = chats.value.findIndex((c) => c.id === chatId);
-        chats.value = chats.value.filter((c) => c.id !== chatId);
+        const index = chats.value.findIndex(c => c.id === chatId);
+        chats.value = chats.value.filter(c => c.id !== chatId);
 
         if (activeChatId.value === chatId) {
             const next = chats.value[index] || chats.value[index - 1] || chats.value[0];
@@ -1398,8 +1456,6 @@ const executeDeleteChat = async () => {
         toast.error(t('chat.deleteError'));
     } finally {
         deletingChatId.value = null;
-        deleteConfirm.open = false;
-        deleteConfirm.chatId = null;
     }
 };
 const copyText = (text) => {
@@ -1503,12 +1559,12 @@ const focusMessageById = (messageId) => {
     const target = messagesContainer.value.querySelector(`[data-msg-id="${messageId}"]`);
     if (!target) return;
     target.scrollIntoView({behavior: 'smooth', block: 'center'});
-    target.classList.add('cg-msg--highlight');
+    target.classList.add('cg-msg-highlight');
     if (highlightTimers.has(messageId)) {
         clearTimeout(highlightTimers.get(messageId));
     }
     const timer = setTimeout(() => {
-        target.classList.remove('cg-msg--highlight');
+        target.classList.remove('cg-msg-highlight');
         highlightTimers.delete(messageId);
     }, 2200);
     highlightTimers.set(messageId, timer);
@@ -1567,6 +1623,9 @@ onMounted(() => {
         updateLayoutFlags();
         window.addEventListener('resize', updateLayoutFlags);
         window.addEventListener(EVENT_ACTIVE_CHAT_CHANGED, handleExternalConversationChange);
+    }
+    if (typeof document !== 'undefined') {
+        document.addEventListener('click', handleMenuClickOutside);
     }
 });
 
@@ -1656,568 +1715,18 @@ const stopSpeak = () => {
     currentUtter = null;
 };
 
+function handleMenuClickOutside(event) {
+    const target = event.target;
+    if (!target) return;
+    const inMenu = typeof target.closest === 'function' ? target.closest('.chat-menu') : null;
+    const inButton = typeof target.closest === 'function' ? target.closest('.chat-menu-btn') : null;
+    if (!inMenu && !inButton) {
+        closeChatMenu();
+    }
+    const inUserTrigger = typeof target.closest === 'function' ? target.closest('.sidebar-user-trigger') : null;
+    const inUserMenu = typeof target.closest === 'function' ? target.closest('.sidebar-user-menu') : null;
+    if (!inUserTrigger && !inUserMenu) {
+        userMenuOpen.value = false;
+    }
+}
 </script>
-
-<style scoped>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.cg-app {
-    --cg-brand: #0f766e;
-    --cg-brand-2: #0ea5e9;
-    --cg-brand-muted: rgba(15, 118, 110, 0.12);
-    --cg-ink: #0f172a;
-    --cg-ink-muted: #64748b;
-    --cg-surface-0: #ffffff;
-    --cg-surface-1: #f8fafc;
-    --cg-surface-2: #f1f5f9;
-    --cg-surface-elevated: #ffffff;
-    --cg-border: rgba(148, 163, 184, 0.22);
-    --cg-shadow-soft: 0 8px 32px rgba(15, 23, 42, 0.06);
-    --cg-shadow-modal: 0 24px 64px rgba(15, 23, 42, 0.16);
-    --cg-header-h: 56px;
-    --cg-header-total: calc(var(--cg-header-h) + env(safe-area-inset-top, 0px));
-    --cg-thread-max: 768px;
-    font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
-    color: var(--cg-ink);
-    background: var(--cg-surface-1);
-    height: 100vh;
-    height: 100dvh;
-    min-height: -webkit-fill-available;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    max-width: 100vw;
-}
-
-.cg-body {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-    position: relative;
-}
-
-.cg-drawer-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 35;
-    background: rgba(15, 23, 42, 0.35);
-    backdrop-filter: blur(2px);
-}
-
-.cg-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    min-height: 0;
-    background: var(--cg-surface-0);
-}
-
-.cg-thread-scroll {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scroll-behavior: smooth;
-}
-
-.cg-thread {
-    width: 100%;
-    max-width: var(--cg-thread-max);
-    margin-inline: auto;
-    padding: 24px 16px 120px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.cg-msg {
-    display: flex;
-    width: 100%;
-}
-
-.cg-msg--user {
-    justify-content: flex-end;
-}
-
-.cg-msg--bot {
-    justify-content: flex-start;
-}
-
-.cg-msg-inner {
-    max-width: min(70%, 640px);
-    min-width: 0;
-}
-
-.cg-msg-bubble {
-    border-radius: 16px;
-    padding: 14px 16px;
-    border: 1px solid transparent;
-    box-shadow: var(--cg-shadow-soft);
-    animation: cg-msg-in 0.22s ease;
-}
-
-@keyframes cg-msg-in {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.cg-msg--user .cg-msg-bubble {
-    background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(14, 165, 233, 0.1));
-    border-color: rgba(15, 118, 110, 0.18);
-    color: var(--cg-ink);
-}
-
-.cg-msg--bot .cg-msg-bubble {
-    background: var(--cg-surface-2);
-    border-color: var(--cg-border);
-}
-
-.cg-msg-bubble--typing {
-    padding-block: 12px;
-}
-
-.cg-msg-sending {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.875rem;
-    color: var(--cg-ink-muted);
-}
-
-.cg-msg-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--cg-brand);
-    animation: cg-pulse 1s ease infinite;
-}
-
-@keyframes cg-pulse {
-    50% {
-        opacity: 0.4;
-    }
-}
-
-.cg-msg-transcript {
-    font-size: 0.95rem;
-    line-height: 1.65;
-}
-
-.cg-voice-placeholder {
-    font-size: 0.875rem;
-    color: var(--cg-brand);
-    cursor: pointer;
-    margin-top: 8px;
-}
-
-.cg-voice-wrap audio {
-    width: 100%;
-    margin-top: 10px;
-    max-height: 40px;
-}
-
-.cg-msg-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(148, 163, 184, 0.15);
-}
-
-.cg-msg-time {
-    font-size: 0.72rem;
-    color: var(--cg-ink-muted);
-}
-
-.cg-msg-actions {
-    display: flex;
-    gap: 4px;
-}
-
-.cg-icon-btn {
-    width: 32px;
-    height: 32px;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--cg-ink-muted);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.12s ease, color 0.12s ease;
-}
-
-.cg-icon-btn:hover {
-    background: rgba(255, 255, 255, 0.65);
-    color: var(--cg-brand);
-}
-
-.cg-icon-btn:focus-visible {
-    outline: 2px solid var(--cg-brand);
-    outline-offset: 2px;
-}
-
-.cg-icon {
-    width: 16px;
-    height: 16px;
-    fill: currentColor;
-}
-
-.cg-scroll-to-bottom {
-    position: fixed;
-    bottom: calc(112px + env(safe-area-inset-bottom, 0px));
-    inset-inline-end: max(20px, env(safe-area-inset-inline-end));
-    z-index: 15;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    border: 1px solid var(--cg-border);
-    background: var(--cg-surface-elevated);
-    box-shadow: var(--cg-shadow-soft);
-    color: var(--cg-brand);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.12s ease, box-shadow 0.15s ease;
-}
-
-.cg-scroll-to-bottom:hover {
-    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
-}
-
-.cg-scroll-to-bottom:active {
-    transform: scale(0.96);
-}
-
-.cg-empty {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 32px;
-    text-align: center;
-    cursor: pointer;
-    color: var(--cg-ink-muted);
-}
-
-.cg-empty h2 {
-    font-size: 1.15rem;
-    color: var(--cg-ink);
-}
-
-.cg-empty p {
-    max-width: 320px;
-    font-size: 0.9rem;
-    line-height: 1.6;
-}
-
-.cg-modal-eyebrow {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--cg-ink-muted);
-    margin-bottom: 6px;
-}
-
-.cg-muted {
-    color: var(--cg-ink-muted);
-    font-size: 0.875rem;
-    line-height: 1.55;
-    margin-bottom: 12px;
-}
-
-.cg-referral-toolbar {
-    margin-bottom: 16px;
-}
-
-.cg-referral-placeholder {
-    text-align: center;
-    padding: 32px 16px;
-    color: var(--cg-ink-muted);
-}
-
-.cg-referral-placeholder--error {
-    color: #b91c1c;
-}
-
-.cg-spinner {
-    width: 32px;
-    height: 32px;
-    margin: 0 auto 12px;
-    border: 3px solid var(--cg-border);
-    border-top-color: var(--cg-brand);
-    border-radius: 50%;
-    animation: cg-spin 0.8s linear infinite;
-}
-
-@keyframes cg-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.cg-referral-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.cg-referral-card {
-    border: 1px solid var(--cg-border);
-    border-radius: 14px;
-    padding: 14px;
-    background: var(--cg-surface-1);
-}
-
-.cg-referral-card-head {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.cg-referral-status {
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 8px;
-    background: var(--cg-surface-2);
-}
-
-.cg-referral-block {
-    margin-top: 10px;
-}
-
-.cg-referral-block--response {
-    border-top: 1px solid var(--cg-border);
-    padding-top: 10px;
-}
-
-.cg-referral-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--cg-ink-muted);
-    margin-bottom: 4px;
-}
-
-.cg-referral-text {
-    font-size: 0.9rem;
-    line-height: 1.55;
-}
-
-.cg-referral-foot {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 8px;
-    font-size: 0.75rem;
-    color: var(--cg-ink-muted);
-}
-
-.cg-link-btn {
-    border: 0;
-    background: none;
-    color: var(--cg-brand);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-}
-
-.cg-referral-files {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.cg-file-chip {
-    padding: 6px 10px;
-    border-radius: 8px;
-    background: var(--cg-surface-0);
-    border: 1px solid var(--cg-border);
-    font-size: 0.8rem;
-    color: var(--cg-brand);
-    text-decoration: none;
-    max-width: 100%;
-}
-
-.truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: inline-block;
-    max-width: 220px;
-}
-
-.cg-input {
-    width: 100%;
-    padding: 12px 14px;
-    border-radius: 12px;
-    border: 1px solid var(--cg-border);
-    font: inherit;
-    margin-bottom: 16px;
-}
-
-.cg-input:focus {
-    outline: none;
-    border-color: var(--cg-brand);
-    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
-}
-
-.cg-modal-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: flex-end;
-}
-
-.cg-btn-primary,
-.cg-btn-secondary,
-.cg-btn-danger {
-    padding: 10px 18px;
-    border-radius: 10px;
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-    border: 0;
-    transition: opacity 0.15s ease, transform 0.12s ease;
-}
-
-.cg-btn-primary {
-    background: linear-gradient(135deg, var(--cg-brand), var(--cg-brand-2));
-    color: #fff;
-}
-
-.cg-btn-secondary {
-    background: var(--cg-surface-2);
-    color: var(--cg-ink);
-    border: 1px solid var(--cg-border);
-}
-
-.cg-btn-danger {
-    background: #dc2626;
-    color: #fff;
-}
-
-.cg-btn-block {
-    width: 100%;
-    justify-content: center;
-}
-
-.cg-actions-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.cg-actions-row {
-    width: 100%;
-    text-align: inherit;
-    padding: 14px 16px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--cg-surface-1);
-    font: inherit;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.12s ease;
-}
-
-.cg-actions-row:hover {
-    background: var(--cg-surface-2);
-}
-
-.cg-actions-row--danger {
-    color: #b91c1c;
-}
-
-.cg-settings {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.cg-settings-block {
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--cg-border);
-}
-
-.cg-settings-block:last-child {
-    border-bottom: 0;
-}
-
-.cg-settings-heading {
-    font-size: 0.95rem;
-    margin-bottom: 10px;
-    color: var(--cg-ink);
-}
-
-.cg-label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: var(--cg-ink-muted);
-}
-
-.cg-select {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--cg-border);
-    font: inherit;
-    background: var(--cg-surface-0);
-}
-
-:deep(.cg-app) {
-    --cg-surface-elevated: #fff;
-}
-
-:deep([class^='cg-modal']) {
-    --cg-surface-elevated: #fff;
-    --cg-ink: #0f172a;
-    --cg-border: rgba(148, 163, 184, 0.22);
-    --cg-brand: #0f766e;
-    --cg-brand-2: #0ea5e9;
-}
-
-.cg-msg.cg-msg--highlight .cg-msg-bubble {
-    box-shadow: 0 0 0 2px var(--cg-brand), var(--cg-shadow-soft);
-    transition: box-shadow 0.2s ease;
-}
-
-@media (max-width: 768px) {
-    .cg-thread {
-        padding-inline: 12px;
-        padding-bottom: 100px;
-    }
-
-    .cg-msg-inner {
-        max-width: 92%;
-    }
-
-    .cg-scroll-to-bottom {
-        bottom: calc(100px + env(safe-area-inset-bottom, 0px));
-    }
-}
-</style>

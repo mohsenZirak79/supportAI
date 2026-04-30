@@ -70,6 +70,7 @@
     "welcomeToast": "{name} عزیز، خوش آمدید!",
     "welcomeNameFallback": "دوست گرامی",
     "newChat": "+ چت جدید",
+    "searchChats": "جستجوی گفتگوها…",
     "startNewChat": "چت جدیدی شروع کنید",
     "startNewChatDesc": "برای شروع گفت‌وگو، روی «چت جدید» کلیک کنید.",
     "inputPlaceholder": "پیام خود را بنویسید…",
