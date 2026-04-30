@@ -239,7 +239,7 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: var(--space-md);
+            padding: max(6px, env(safe-area-inset-top, 0px)) 12px 8px;
             transition: all var(--duration-normal) var(--ease-smooth);
             pointer-events: none;
         }
@@ -247,28 +247,29 @@
         .navbar {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 10px var(--space-xl);
+            padding: 6px 14px;
             min-height: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: var(--shadow-md);
-            border-radius: var(--radius-xl);
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            box-shadow: 0 2px 16px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.04);
+            border-radius: var(--radius-lg);
             pointer-events: auto;
             opacity: 0;
-            transform: translateY(-20px);
+            transform: translateY(-8px);
             animation: navSlideDown var(--duration-slower) var(--ease-expo) forwards;
-            animation-delay: 200ms;
+            animation-delay: 120ms;
         }
 
         .landing-header.scrolled .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(14, 116, 144, 0.05);
-            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(14, 116, 144, 0.06);
+            transform: scale(0.995);
         }
 
         .landing-header.hidden .navbar {
@@ -279,7 +280,7 @@
         @keyframes navSlideDown {
             from {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateY(-8px);
             }
             to {
                 opacity: 1;
@@ -290,17 +291,21 @@
         .navbar-brand {
             display: flex;
             align-items: center;
-            gap: var(--space-sm);
+            gap: 10px;
+            min-width: 0;
             text-decoration: none;
-            color: var(--color-primary);
-            font-size: var(--font-size-lg);
+            color: var(--color-dark);
+            font-size: 0.9375rem;
             font-weight: 700;
-            transition: all var(--duration-normal) var(--ease-smooth);
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+            transition: color var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast);
             position: relative;
         }
 
         .navbar-brand:hover {
-            transform: translateX(-4px);
+            color: var(--color-primary-dark);
+            opacity: 0.95;
         }
 
         .navbar-brand:focus-visible {
@@ -309,15 +314,20 @@
             border-radius: var(--radius-sm);
         }
 
+        .navbar-brand span {
+            min-width: 0;
+        }
+
         .navbar-brand-icon {
-            width: 96px;
-            height: 96px;
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
             background: transparent;
-            border-radius: var(--radius-md);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform var(--duration-normal) var(--ease-spring);
+            transition: transform var(--duration-fast) var(--ease-spring);
             overflow: hidden;
         }
 
@@ -325,31 +335,42 @@
         .navbar-brand-icon img {
             width: 100%;
             height: 100%;
-            padding: 2px;
+            padding: 1px;
             object-fit: contain;
         }
 
         .navbar-brand:hover .navbar-brand-icon {
-            transform: scale(1.05);
+            transform: scale(1.04);
         }
 
         .navbar-actions {
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: var(--space-sm);
+            gap: 8px;
             flex-wrap: nowrap;
+            flex-shrink: 0;
         }
 
         .navbar-actions .btn {
             white-space: nowrap;
-            height: 38px;
+            min-height: 34px;
+            height: 34px;
+            padding: 0 12px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: 10px;
             display: inline-flex;
             align-items: center;
+            gap: 6px;
+        }
+
+        .navbar-actions .btn:active {
+            transform: scale(0.98);
         }
 
         .navbar-actions .lang-pills {
-            height: 38px;
+            height: 34px;
             display: flex;
             align-items: center;
         }
@@ -421,39 +442,42 @@
            ============================================ */
         .lang-pills {
             display: flex;
-            gap: 3px;
-            padding: 3px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 50px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            gap: 2px;
+            padding: 2px;
+            background: rgba(14, 116, 144, 0.09);
+            border-radius: 999px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(14, 116, 144, 0.1);
         }
 
         .lang-pill {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border: none;
             border-radius: 50%;
             background: transparent;
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--color-primary);
+            opacity: 0.75;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.6875rem;
         }
 
         .lang-pill:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
+            background: rgba(255, 255, 255, 0.65);
+            color: var(--color-primary-dark);
+            opacity: 1;
         }
 
         .lang-pill.active {
             background: var(--color-primary);
             color: white;
-            box-shadow: 0 2px 8px rgba(14, 116, 144, 0.4);
+            opacity: 1;
+            box-shadow: 0 1px 6px rgba(14, 116, 144, 0.35);
         }
 
         .lang-pill__text {
@@ -605,7 +629,8 @@
             display: flex;
             align-items: center;
             padding: var(--space-4xl) var(--space-xl);
-            padding-top: calc(80px + var(--space-4xl));
+            /* هم‌تراز با هدر فشرده (~۵۲px نوار + فاصلهٔ امن) */
+            padding-top: calc(52px + max(env(safe-area-inset-top, 0px), 6px) + var(--space-2xl));
             background: linear-gradient(175deg, #fafbfc 0%, #f8fafc 40%, #f1f5f9 100%);
             overflow: hidden;
         }
@@ -745,7 +770,10 @@
         }
 
         @media (max-width: 576px) {
-            .hero { padding: var(--space-2xl) var(--space-md); padding-top: calc(70px + var(--space-2xl)); }
+            .hero {
+                padding: var(--space-2xl) var(--space-md);
+                padding-top: calc(48px + max(env(safe-area-inset-top, 0px), 4px) + var(--space-xl));
+            }
             .hero-visual img { max-width: 260px; }
         }
 
@@ -1188,68 +1216,24 @@
            ============================================ */
         @media (max-width: 900px) {
             .navbar {
-                padding: 8px var(--space-md);
+                padding: 6px 12px;
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: 6px;
             }
 
             .navbar-brand span {
-                font-size: var(--font-size-sm);
+                font-size: 0.8125rem;
             }
 
             .navbar-actions {
                 gap: 6px;
             }
 
-            .btn {
-                padding: 8px 14px;
-                font-size: 0.8rem;
-            }
-
-            .lang-pill {
-                width: 28px;
-                height: 28px;
-                font-size: 0.7rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .landing-header {
-                padding: var(--space-sm);
-            }
-
-            .navbar {
-                padding: 10px 14px;
-                margin: 0 var(--space-xs);
-                border-radius: var(--radius-lg);
-            }
-
-            .navbar-brand span {
-                font-size: 0.8rem;
-                max-width: 120px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .navbar-brand-icon {
-                width: 80px;
-                height: 80px;
-            }
-
-            .navbar-actions {
-                gap: 4px;
-                flex-wrap: wrap;
-                justify-content: flex-end;
-            }
-
             .navbar-actions .btn {
-                padding: 6px 10px;
+                min-height: 32px;
+                height: 32px;
+                padding: 0 10px;
                 font-size: 0.75rem;
-            }
-
-            .lang-pills {
-                padding: 2px;
             }
 
             .lang-pill {
@@ -1257,11 +1241,63 @@
                 height: 26px;
                 font-size: 0.65rem;
             }
+        }
+
+        @media (max-width: 768px) {
+            .landing-header {
+                padding: max(4px, env(safe-area-inset-top, 0px)) 8px 6px;
+            }
+
+            .navbar {
+                padding: 5px 12px;
+                margin: 0 var(--space-xs);
+                border-radius: var(--radius-md);
+            }
+
+            .navbar-brand span {
+                font-size: 0.78rem;
+                max-width: 140px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .navbar-brand-icon {
+                width: 34px;
+                height: 34px;
+            }
+
+            .navbar-actions {
+                gap: 5px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .navbar-actions .btn {
+                min-height: 30px;
+                height: 30px;
+                padding: 0 9px;
+                font-size: 0.72rem;
+            }
+
+            .navbar-actions .lang-pills {
+                height: 30px;
+            }
+
+            .lang-pills {
+                padding: 2px;
+            }
+
+            .lang-pill {
+                width: 24px;
+                height: 24px;
+                font-size: 0.625rem;
+            }
 
             .hero {
                 padding: var(--space-4xl) var(--space-md);
                 min-height: auto;
-                padding-top: 110px;
+                padding-top: calc(46px + max(env(safe-area-inset-top, 0px), 4px) + var(--space-xl));
             }
 
             .hero-badge {
@@ -1332,7 +1368,7 @@
 
         @media (max-width: 480px) {
             .navbar {
-                padding: 8px 12px;
+                padding: 5px 10px;
             }
 
             .navbar-brand span {
@@ -1340,23 +1376,25 @@
             }
 
             .navbar-brand-icon {
-                width: 72px;
-                height: 72px;
+                width: 32px;
+                height: 32px;
             }
 
             .navbar-actions .btn {
-                padding: 5px 8px;
-                font-size: 0.7rem;
+                min-height: 30px;
+                height: 30px;
+                padding: 0 8px;
+                font-size: 0.68rem;
             }
 
             .lang-pill {
-                width: 24px;
-                height: 24px;
-                font-size: 0.6rem;
+                width: 22px;
+                height: 22px;
+                font-size: 0.58rem;
             }
 
             .hero {
-                padding-top: 90px;
+                padding-top: calc(42px + max(env(safe-area-inset-top, 0px), 4px) + var(--space-lg));
                 padding-left: var(--space-sm);
                 padding-right: var(--space-sm);
             }
@@ -1408,13 +1446,16 @@
 
         @media (max-width: 360px) {
             .navbar-actions .btn {
-                padding: 4px 6px;
-                font-size: 0.65rem;
+                min-height: 28px;
+                height: 28px;
+                padding: 0 6px;
+                font-size: 0.625rem;
             }
 
             .lang-pill {
-                width: 22px;
-                height: 22px;
+                width: 21px;
+                height: 21px;
+                font-size: 0.55rem;
             }
         }
     </style>
