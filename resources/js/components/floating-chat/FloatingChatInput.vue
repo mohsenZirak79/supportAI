@@ -87,24 +87,28 @@ const formatTimer = (ms) => {
 
 <style scoped>
 .widget-input-wrap {
-    padding: 10px 12px 12px;
+    flex-shrink: 0;
+    padding: 10px 14px 8px;
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .widget-input-form {
     display: flex;
     flex-direction: row;
     gap: 8px;
-    align-items: center;
+    align-items: stretch;
 }
 
 .widget-input {
     flex: 1;
     min-width: 0;
+    align-self: center;
+    min-height: 42px;
     border: 1px solid rgba(148, 163, 184, 0.35);
-    border-radius: 14px;
-    padding: 10px 12px;
+    border-radius: 12px;
+    padding: 0 12px;
     font-size: 13px;
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.95);
 }
 
 .widget-input:focus {
@@ -113,8 +117,10 @@ const formatTimer = (ms) => {
 }
 
 .mini-btn {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    align-self: center;
     border-radius: 12px;
     border: 0;
     cursor: pointer;
@@ -122,11 +128,11 @@ const formatTimer = (ms) => {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: transform 0.12s ease, opacity 0.15s ease;
+    transition: opacity 0.15s ease, box-shadow 0.15s ease;
 }
 
 .mini-btn:active:not(:disabled) {
-    transform: scale(0.96);
+    opacity: 0.88;
 }
 
 .mini-ico {

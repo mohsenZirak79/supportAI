@@ -22,7 +22,11 @@
             </transition>
 
             <div class="floating-chat-launcher-anchor">
-                <FloatingChatGreeting :visible="showGreeting" :text="t('floating.greeting')" />
+                <FloatingChatGreeting
+                    :visible="showGreeting"
+                    :text="t('floating.greeting')"
+                    :text-dir="direction"
+                />
                 <FloatingChatLauncher
                     :aria-label="isOpen ? 'بستن چت شناور' : 'باز کردن چت شناور'"
                     @toggle="toggleWidget"
@@ -48,7 +52,7 @@ const GREETING_SHOWN_STORAGE_KEY = 'supportAI:floating-widget:greeting-shown';
 const GREETING_SOUND_STORAGE_KEY = 'supportAI:floating-widget:greeting-sound-played';
 const EVENT_ACTIVE_CHAT_CHANGED = 'supportAI:active-chat-changed';
 
-const { t, initLocale } = useLanguage();
+const { t, initLocale, direction } = useLanguage();
 
 const config = floatingChatWidgetConfig;
 const isOpen = ref(false);
@@ -551,21 +555,22 @@ onUnmounted(() => {
 .floating-chat-stack {
     display: flex;
     flex-direction: column;
-    /* وسط‌چین تا با باز شدن پنل عریض‌تر، دکمهٔ لانچر در صفحات RTL جابه‌جا نشود */
-    align-items: center;
-    gap: 10px;
+    /* LTR تا لبهٔ چپ فیزیکی ثابت بماند؛ با center لانچر زیر پنل عریض به وسط می‌رفت */
+    direction: ltr;
+    align-items: flex-start;
+    gap: 12px;
     width: max-content;
     max-width: min(380px, calc(100vw - 40px));
 }
 
-/* لانچر همیشه ۶۲×۶۲؛ پیام فقط absolute بالا-راست — بدون تکان دکمه */
+/* لانچر همیشه زیر لبهٔ چپ پنل؛ اندازه ثابت */
 .floating-chat-launcher-anchor {
     position: relative;
     width: 62px;
     height: 62px;
     flex-shrink: 0;
+    align-self: flex-start;
     pointer-events: auto;
-    direction: ltr;
 }
 
 .floating-chat-root :deep(button),
@@ -583,7 +588,7 @@ onUnmounted(() => {
 
 .widget-pop-enter-from,
 .widget-pop-leave-to {
-    transform: translateY(10px) scale(0.97);
+    transform: translateY(6px);
     opacity: 0;
 }
 
