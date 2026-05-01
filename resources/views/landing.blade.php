@@ -239,29 +239,31 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: max(6px, env(safe-area-inset-top, 0px)) 12px 8px;
+            padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 10px;
             transition: all var(--duration-normal) var(--ease-smooth);
             pointer-events: none;
         }
 
         .navbar {
-            max-width: 1200px;
+            max-width: 1160px;
             margin: 0 auto;
-            padding: 6px 14px;
+            padding: 8px 18px;
             min-height: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.55);
-            box-shadow: 0 2px 16px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.04);
-            border-radius: var(--radius-lg);
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            box-shadow:
+                0 4px 24px rgba(15, 23, 42, 0.07),
+                0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+            border-radius: 14px;
             pointer-events: auto;
             opacity: 0;
-            transform: translateY(-8px);
+            transform: translateY(-6px);
             animation: navSlideDown var(--duration-slower) var(--ease-expo) forwards;
             animation-delay: 120ms;
         }
@@ -291,21 +293,20 @@
         .navbar-brand {
             display: flex;
             align-items: center;
-            gap: 10px;
             min-width: 0;
             text-decoration: none;
             color: var(--color-dark);
-            font-size: 0.9375rem;
+            font-size: 1rem;
             font-weight: 700;
-            letter-spacing: -0.02em;
-            line-height: 1.25;
+            letter-spacing: -0.025em;
+            line-height: 1.3;
             transition: color var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast);
             position: relative;
         }
 
         .navbar-brand:hover {
             color: var(--color-primary-dark);
-            opacity: 0.95;
+            opacity: 0.92;
         }
 
         .navbar-brand:focus-visible {
@@ -318,45 +319,20 @@
             min-width: 0;
         }
 
-        .navbar-brand-icon {
-            width: 40px;
-            height: 40px;
-            flex-shrink: 0;
-            background: transparent;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform var(--duration-fast) var(--ease-spring);
-            overflow: hidden;
-        }
-
-        .navbar-brand-icon svg,
-        .navbar-brand-icon img {
-            width: 100%;
-            height: 100%;
-            padding: 1px;
-            object-fit: contain;
-        }
-
-        .navbar-brand:hover .navbar-brand-icon {
-            transform: scale(1.04);
-        }
-
         .navbar-actions {
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: nowrap;
             flex-shrink: 0;
         }
 
         .navbar-actions .btn {
             white-space: nowrap;
-            min-height: 34px;
-            height: 34px;
-            padding: 0 12px;
+            min-height: 36px;
+            height: 36px;
+            padding: 0 14px;
             font-size: 0.8125rem;
             font-weight: 600;
             border-radius: 10px;
@@ -370,9 +346,9 @@
         }
 
         .navbar-actions .lang-pills {
-            height: 34px;
-            display: flex;
+            display: inline-flex;
             align-items: center;
+            height: auto;
         }
 
         /* Language Switcher */
@@ -441,47 +417,61 @@
            LANGUAGE PILLS - Modern Pill Buttons
            ============================================ */
         .lang-pills {
-            display: flex;
-            gap: 2px;
-            padding: 2px;
-            background: rgba(14, 116, 144, 0.09);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 4px;
+            box-sizing: border-box;
+            background: rgba(14, 116, 144, 0.08);
             border-radius: 999px;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(14, 116, 144, 0.1);
+            border: 1px solid rgba(14, 116, 144, 0.12);
         }
 
         .lang-pill {
-            display: flex;
+            box-sizing: border-box;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
+            padding: 0;
+            margin: 0;
             border: none;
             border-radius: 50%;
             background: transparent;
             color: var(--color-primary);
-            opacity: 0.75;
+            opacity: 0.82;
             cursor: pointer;
-            transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
             font-weight: 600;
             font-size: 0.6875rem;
+            line-height: 1;
+            letter-spacing: 0.01em;
+            transition: background 0.18s ease, color 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
         }
 
         .lang-pill:hover {
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.85);
             color: var(--color-primary-dark);
             opacity: 1;
         }
 
         .lang-pill.active {
             background: var(--color-primary);
-            color: white;
+            color: #fff;
             opacity: 1;
-            box-shadow: 0 1px 6px rgba(14, 116, 144, 0.35);
+            box-shadow: 0 2px 8px rgba(14, 116, 144, 0.35);
         }
 
         .lang-pill__text {
             pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
         }
 
         /* Scrolled state - dark pills */
@@ -629,8 +619,8 @@
             display: flex;
             align-items: center;
             padding: var(--space-4xl) var(--space-xl);
-            /* هم‌تراز با هدر فشرده (~۵۲px نوار + فاصلهٔ امن) */
-            padding-top: calc(52px + max(env(safe-area-inset-top, 0px), 6px) + var(--space-2xl));
+            /* فاصله از نوار + هدر با margin بالا (~۷۰px نوار + safe-area) */
+            padding-top: calc(70px + env(safe-area-inset-top, 0px) + var(--space-2xl));
             background: linear-gradient(175deg, #fafbfc 0%, #f8fafc 40%, #f1f5f9 100%);
             overflow: hidden;
         }
@@ -772,7 +762,7 @@
         @media (max-width: 576px) {
             .hero {
                 padding: var(--space-2xl) var(--space-md);
-                padding-top: calc(48px + max(env(safe-area-inset-top, 0px), 4px) + var(--space-xl));
+                padding-top: calc(60px + env(safe-area-inset-top, 0px) + var(--space-xl));
             }
             .hero-visual img { max-width: 260px; }
         }
@@ -1236,68 +1226,69 @@
                 font-size: 0.75rem;
             }
 
+            .lang-pills {
+                padding: 3px;
+                gap: 3px;
+            }
+
             .lang-pill {
-                width: 26px;
-                height: 26px;
+                width: 28px;
+                height: 28px;
+                min-width: 28px;
+                min-height: 28px;
                 font-size: 0.65rem;
             }
         }
 
         @media (max-width: 768px) {
             .landing-header {
-                padding: max(4px, env(safe-area-inset-top, 0px)) 8px 6px;
+                padding: calc(10px + env(safe-area-inset-top, 0px)) 10px 8px;
             }
 
             .navbar {
-                padding: 5px 12px;
+                padding: 6px 14px;
                 margin: 0 var(--space-xs);
                 border-radius: var(--radius-md);
             }
 
             .navbar-brand span {
-                font-size: 0.78rem;
-                max-width: 140px;
+                font-size: 0.8125rem;
+                max-width: 160px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
 
-            .navbar-brand-icon {
-                width: 34px;
-                height: 34px;
-            }
-
             .navbar-actions {
-                gap: 5px;
+                gap: 8px;
                 flex-wrap: wrap;
                 justify-content: flex-end;
             }
 
             .navbar-actions .btn {
-                min-height: 30px;
-                height: 30px;
-                padding: 0 9px;
-                font-size: 0.72rem;
-            }
-
-            .navbar-actions .lang-pills {
-                height: 30px;
+                min-height: 32px;
+                height: 32px;
+                padding: 0 10px;
+                font-size: 0.75rem;
             }
 
             .lang-pills {
-                padding: 2px;
+                padding: 3px;
+                gap: 3px;
             }
 
             .lang-pill {
-                width: 24px;
-                height: 24px;
+                width: 28px;
+                height: 28px;
+                min-width: 28px;
+                min-height: 28px;
                 font-size: 0.625rem;
             }
 
             .hero {
                 padding: var(--space-4xl) var(--space-md);
                 min-height: auto;
-                padding-top: calc(46px + max(env(safe-area-inset-top, 0px), 4px) + var(--space-xl));
+                padding-top: calc(64px + env(safe-area-inset-top, 0px) + var(--space-xl));
             }
 
             .hero-badge {
@@ -1368,16 +1359,15 @@
 
         @media (max-width: 480px) {
             .navbar {
-                padding: 5px 10px;
+                padding: 6px 10px;
             }
 
             .navbar-brand span {
-                display: none;
-            }
-
-            .navbar-brand-icon {
-                width: 32px;
-                height: 32px;
+                font-size: 0.72rem;
+                max-width: min(46vw, 150px);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .navbar-actions .btn {
@@ -1387,14 +1377,21 @@
                 font-size: 0.68rem;
             }
 
+            .lang-pills {
+                padding: 3px;
+                gap: 3px;
+            }
+
             .lang-pill {
-                width: 22px;
-                height: 22px;
+                width: 26px;
+                height: 26px;
+                min-width: 26px;
+                min-height: 26px;
                 font-size: 0.58rem;
             }
 
             .hero {
-                padding-top: calc(42px + max(env(safe-area-inset-top, 0px), 4px) + var(--space-lg));
+                padding-top: calc(56px + env(safe-area-inset-top, 0px) + var(--space-lg));
                 padding-left: var(--space-sm);
                 padding-right: var(--space-sm);
             }
@@ -1452,9 +1449,16 @@
                 font-size: 0.625rem;
             }
 
+            .lang-pills {
+                padding: 3px;
+                gap: 3px;
+            }
+
             .lang-pill {
-                width: 21px;
-                height: 21px;
+                width: 24px;
+                height: 24px;
+                min-width: 24px;
+                min-height: 24px;
                 font-size: 0.55rem;
             }
         }
@@ -1468,9 +1472,6 @@
     <header class="landing-header" id="header" role="banner">
         <nav class="navbar" role="navigation" aria-label="Main navigation">
             <a href="/" class="navbar-brand" aria-label="صفحه اصلی - پارس فناوران مبتکر">
-                <div class="navbar-brand-icon">
-                    <img src="{{ asset('images/logo.png') }}" alt="پارس فناوران مبتکر">
-                </div>
                 <span data-i18n="landing.brandName">پارس فناوران مبتکر</span>
             </a>
             <div class="navbar-actions">
