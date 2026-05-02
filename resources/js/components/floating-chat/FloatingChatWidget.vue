@@ -23,7 +23,7 @@
 
             <div class="floating-chat-launcher-anchor">
                 <FloatingChatGreeting
-                    :visible="showGreeting"
+                    :visible="greetingVisible"
                     :text="t('floating.greeting')"
                     :text-dir="direction"
                 />
@@ -46,17 +46,16 @@ import FloatingChatPanel from './FloatingChatPanel.vue';
 import FloatingChatGreeting from './FloatingChatGreeting.vue';
 
 const ACTIVE_CHAT_STORAGE_KEY = 'supportAI:active-conversation-id';
+const FLOATING_WIDGET_CONVERSATION_KEY = 'supportAI:floating-widget-conversation-id';
 const FLOATING_IMPORT_STORAGE_KEY = 'supportAI:floating-import-v1';
 const GUEST_FLOATING_SESSION_KEY = 'supportAI:floating-guest-thread-v1';
-const GREETING_SHOWN_STORAGE_KEY = 'supportAI:floating-widget:greeting-shown';
-const GREETING_SOUND_STORAGE_KEY = 'supportAI:floating-widget:greeting-sound-played';
-const EVENT_ACTIVE_CHAT_CHANGED = 'supportAI:active-chat-changed';
 
 const { t, initLocale, direction } = useLanguage();
 
 const config = floatingChatWidgetConfig;
 const isOpen = ref(false);
-const showGreeting = ref(false);
+/** پیام «نیاز به کمک…» همیشه وقتی پنل بسته است نمایش داده می‌شود */
+const greetingVisible = computed(() => !isOpen.value);
 const draft = ref('');
 const loading = ref(false);
 const messages = ref([]);
@@ -72,10 +71,6 @@ const recordingInterval = ref(null);
 const mediaRecorder = ref(null);
 const audioChunks = ref([]);
 
-const greetingDelayMs = computed(() => Number(config.greetingDelayMs || 0));
-
-let greetingOpenTimer;
-
 const getStorage = () => {
     if (typeof window === 'undefined') return null;
     try {
@@ -85,19 +80,21 @@ const getStorage = () => {
     }
 };
 
-const getPreferredConversationId = () => {
+/** فقط گفتگوی ویجت؛ بدون localStorage اصلی اپ و بدون sync با صفحهٔ چت کامل */
+const readWidgetStoredConversationId = () => {
     if (typeof window === 'undefined' || isGuest.value) return null;
-    const urlConversation = new URLSearchParams(window.location.search).get('conversation');
-    if (urlConversation) return Number(urlConversation) || urlConversation;
-    const saved = window.localStorage?.getItem(ACTIVE_CHAT_STORAGE_KEY);
-    if (!saved) return null;
-    return Number(saved) || saved;
+    const raw = getStorage()?.getItem(FLOATING_WIDGET_CONVERSATION_KEY);
+    if (!raw) return null;
+    return Number(raw) || raw;
 };
 
-const persistActiveConversationId = (id) => {
+const persistWidgetConversationId = (id) => {
     if (typeof window === 'undefined' || !id || isGuest.value) return;
-    window.localStorage?.setItem(ACTIVE_CHAT_STORAGE_KEY, String(id));
-    window.dispatchEvent(new CustomEvent(EVENT_ACTIVE_CHAT_CHANGED, { detail: { id } }));
+    try {
+        getStorage()?.setItem(FLOATING_WIDGET_CONVERSATION_KEY, String(id));
+    } catch {
+        /* ignore */
+    }
 };
 
 const checkAuth = async () => {
@@ -166,21 +163,10 @@ const ensureConversation = async () => {
     }
     if (activeConversationId.value) return activeConversationId.value;
 
-    const preferredId = getPreferredConversationId();
-    if (preferredId) {
-        activeConversationId.value = preferredId;
-        return preferredId;
-    }
-
-    const listRes = await apiFetch('/conversations');
-    if (listRes.ok) {
-        const payload = await listRes.json();
-        const first = payload?.data?.[0];
-        if (first?.id) {
-            activeConversationId.value = first.id;
-            persistActiveConversationId(first.id);
-            return first.id;
-        }
+    const storedId = readWidgetStoredConversationId();
+    if (storedId) {
+        activeConversationId.value = storedId;
+        return storedId;
     }
 
     const createRes = await apiFetch('/conversations', {
@@ -193,7 +179,7 @@ const ensureConversation = async () => {
     }
     const newConversation = await createRes.json();
     activeConversationId.value = newConversation.id;
-    persistActiveConversationId(newConversation.id);
+    persistWidgetConversationId(newConversation.id);
     return newConversation.id;
 };
 
@@ -242,7 +228,7 @@ const sendText = async () => {
         const data = await res.json();
         if (data?.conversation?.id) {
             activeConversationId.value = data.conversation.id;
-            persistActiveConversationId(data.conversation.id);
+            persistWidgetConversationId(data.conversation.id);
         }
         appendBotMessage(data?.ai_message);
     } catch {
@@ -347,7 +333,7 @@ const uploadVoice = async (blob) => {
         const data = await messageRes.json();
         if (data?.conversation?.id) {
             activeConversationId.value = data.conversation.id;
-            persistActiveConversationId(data.conversation.id);
+            persistWidgetConversationId(data.conversation.id);
         }
         appendBotMessage(data?.ai_message);
     } catch {
@@ -358,47 +344,11 @@ const uploadVoice = async (blob) => {
     }
 };
 
-const hideGreeting = () => {
-    showGreeting.value = false;
-    const storage = getStorage();
-    storage?.setItem(GREETING_SHOWN_STORAGE_KEY, '1');
-};
-
-const maybePlayGreetingSound = async () => {
-    if (!config.enableGreetingSound) return;
-    const storage = getStorage();
-    if (storage?.getItem(GREETING_SOUND_STORAGE_KEY)) return;
-    if (!navigator.userActivation?.hasBeenActive) return;
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = ctx.createOscillator();
-        const gain = ctx.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 740;
-        gain.gain.value = 0.01;
-        oscillator.connect(gain);
-        gain.connect(ctx.destination);
-        oscillator.start();
-        oscillator.stop(ctx.currentTime + 0.07);
-        storage?.setItem(GREETING_SOUND_STORAGE_KEY, '1');
-    } catch {
-        // Respect autoplay restrictions; silently fail.
-    }
-};
-
-const openGreeting = async () => {
-    const storage = getStorage();
-    if (storage?.getItem(GREETING_SHOWN_STORAGE_KEY)) return;
-    showGreeting.value = true;
-    await maybePlayGreetingSound();
-};
-
 const openWidget = async () => {
     if (!authChecked.value) {
         await checkAuth();
     }
     isOpen.value = true;
-    hideGreeting();
     if (!isGuest.value) {
         try {
             await ensureConversation();
@@ -462,7 +412,7 @@ const openFullChat = async () => {
         return;
     }
 
-    /** همان گفتگوی ویجت روی سرور؛ بدون ادامهٔ چت قدیمیِ ذخیره‌شده در localStorage */
+    /** همیشه جریان «از ویجت» تا صفحهٔ چت، آخرین چت اصلی اپ را باز نکند */
     let conversationId = activeConversationId.value;
     if (!conversationId) {
         try {
@@ -476,12 +426,16 @@ const openFullChat = async () => {
     } catch {
         /* ignore */
     }
+    try {
+        getStorage()?.removeItem(FLOATING_WIDGET_CONVERSATION_KEY);
+    } catch {
+        /* ignore */
+    }
     const base = config.openChatPath || '/chat';
     const params = new URLSearchParams();
+    params.set('newFromFloating', '1');
     if (conversationId) {
         params.set('conversation', String(conversationId));
-    } else {
-        params.set('newFromFloating', '1');
     }
     window.location.href = `${base}?${params.toString()}`;
 };
@@ -491,19 +445,6 @@ const onEsc = (event) => {
         closeWidget();
     }
 };
-
-const onExternalActiveConversationChange = (event) => {
-    if (isGuest.value) return;
-    const id = event?.detail?.id;
-    if (!id) return;
-    activeConversationId.value = id;
-};
-
-watch(isOpen, (opened) => {
-    if (opened) {
-        hideGreeting();
-    }
-});
 
 watch(
     messages,
@@ -519,22 +460,15 @@ onMounted(async () => {
     if (isGuest.value) {
         loadGuestThreadFromStorage();
     } else {
-        const preferred = getPreferredConversationId();
-        if (preferred) activeConversationId.value = preferred;
+        const wid = readWidgetStoredConversationId();
+        if (wid) activeConversationId.value = wid;
     }
 
-    greetingOpenTimer = window.setTimeout(() => {
-        openGreeting();
-    }, greetingDelayMs.value);
-
     document.addEventListener('keydown', onEsc);
-    window.addEventListener(EVENT_ACTIVE_CHAT_CHANGED, onExternalActiveConversationChange);
 });
 
 onUnmounted(() => {
-    window.clearTimeout(greetingOpenTimer);
     document.removeEventListener('keydown', onEsc);
-    window.removeEventListener(EVENT_ACTIVE_CHAT_CHANGED, onExternalActiveConversationChange);
     if (recordingInterval.value) window.clearInterval(recordingInterval.value);
     if (mediaRecorder.value) {
         mediaRecorder.value.stream?.getTracks().forEach((track) => track.stop());

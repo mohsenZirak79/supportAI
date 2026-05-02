@@ -1220,7 +1220,9 @@ const autoResize = () => {
 };
 
 // لود چت‌ها از API
-const loadChats = async () => {
+/** @param {{ skipAutoSelect?: boolean }} [opts] اگر true، چتی را خودکار فعال نکن (مثلاً قبل از import ویجت شناور) */
+const loadChats = async (opts = {}) => {
+    const skipAutoSelect = !!opts.skipAutoSelect;
     try {
         const res = await apiFetch('/conversations');
         if (res.ok) {
@@ -1230,7 +1232,7 @@ const loadChats = async () => {
                 title: chat.title,
                 messages: []
             }));
-            if (chats.value.length > 0 && !activeChatId.value) {
+            if (!skipAutoSelect && chats.value.length > 0 && !activeChatId.value) {
                 const preferred = getPreferredConversationId();
                 const matched = preferred ? chats.value.find((chat) => String(chat.id) === String(preferred)) : null;
                 setActiveChat(matched?.id || chats.value[0].id);
@@ -1708,22 +1710,38 @@ onMounted(async () => {
         speechSynthesis.onvoiceschanged = loadVoices;
     }
 
-    await loadChats();
-
     let newFromFloating = false;
+    /** شناسهٔ گفتگوی ویجت از query؛ بعد از replaceState از URL حذف می‌شود */
+    let floatingTargetConversationId = null;
     if (typeof window !== 'undefined' && typeof window.history?.replaceState === 'function') {
         const url = new URL(window.location.href);
         if (url.searchParams.get('newFromFloating') === '1') {
             newFromFloating = true;
+            const convParam = url.searchParams.get('conversation');
+            if (convParam) {
+                floatingTargetConversationId = Number(convParam) || convParam;
+            }
             url.searchParams.delete('newFromFloating');
+            url.searchParams.delete('conversation');
             const qs = url.searchParams.toString();
             window.history.replaceState({}, '', url.pathname + (qs ? `?${qs}` : '') + url.hash);
         }
     }
 
+    await loadChats({ skipAutoSelect: newFromFloating });
+
     const imported = await tryImportFloatingTranscript();
     if (newFromFloating && !imported) {
-        await startNewChat();
+        if (floatingTargetConversationId) {
+            const found = chats.value.find((chat) => String(chat.id) === String(floatingTargetConversationId));
+            if (found) {
+                await setActiveChat(found.id);
+            } else {
+                await startNewChat();
+            }
+        } else {
+            await startNewChat();
+        }
     }
     fetchDepartments();
     fetchUserPreferences();

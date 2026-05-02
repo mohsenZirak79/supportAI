@@ -112,8 +112,8 @@ defineExpose({ focusPanel });
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.22);
-    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(255, 255, 255, 0.5) 100%);
+    border-bottom: 1px solid rgba(15, 118, 110, 0.35);
+    background: linear-gradient(135deg, #0f766e 0%, #0d9488 45%, #0891b2 100%);
 }
 
 .widget-header__titles {
@@ -126,9 +126,10 @@ defineExpose({ focusPanel });
     display: block;
     font-size: 15px;
     font-weight: 700;
-    color: #0f172a;
+    color: #f8fafc;
     letter-spacing: -0.02em;
     line-height: 1.3;
+    text-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
 }
 
 .widget-header small {
@@ -136,7 +137,7 @@ defineExpose({ focusPanel });
     margin-top: 3px;
     font-size: 11px;
     font-weight: 600;
-    color: #16a34a;
+    color: rgba(167, 243, 208, 0.95);
     letter-spacing: 0.02em;
 }
 
@@ -146,8 +147,8 @@ defineExpose({ focusPanel });
     height: 36px;
     flex-shrink: 0;
     border-radius: 11px;
-    background: rgba(241, 245, 249, 0.95);
-    color: #475569;
+    background: rgba(255, 255, 255, 0.18);
+    color: #f1f5f9;
     font-size: 15px;
     line-height: 1;
     cursor: pointer;
@@ -155,8 +156,8 @@ defineExpose({ focusPanel });
 }
 
 .close-btn:hover {
-    background: rgba(226, 232, 240, 1);
-    color: #0f172a;
+    background: rgba(255, 255, 255, 0.28);
+    color: #fff;
 }
 
 .widget-messages {
