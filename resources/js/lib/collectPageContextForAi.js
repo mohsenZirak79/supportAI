@@ -3,6 +3,9 @@
  * Pages may set window.__supportAIPageContext = { ... } or dispatch:
  *   document.dispatchEvent(new CustomEvent('supportai:page-context', { detail: { ... } }))
  * The latest custom detail is merged (shallow) on each collect.
+ *
+ * Includes server-side validation messages when present (e.g. auth/register uses
+ * .error-alert and li[data-error-text]).
  */
 
 const EVENT_NAME = 'supportai:page-context';
@@ -43,11 +46,35 @@ function safeLabel(el) {
     return '';
 }
 
+function collectServerValidationErrors(max = 20) {
+    const out = [];
+    const seen = new Set();
+    try {
+        document.querySelectorAll('[data-error-text]').forEach((el) => {
+            if (out.length >= max) return;
+            const shown = (el.textContent || '').replace(/\s+/g, ' ').trim();
+            const fromAttr = (el.getAttribute('data-error-text') || '').replace(/\s+/g, ' ').trim();
+            const t = shown.length >= 2 ? shown : fromAttr;
+            if (t.length < 2) return;
+            const key = t.slice(0, 200);
+            if (seen.has(key)) return;
+            seen.add(key);
+            out.push(t.slice(0, 600));
+        });
+    } catch {
+        /* ignore */
+    }
+    return out;
+}
+
 function collectVisibleErrors(max = 12) {
     const out = [];
     const seen = new Set();
     const selectors = [
+        '[data-error-text]',
         '[role="alert"]',
+        '.error-alert',
+        '.error-msg',
         '.alert-danger',
         '.alert.alert-danger',
         '.invalid-feedback',
@@ -179,6 +206,7 @@ export function collectPageContextForAi(extra = {}) {
         })(),
         focus: activeElementSummary(),
         fieldIssues: collectFieldSignals(),
+        serverValidationErrors: collectServerValidationErrors(),
         visibleErrors: collectVisibleErrors(),
     };
 

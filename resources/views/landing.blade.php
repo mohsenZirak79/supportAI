@@ -1510,7 +1510,7 @@
                     <span class="hero-badge-dot" aria-hidden="true"></span>
                     <span data-i18n="landing.advancedPlatform">پلتفرم پیشرفته پشتیبانی</span>
                 </div>
-                <h1 data-i18n="landing.heroTitle">سیستم مدیریت پشتیبانی پارس فناوران مبتکر</h1>
+                <h1 data-i18n="landing.heroTitle">سیستم مدیریت پشتیبانی مناطق آزاد تجاری</h1>
                 <p data-i18n="landing.heroSubtitle">پلتفرم جامع و هوشمند برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط مؤثر با کاربران</p>
                 <div class="hero-cta">
                     @auth
@@ -1930,7 +1930,7 @@
                     'nav.login': 'ورود',
                     'nav.register': 'ثبت‌نام',
                     'landing.goToDashboard': 'ورود به داشبورد',
-                    'landing.heroTitle': 'سیستم مدیریت پشتیبانی پارس فناوران مبتکر',
+                    'landing.heroTitle': 'سیستم مدیریت پشتیبانی مناطق آزاد تجاری',
                     'landing.heroSubtitle': 'پلتفرم جامع و هوشمند برای مدیریت تیکت‌ها، گفت‌وگوها و ارتباط مؤثر با کاربران',
                     'landing.advancedPlatform': 'پلتفرم پیشرفته پشتیبانی',
                     'landing.getStarted': 'شروع کنید',

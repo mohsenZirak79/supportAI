@@ -671,8 +671,8 @@
         var confirmSubmitBtn = document.getElementById('adminConfirmModalSubmit');
         var confirmCallback = null;
 
-        if (confirmModalEl && confirmBodyEl && confirmSubmitBtn && window.bootstrap) {
-            var confirmModal = new bootstrap.Modal(confirmModalEl);
+        if (confirmModalEl && confirmBodyEl && confirmSubmitBtn && window.bootstrap && window.bootstrap.Modal) {
+            var confirmModal = new window.bootstrap.Modal(confirmModalEl);
             document.addEventListener('click', function (e) {
                 var btn = e.target.closest('[data-confirm-form]');
                 if (!btn) return;

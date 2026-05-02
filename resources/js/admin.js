@@ -1,11 +1,9 @@
 // /resources/js/admin.js
 
 /**
- * Bootstrap از npm تا زیر Vite/ESM آبجکت روی window قرار بگیرد؛
- * نسخهٔ UMD قدیمی (bootstrap.min.js) با module.exports به global وصل نمی‌شد و data-bs-toggle مودال کار نمی‌کرد.
+ * Bootstrap روی window قبل از soft-ui و سایر importها (نگاه کنید به admin/bootstrap-globals.js).
  */
-import * as bootstrap from 'bootstrap';
-window.bootstrap = bootstrap;
+import './admin/bootstrap-globals.js';
 
 import "./admin/jquery-3.7.1.min.js";
 import "./admin/bootstrap-notify.js";

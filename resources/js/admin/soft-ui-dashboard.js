@@ -30,11 +30,12 @@
 navbarBlurOnScroll('navbarBlur');
 
 
-// initialization of Tooltips
+// initialization of Tooltips (از window.bootstrap؛ در باندل ESM شناسهٔ سراسری bootstrap وجود ندارد)
 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl)
-})
+var TooltipCtor = (typeof window !== 'undefined' && window.bootstrap && window.bootstrap.Tooltip) ? window.bootstrap.Tooltip : null
+var tooltipList = TooltipCtor ? tooltipTriggerList.map(function(tooltipTriggerEl) {
+  return new TooltipCtor(tooltipTriggerEl)
+}) : []
 
 // Fixed Plugin
 

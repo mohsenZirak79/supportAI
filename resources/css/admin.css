@@ -602,6 +602,14 @@ table.dataTable tbody td {
 ------------------------------ */
 
 /* ۴.۱ مودال یکسان (backdrop فقط در صفحات ادمین لود می‌شود) */
+/* ویجت چت شناور z-index≈2140؛ مودال و بک‌دراپ باید بالاتر باشند وگرنه «باز نمی‌شود» به نظر می‌رسد */
+body.admin-layout .modal,
+body.admin-layout .admin-modal {
+    z-index: 2200 !important;
+}
+body.admin-layout .modal-backdrop {
+    z-index: 2190 !important;
+}
 .modal-backdrop { background: rgba(15, 23, 42, 0.35) !important; }
 .modal-backdrop.show { opacity: 1; }
 .admin-modal .modal-dialog {

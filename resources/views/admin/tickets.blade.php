@@ -19,18 +19,21 @@
             const ticketModalEl = document.getElementById('ticketModal');
 
             function showTicketModal() {
-                if (!ticketModalEl || !window.bootstrap || !window.bootstrap.Modal) return;
+                if (!ticketModalEl || !window.bootstrap || !window.bootstrap.Modal) {
+                    window.toast?.error('کتابخانهٔ رابط کاربری (Bootstrap) بارگذاری نشده؛ صفحه را با Ctrl+F5 تازه کنید.');
+                    return;
+                }
                 window.bootstrap.Modal.getOrCreateInstance(ticketModalEl).show();
             }
 
             let currentTicketId = null;
             let canReply = false;
 
-            document.querySelectorAll('.btn-view-ticket').forEach(btn=>{
-                btn.addEventListener('click', function (ev) {
-                    ev.preventDefault();
-                    openTicket(btn);
-                });
+            document.addEventListener('click', function (ev) {
+                const btn = ev.target.closest('.btn-view-ticket');
+                if (!btn) return;
+                ev.preventDefault();
+                openTicket(btn);
             });
             if (ticketModalEl) ticketModalEl.addEventListener('click', function(e){
                 var retryBtn = e.target.closest('[data-retry-ticket]');

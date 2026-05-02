@@ -246,7 +246,7 @@
                             </div>
 
                             @if ($errors->any())
-            <div class="error-alert" id="errorAlert">
+            <div class="error-alert" id="errorAlert" role="alert" aria-live="polite">
                 <ul>
                                         @foreach ($errors->all() as $error)
                                             <li data-error-text="{{ $error }}">{{ $error }}</li>

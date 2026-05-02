@@ -27,24 +27,31 @@
             const convModalEl = document.getElementById('convModal')
 
             function showConvModal() {
-                if (!convModalEl || !window.bootstrap || !window.bootstrap.Modal) return
+                if (!convModalEl || !window.bootstrap || !window.bootstrap.Modal) {
+                    window.toast?.error('کتابخانهٔ رابط کاربری (Bootstrap) بارگذاری نشده؛ صفحه را با Ctrl+F5 تازه کنید.')
+                    return
+                }
                 window.bootstrap.Modal.getOrCreateInstance(convModalEl).show()
             }
 
             let currentConvBtn = null;
-            document.querySelectorAll('.btn-view-conv').forEach(btn => {
-                btn.addEventListener('click', function (ev) {
-                    ev.preventDefault()
-                    currentConvBtn = btn
-                    openConversation(btn)
-                })
-            });
+            document.addEventListener('click', function (ev) {
+                const btn = ev.target.closest('.btn-view-conv')
+                if (!btn) return
+                ev.preventDefault()
+                currentConvBtn = btn
+                openConversation(btn)
+            })
             if (convModalEl) convModalEl.addEventListener('click', function(e){
                 var retryBtn = e.target.closest('.admin-retry-btn[data-retry-conv]');
                 if (retryBtn && currentConvBtn) openConversation(currentConvBtn);
             });
 
             async function openConversation(btn) {
+                if (!titleEl || !msgList || !refList || !convMeta) {
+                    window.toast?.error('المان‌های مودال در صفحه یافت نشد.')
+                    return
+                }
                 const url = btn.getAttribute('data-url')
                 const title = btn.getAttribute('data-title') || 'مکالمه'
                 const convId = btn.getAttribute('data-conv')
