@@ -1464,7 +1464,7 @@
         }
     </style>
 </head>
-<body>
+<body data-support-ai-page="landing">
     <!-- Subtle noise texture overlay -->
     <div class="noise-overlay" aria-hidden="true"></div>
 

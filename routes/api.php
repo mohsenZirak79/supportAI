@@ -31,6 +31,7 @@ Route::post('webhook/bale', [BaleWebhookController::class, 'handle'])->name('web
 
 use App\Domains\Auth\Controllers\AuthController;
 use App\Domains\UserPanel\Controllers\ConversationController;
+use App\Http\Controllers\GuestFloatingChatController;
 use Tymon\JWTAuth\Facades\JWTAuth;
 //use App\Domains\UserPanel\Controllers\FileController;
 //use App\Domains\AgentPanel\Controllers\TicketController;
@@ -83,6 +84,10 @@ Route::get('v1/_debug-jwt', function (\Illuminate\Http\Request $request) {
     }
 })->middleware('jwt.cookie')->name('_debug-jwt'); // ← نکته: فقط jwt.cookie
 
+/** ویجت چت شناور — بدون JWT؛ سقف درخواست برای جلوگیری از سوءاستفاده */
+Route::prefix('v1')->middleware(['throttle:60,1'])->group(function () {
+    Route::post('guest-floating-chat', [GuestFloatingChatController::class, 'ask']);
+});
 
 Route::prefix('v1')->group(function () {
     Route::post('/auth/refresh', [AuthController::class, 'refresh']); // ⬅️ جدید

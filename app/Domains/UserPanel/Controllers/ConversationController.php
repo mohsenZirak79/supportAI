@@ -19,6 +19,7 @@ use Illuminate\Http\Client\RequestException;
 use Symfony\Component\Process\Process;
 use App\Notifications\ReferralRespondedNotification;
 use App\Domains\Shared\Services\RoundRobinAssigner;
+use App\Support\PageContextForAi;
 
 class ConversationController extends Controller
 {
@@ -120,7 +121,10 @@ class ConversationController extends Controller
             'media_ids.*' => 'integer',        // id جدول media در Spatie عددی است
             'media_kind' => 'nullable|in:file,voice',
             'lang' => 'nullable|string|in:fa,en,ar', // Language code
+            'page_context' => 'nullable|array',
         ]);
+
+        $pageContext = PageContextForAi::sanitize($validated['page_context'] ?? null);
 
         $messageCount = $conversation->messages()->count();
         $isFirstMessage = $messageCount === 0;
@@ -333,13 +337,13 @@ class ConversationController extends Controller
                 $resp = Http::withoutVerifying()
                     ->withOptions(['connect_timeout' => 10])
                     ->timeout((int) config('services.python_ai.timeout', 60))
-                    ->post($askUrl, [
+                    ->post($askUrl, array_merge([
                         'question' => $validated['content'] ?? '',
                         'user_type' => 'new',
                         'first_message' => $isFirstMessage,
                         'lang' => $lang,
                         'user_name' => $userName,
-                    ]);
+                    ], $pageContext !== null ? ['page_context' => $pageContext] : []));
 
                 if ($resp->successful()) {
                     $json = $resp->json();

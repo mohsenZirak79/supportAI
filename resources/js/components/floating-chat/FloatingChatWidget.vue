@@ -9,6 +9,7 @@
                     :loading="loading"
                     :draft="draft"
                     :assistant-name="config.assistantName"
+                    :show-open-full-chat="!isGuest"
                     :is-recording="isRecording"
                     :recording-time="recordingTime"
                     @update:draft="draft = $event"
@@ -34,6 +35,7 @@
 <script setup>
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { apiFetch } from '../../lib/http';
+import { collectPageContextForAi } from '../../lib/collectPageContextForAi';
 import { floatingChatWidgetConfig } from '../../config/floatingChatWidget';
 import { useLanguage } from '../../i18n';
 import FloatingChatLauncher from './FloatingChatLauncher.vue';
@@ -41,7 +43,6 @@ import FloatingChatPanel from './FloatingChatPanel.vue';
 
 const ACTIVE_CHAT_STORAGE_KEY = 'supportAI:active-conversation-id';
 const FLOATING_WIDGET_CONVERSATION_KEY = 'supportAI:floating-widget-conversation-id';
-const FLOATING_IMPORT_STORAGE_KEY = 'supportAI:floating-import-v1';
 const GUEST_FLOATING_SESSION_KEY = 'supportAI:floating-guest-thread-v1';
 
 const { t, initLocale } = useLanguage();
@@ -203,7 +204,36 @@ const sendText = async () => {
     draft.value = '';
 
     if (isGuest.value) {
-        appendBotMessage({ content: t('floating.guestNeedLoginForAi') });
+        loading.value = true;
+        try {
+            const res = await fetch('/api/v1/guest-floating-chat', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify({
+                    question: text,
+                    lang: document.documentElement.lang || 'fa',
+                    page_context: collectPageContextForAi({ source: 'floating-widget' }),
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                appendBotMessage({
+                    content:
+                        (typeof data.message === 'string' && data.message) ||
+                        'موقتاً پاسخ در دسترس نیست. بعداً دوباره تلاش کنید.',
+                });
+            } else {
+                appendBotMessage({ content: data.answer || 'پاسخی دریافت نشد.' });
+            }
+        } catch {
+            appendBotMessage({ content: 'خطا در ارسال پیام. لطفا دوباره تلاش کنید.' });
+        } finally {
+            loading.value = false;
+        }
         return;
     }
 
@@ -214,7 +244,11 @@ const sendText = async () => {
         const res = await apiFetch(`/conversations/${conversationId}/messages`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: text, lang: document.documentElement.lang || 'fa' }),
+            body: JSON.stringify({
+                content: text,
+                lang: document.documentElement.lang || 'fa',
+                page_context: collectPageContextForAi({ source: 'floating-widget' }),
+            }),
         });
         if (!res.ok) throw new Error('send failed');
         const data = await res.json();
@@ -319,6 +353,7 @@ const uploadVoice = async (blob) => {
                 media_ids: [file_id],
                 media_kind: 'voice',
                 lang: document.documentElement.lang || 'fa',
+                page_context: collectPageContextForAi({ source: 'floating-widget-voice' }),
             }),
         });
         if (!messageRes.ok) throw new Error('voice send failed');
@@ -367,40 +402,7 @@ const toggleWidget = async () => {
 };
 
 const openFullChat = async () => {
-    const loginBase = config.loginPath || '/login';
-
     if (isGuest.value) {
-        const rows = messages.value
-            .map((m) => ({
-                sender: m.sender === 'user' ? 'user' : 'bot',
-                text: (m.text || '').trim(),
-            }))
-            .filter((r) => r.text !== '');
-        const userHasContent = rows.some((r) => r.sender === 'user');
-        if (userHasContent) {
-            try {
-                getStorage()?.setItem(
-                    FLOATING_IMPORT_STORAGE_KEY,
-                    JSON.stringify({
-                        title: 'چت جدید',
-                        messages: rows,
-                    })
-                );
-            } catch {
-                /* ignore */
-            }
-        }
-        try {
-            getStorage()?.removeItem(GUEST_FLOATING_SESSION_KEY);
-        } catch {
-            /* ignore */
-        }
-        try {
-            window.localStorage?.removeItem(ACTIVE_CHAT_STORAGE_KEY);
-        } catch {
-            /* ignore */
-        }
-        window.location.href = loginBase;
         return;
     }
 

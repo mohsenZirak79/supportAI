@@ -445,6 +445,7 @@ import MessageBubble from './chat-app/MessageBubble.vue';
 import TypingIndicator from './chat-app/TypingIndicator.vue';
 import {useToast} from 'vue-toast-notification'
 import {apiFetch} from '../lib/http';
+import { collectPageContextForAi } from '../lib/collectPageContextForAi';
 import { useLanguage } from '../i18n';
 
 // i18n setup - CSP-safe, no vue-i18n
@@ -1029,7 +1030,8 @@ const uploadVoice = async (blob) => {
                 content: '',
                 media_ids: [file_id],
                 media_kind: 'voice',
-                lang: locale.value
+                lang: locale.value,
+                page_context: collectPageContextForAi({ source: 'chat-full-voice' }),
             })
         });
         if (!messageRes.ok) {
@@ -1428,7 +1430,8 @@ const sendMessage = async () => {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 content: userMsg.text,
-                lang: locale.value
+                lang: locale.value,
+                page_context: collectPageContextForAi({ source: 'chat-full' }),
             })
         });
 

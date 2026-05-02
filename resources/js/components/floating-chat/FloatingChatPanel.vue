@@ -43,7 +43,7 @@
             @send-recording="$emit('send-recording')"
         />
 
-        <footer class="widget-footer">
+        <footer v-if="showOpenFullChat" class="widget-footer">
             <button type="button" class="open-full-btn" @click="$emit('open-full-chat')">
                 {{ t('floating.openFullChat') }}
             </button>
@@ -62,6 +62,8 @@ defineProps({
     loading: { type: Boolean, default: false },
     draft: { type: String, default: '' },
     assistantName: { type: String, default: 'دستیار هوشمند' },
+    /** فقط برای کاربر لاگین‌شده؛ مهمان دکمهٔ «چت کامل» ندارد */
+    showOpenFullChat: { type: Boolean, default: true },
     isRecording: { type: Boolean, default: false },
     recordingTime: { type: Number, default: 0 },
 });

@@ -213,7 +213,7 @@
     </style>
 </head>
 
-<body>
+<body data-support-ai-page="login">
     <div class="lang-switcher">
         <button class="lang-btn" data-lang="fa">فارسی</button>
         <button class="lang-btn" data-lang="en">English</button>

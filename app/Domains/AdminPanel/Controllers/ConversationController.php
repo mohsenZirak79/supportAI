@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use App\Notifications\ReferralRespondedNotification;
 use App\Domains\Shared\Services\RoundRobinAssigner;
+use App\Support\PageContextForAi;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ConversationController extends Controller
@@ -118,7 +119,10 @@ class ConversationController extends Controller
             'media_ids' => 'nullable|array',
             'media_ids.*' => 'integer',        // id جدول media در Spatie عددی است
             'media_kind' => 'nullable|in:file,voice',
+            'page_context' => 'nullable|array',
         ]);
+
+        $pageContext = PageContextForAi::sanitize($validated['page_context'] ?? null);
 
         $isFirstMessage = $conversation->messages()->count() === 0;
 
@@ -197,11 +201,11 @@ class ConversationController extends Controller
                 $aiBaseUrl = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/');
                 $askUrl = $aiBaseUrl . '/api/ask';
                 \Log::info('AI API request', ['url' => $askUrl]);
-                $resp = Http::withoutVerifying()->withOptions(['connect_timeout' => 10])->timeout((int) config('services.python_ai.timeout', 60))->post($askUrl, [
+                $resp = Http::withoutVerifying()->withOptions(['connect_timeout' => 10])->timeout((int) config('services.python_ai.timeout', 60))->post($askUrl, array_merge([
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
                     'first_message' => $isFirstMessage,
-                ]);
+                ], $pageContext !== null ? ['page_context' => $pageContext] : []));
 
                 if ($resp->successful()) {
                     $json = $resp->json();
