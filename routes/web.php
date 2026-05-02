@@ -2,6 +2,7 @@
 
 use App\Domains\AdminPanel\Controllers\AdminChatController;
 use App\Domains\AdminPanel\Controllers\AdminTicketController;
+use App\Domains\AdminPanel\Controllers\AdminWidgetCallbackController;
 use App\Domains\Auth\Controllers\WebController;
 use App\Domains\Shared\Controllers\UserController;
 use App\Domains\Shared\Controllers\NotificationController;
@@ -59,6 +60,8 @@ Route::middleware($adminWebStack)
         Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('admin.notifications.read-all');
         Route::get('dashboard', [\App\Domains\AdminPanel\Controllers\AdminDashboardController::class, '__invoke'])->name('admin.dashboard');
         Route::get('/chats/{conversation}/detail', [AdminChatController::class, 'detail'])->name('admin.chats.detail');
+        Route::get('/callbacks', [AdminWidgetCallbackController::class, 'index'])->name('admin.callbacks');
+        Route::patch('/callbacks/{widgetCallbackRequest}', [AdminWidgetCallbackController::class, 'update'])->name('admin.callbacks.update');
         Route::post('/referrals/{referral}/respond', [AdminChatController::class, 'respond'])->name('admin.referrals.respond');
         Route::post('/referrals/{referral}/assign-me', [AdminChatController::class, 'assignMe'])->name('admin.referrals.assign_me');
     });

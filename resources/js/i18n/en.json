@@ -134,7 +134,10 @@
     "onlineStatus": "Online",
     "closeChat": "Close chat",
     "dialogLabel": "Smart assistant chat",
-    "processing": "Processing…"
+    "processing": "Processing…",
+    "callbackConsentLabel": "I agree that support may call me on the phone number saved on my account.",
+    "callbackSubmit": "Request a call",
+    "callbackRegistered": "Call request submitted."
   },
   "notifications": {
     "title": "Notifications",

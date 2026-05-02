@@ -134,7 +134,10 @@
     "onlineStatus": "متصل",
     "closeChat": "إغلاق الدردشة",
     "dialogLabel": "محادثة المساعد الذكي",
-    "processing": "جاري المعالجة…"
+    "processing": "جاري المعالجة…",
+    "callbackConsentLabel": "أوافق على أن يتصل بي فريق الدعم على رقم الهاتف المسجّل في حسابي.",
+    "callbackSubmit": "طلب اتصال",
+    "callbackRegistered": "تم تسجيل طلب الاتصال."
   },
   "notifications": {
     "title": "الإشعارات",

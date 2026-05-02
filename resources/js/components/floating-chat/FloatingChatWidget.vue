@@ -10,6 +10,8 @@
                     :draft="draft"
                     :assistant-name="config.assistantName"
                     :show-open-full-chat="!isGuest"
+                    :show-phone-callback-option="!isGuest"
+                    :conversation-id="activeConversationId"
                     :is-recording="isRecording"
                     :recording-time="recordingTime"
                     @update:draft="draft = $event"
@@ -19,6 +21,7 @@
                     @start-recording="startRecording"
                     @cancel-recording="cancelRecording"
                     @send-recording="sendRecording"
+                    @phone-callback-request="onPhoneCallbackRequest"
                 />
             </transition>
 
@@ -188,12 +191,48 @@ const appendUserMessage = (text) => {
 };
 
 const appendBotMessage = (payload) => {
+    const serverId = payload?.id ?? null;
     messages.value.push({
-        id: payload?.id ?? `widget-ai-${Date.now()}`,
+        id: serverId ?? `widget-ai-${Date.now()}`,
+        aiMessageId: serverId,
         sender: 'bot',
         text: payload?.content || 'پاسخی دریافت نشد.',
         created_at: payload?.created_at ?? new Date().toISOString(),
+        callbackRegistered: false,
     });
+};
+
+const onPhoneCallbackRequest = async ({ aiMessageId, consent }) => {
+    if (!aiMessageId || !consent) return;
+    let conversationId = activeConversationId.value;
+    if (!conversationId) {
+        try {
+            conversationId = await ensureConversation();
+        } catch {
+            window.toast?.error?.('ابتدا یک پیام ارسال کنید.');
+            return;
+        }
+    }
+    const res = await apiFetch('/widget-callback-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            conversation_id: String(conversationId),
+            trigger_message_id: String(aiMessageId),
+            consent: true,
+        }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        window.toast?.error?.(typeof data.message === 'string' ? data.message : 'ثبت درخواست ممکن نشد.');
+        return;
+    }
+    const idx = messages.value.findIndex((m) => m.sender === 'bot' && m.aiMessageId === aiMessageId);
+    if (idx >= 0) {
+        const prev = messages.value[idx];
+        messages.value.splice(idx, 1, { ...prev, callbackRegistered: true });
+    }
+    window.toast?.success?.(typeof data.message === 'string' ? data.message : 'درخواست تماس ثبت شد.');
 };
 
 const sendText = async () => {

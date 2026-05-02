@@ -23,6 +23,26 @@
                     <AiAnswer v-if="msg.sender === 'bot' && msg.text" :text="msg.text" />
                     <template v-else>{{ msg.text || t('chat.voiceMessage') }}</template>
                 </div>
+                <div
+                    v-if="msg.sender === 'bot' && showPhoneCallbackOption && msg.aiMessageId && conversationId && !msg.callbackRegistered"
+                    class="callback-cta"
+                >
+                    <label class="callback-cta__row">
+                        <input v-model="consentByMessageId[msg.aiMessageId]" type="checkbox" />
+                        <span>{{ t('floating.callbackConsentLabel') }}</span>
+                    </label>
+                    <button
+                        type="button"
+                        class="callback-cta__btn"
+                        :disabled="!consentByMessageId[msg.aiMessageId]"
+                        @click="requestCallback(msg)"
+                    >
+                        {{ t('floating.callbackSubmit') }}
+                    </button>
+                </div>
+                <div v-else-if="msg.sender === 'bot' && msg.callbackRegistered" class="callback-done">
+                    {{ t('floating.callbackRegistered') }}
+                </div>
             </div>
             <div v-if="loading" class="typing">{{ t('floating.processing') }}</div>
         </div>
@@ -52,7 +72,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import AiAnswer from '../AiAnswer.vue';
 import FloatingChatInput from './FloatingChatInput.vue';
 import { useLanguage } from '../../i18n';
@@ -64,11 +84,15 @@ defineProps({
     assistantName: { type: String, default: 'دستیار هوشمند' },
     /** فقط برای کاربر لاگین‌شده؛ مهمان دکمهٔ «چت کامل» ندارد */
     showOpenFullChat: { type: Boolean, default: true },
+    /** درخواست تماس پس از پیام دستیار (فقط کاربر لاگین) */
+    showPhoneCallbackOption: { type: Boolean, default: false },
+    /** شناسهٔ گفتگوی ویجت روی سرور */
+    conversationId: { type: [String, Number], default: null },
     isRecording: { type: Boolean, default: false },
     recordingTime: { type: Number, default: 0 },
 });
 
-defineEmits([
+const emit = defineEmits([
     'update:draft',
     'send-text',
     'close',
@@ -76,7 +100,16 @@ defineEmits([
     'start-recording',
     'cancel-recording',
     'send-recording',
+    'phone-callback-request',
 ]);
+
+const consentByMessageId = reactive({});
+
+function requestCallback(msg) {
+    const id = msg.aiMessageId;
+    if (!id || !consentByMessageId[id]) return;
+    emit('phone-callback-request', { aiMessageId: id, consent: true });
+}
 
 const { t, initLocale, direction } = useLanguage();
 
@@ -181,6 +214,52 @@ defineExpose({ focusPanel });
 }
 .msg.bot {
     justify-content: flex-start;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+.callback-cta {
+    max-width: 85%;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(240, 253, 250, 0.95);
+    border: 1px solid rgba(13, 148, 136, 0.25);
+    font-size: 11px;
+    color: #0f172a;
+}
+.callback-cta__row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    line-height: 1.45;
+}
+.callback-cta__row input {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+.callback-cta__btn {
+    width: 100%;
+    border: 0;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #0f766e, #0d9488);
+    color: #fff;
+    cursor: pointer;
+}
+.callback-cta__btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.callback-done {
+    max-width: 85%;
+    font-size: 11px;
+    color: #047857;
+    font-weight: 600;
+    padding-inline-start: 2px;
 }
 .bubble {
     max-width: 85%;

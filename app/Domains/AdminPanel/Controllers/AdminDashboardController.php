@@ -6,6 +6,7 @@ use App\Domains\Shared\Models\Conversation;
 use App\Domains\Shared\Models\Referral;
 use App\Domains\Shared\Models\Ticket;
 use App\Domains\Shared\Models\User;
+use App\Domains\Shared\Models\WidgetCallbackRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +31,9 @@ class AdminDashboardController extends Controller
             'tickets_pending' => (clone $ticketsQuery)->where('status', 'pending')->count(),
             'conversations_total' => Conversation::query()->count(),
             'referrals_open'  => Referral::query()->whereIn('status', ['pending', 'assigned'])->count(),
+            'callbacks_pending' => WidgetCallbackRequest::query()->where('status', WidgetCallbackRequest::STATUS_PENDING)->count(),
+            'callbacks_contacted' => WidgetCallbackRequest::query()->where('status', WidgetCallbackRequest::STATUS_CONTACTED)->count(),
+            'callbacks_declined' => WidgetCallbackRequest::query()->where('status', WidgetCallbackRequest::STATUS_DECLINED)->count(),
         ];
 
         if ($isAdmin) {

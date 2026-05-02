@@ -25,6 +25,8 @@ class CheckPermissionForRoute
         'admin.tickets.reply' => 'update-ticket',
         'admin.chats' => 'read-chat',
         'admin.chats.detail' => 'read-chat',
+        'admin.callbacks' => 'read-chat',
+        'admin.callbacks.update' => 'update-chat',
         'admin.referrals.respond' => 'update-chat',
         'admin.referrals.assign_me' => 'update-chat',
         'admin.notifications.index' => null,

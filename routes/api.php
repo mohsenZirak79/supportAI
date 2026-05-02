@@ -31,6 +31,7 @@ Route::post('webhook/bale', [BaleWebhookController::class, 'handle'])->name('web
 
 use App\Domains\Auth\Controllers\AuthController;
 use App\Domains\UserPanel\Controllers\ConversationController;
+use App\Domains\UserPanel\Controllers\WidgetCallbackRequestController;
 use App\Http\Controllers\GuestFloatingChatController;
 use Tymon\JWTAuth\Facades\JWTAuth;
 //use App\Domains\UserPanel\Controllers\FileController;
@@ -98,6 +99,8 @@ Route::prefix('v1')
         Route::get('conversations', [ConversationController::class, 'index']);
         Route::post('conversations', [ConversationController::class, 'store']);
         Route::post('conversations/import-floating', [ConversationController::class, 'importFloatingTranscript']);
+        Route::post('widget-callback-requests', [WidgetCallbackRequestController::class, 'store']);
+        Route::delete('widget-callback-requests/{widgetCallbackRequest}', [WidgetCallbackRequestController::class, 'destroy']);
         Route::patch('conversations/{conversation}/title', [ConversationController::class, 'updateTitle']);
         Route::delete('conversations/{conversation}', [ConversationController::class, 'destroy']);
         Route::post('conversations/{conversation}/messages', [ConversationController::class, 'sendMessage']);

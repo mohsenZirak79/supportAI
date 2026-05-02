@@ -134,7 +134,10 @@
     "onlineStatus": "آنلاین",
     "closeChat": "بستن چت",
     "dialogLabel": "گفتگو با دستیار هوشمند",
-    "processing": "در حال پردازش…"
+    "processing": "در حال پردازش…",
+    "callbackConsentLabel": "موافقم که پشتیبان با شمارهٔ ثبت‌شده در حسابم با من تماس بگیرد.",
+    "callbackSubmit": "ثبت درخواست تماس",
+    "callbackRegistered": "درخواست تماس ثبت شد."
   },
   "notifications": {
     "title": "نوتیفیکیشن‌ها",

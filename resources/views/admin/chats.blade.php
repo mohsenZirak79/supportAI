@@ -356,6 +356,12 @@
                 const el = document.querySelector('meta[name="csrf-token"]');
                 return el ? el.getAttribute('content') : '{{ csrf_token() }}'
             }
+
+            const openConv = new URLSearchParams(window.location.search).get('open')
+            if (openConv) {
+                const btn = document.querySelector('.btn-view-conv[data-conv="' + openConv + '"]')
+                if (btn) btn.click()
+            }
         })();
     </script>
 @endpush
