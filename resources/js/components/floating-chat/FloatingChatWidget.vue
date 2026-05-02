@@ -484,6 +484,7 @@ onUnmounted(() => {
     right: auto;
     bottom: max(20px, env(safe-area-inset-bottom, 0px));
     pointer-events: none;
+    overflow: visible;
 }
 
 .floating-chat-stack {
@@ -495,6 +496,7 @@ onUnmounted(() => {
     gap: 12px;
     width: max-content;
     max-width: min(380px, calc(100vw - 40px));
+    overflow: visible;
 }
 
 /* لانچر همیشه زیر لبهٔ چپ پنل؛ اندازه ثابت */
