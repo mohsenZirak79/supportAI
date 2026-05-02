@@ -497,31 +497,11 @@
     gap: 0.35rem;
     width: 100%;
     min-height: 52px;
-    padding: 0.35rem 0.6rem 0.35rem 0.75rem;
+    padding: 0.35rem 0.65rem;
     background: var(--cg-surface);
     border-radius: 999px;
     border: 1px solid rgba(15, 23, 42, 0.08);
     box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
-}
-
-.cg-main--landing-start .cg-landing-pill__plus {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    margin-bottom: 2px;
-    border: none;
-    border-radius: 999px;
-    background: transparent;
-    color: var(--cg-muted);
-    cursor: default;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.cg-main--landing-start .cg-landing-pill__plus:hover {
-    color: var(--cg-text);
-    background: var(--cg-surface-2);
 }
 
 .cg-main--landing-start .cg-landing-pill__input {
@@ -549,18 +529,8 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    gap: 0.15rem;
+    gap: 0.25rem;
     padding-bottom: 2px;
-}
-
-.cg-main--landing-start .cg-landing-pill__mode {
-    font-size: 0.75rem;
-    color: var(--cg-muted);
-    padding: 0 0.35rem;
-    white-space: nowrap;
-    max-width: 5rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .cg-main--landing-start .cg-landing-pill__icon-btn {
@@ -635,12 +605,6 @@
 
 .cg-mobile-chat-top {
     display: none;
-}
-
-@media (max-width: 560px) {
-    .cg-main--landing-start .cg-landing-pill__mode {
-        display: none;
-    }
 }
 
 .cg-msg-scroll {

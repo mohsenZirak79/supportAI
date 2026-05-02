@@ -281,17 +281,6 @@
                         <h1 class="cg-landing__title">{{ $t('chat.emptyHeroTitle') }}</h1>
                         <form class="cg-landing-form" @submit.prevent="sendMessage">
                             <div class="cg-landing-pill">
-                                <button
-                                    type="button"
-                                    class="cg-landing-pill__plus"
-                                    :aria-label="$t('chat.landingAttachAria')"
-                                    :title="$t('chat.landingAttachAria')"
-                                    @click.stop
-                                >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path d="M12 5v14M5 12h14"/>
-                                    </svg>
-                                </button>
                                 <textarea
                                     ref="emptyMsgInput"
                                     v-model="inputMessage"
@@ -302,7 +291,6 @@
                                     @keydown="onKeydown"
                                 />
                                 <div class="cg-landing-pill__trailing">
-                                    <span class="cg-landing-pill__mode" aria-hidden="true">{{ $t('chat.emptyHeroMode') }}</span>
                                     <button
                                         type="button"
                                         class="cg-landing-pill__icon-btn"
