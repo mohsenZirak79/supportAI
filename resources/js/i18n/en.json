@@ -144,10 +144,14 @@
     "chatLockedBanner": "A call request is registered for this chat; you cannot send new messages until support follows up. Tap “New chat” to talk to the assistant again.",
     "chatLockedHint": "This chat is locked because of a call request. Use “New chat” to continue.",
     "proactiveTitle": "Something went wrong?",
-    "proactiveBody": "If you hit an error or are stuck, I can help. Open chat and tell me what happened.",
+    "proactiveBody": "Open chat — I’ll read this page’s errors and tell you what to do. You don’t have to type first.",
     "proactiveOpen": "Open chat",
     "proactiveDismiss": "Dismiss suggestion",
-    "proactiveAria": "Assistant help offer after an error"
+    "proactiveAria": "Assistant help offer after an error",
+    "proactiveUserBubble": "Automatic page error check",
+    "proactiveAutoUserPrompt": "Using the supplied page context (path, title, visible errors, invalid fields) and the fact that the user only tapped the help offer and did not add their own explanation: infer what likely went wrong and give numbered next steps. If data is insufficient for a definite diagnosis, say exactly what they should verify. Answer in clear, polite English.",
+    "proactiveAutoFailed": "Automatic analysis failed. Try again or describe the issue briefly.",
+    "proactiveAutoEmpty": "No reply from the assistant. Try again or summarize the error."
   },
   "notifications": {
     "title": "Notifications",

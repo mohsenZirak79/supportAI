@@ -96,6 +96,8 @@ const audioChunks = ref([]);
 
 const proactiveNudgeVisible = ref(false);
 let proactiveAutoHideTimer = null;
+/** آخرین جزئیات رویداد پیشنهاد کمک؛ با کلیک روی CTA مصرف می‌شود. */
+const lastProactiveHelpDetail = ref(null);
 
 const OFFER_HELP_EVENT = 'supportai:offer-help';
 
@@ -567,8 +569,6 @@ const openWidget = async () => {
         } catch {
             /* ignore */
         }
-    } else if (messages.value.length === 0) {
-        loadGuestThreadFromStorage();
     }
     await nextTick();
     panelRef.value?.focusPanel?.();
@@ -580,6 +580,7 @@ const closeWidget = () => {
 
 function onOfferHelpEvent(ev) {
     const d = (ev && ev.detail) || {};
+    lastProactiveHelpDetail.value = d && typeof d === 'object' ? { ...d } : {};
     if (isOpen.value) return;
     proactiveNudgeVisible.value = true;
     if (!d.silentSound) {
@@ -591,9 +592,112 @@ function onOfferHelpEvent(ev) {
     }, 28000);
 }
 
+function buildProactiveDiagnosisQuestion(detail) {
+    const d = detail && typeof detail === 'object' ? detail : {};
+    const base = t('floating.proactiveAutoUserPrompt');
+    const bits = [];
+    if (d.source) bits.push(`[offer_help source: ${String(d.source).slice(0, 120)}]`);
+    if (d.message) bits.push(`[offer_help message: ${String(d.message).slice(0, 400)}]`);
+    if (d.toastMethod) bits.push(`[toast method: ${String(d.toastMethod).slice(0, 40)}]`);
+    const extra = bits.length ? `\n${bits.join('\n')}` : '';
+    const combined = base + extra;
+    return combined.length > 3200 ? combined.slice(0, 3200) : combined;
+}
+
+/**
+ * پس از کلیک روی پیشنهاد کمک: بدون تایپ کاربر، زمینهٔ صفحه + پرامپت منطقی به AI فرستاده می‌شود.
+ */
+async function sendProactiveAutoDiagnosis(offerDetail) {
+    if (loading.value) return;
+    if (!isGuest.value && conversationLocked.value) {
+        window.toast?.error?.(t('floating.chatLockedHint'));
+        return;
+    }
+
+    const lang = document.documentElement.lang || 'fa';
+    const pageContext = collectPageContextForAi({
+        source: 'floating-widget-proactive',
+        proactiveTrigger: true,
+        offerHelpSource: typeof offerDetail?.source === 'string' ? offerDetail.source.slice(0, 160) : undefined,
+        offerHelpMessage: typeof offerDetail?.message === 'string' ? offerDetail.message.slice(0, 500) : undefined,
+        offerHelpToastMethod: typeof offerDetail?.toastMethod === 'string' ? offerDetail.toastMethod.slice(0, 32) : undefined,
+    });
+
+    const question = buildProactiveDiagnosisQuestion(offerDetail);
+    loading.value = true;
+
+    try {
+        if (isGuest.value) {
+            const res = await fetch('/api/v1/guest-floating-chat', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify({
+                    question,
+                    lang,
+                    page_context: pageContext,
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                appendBotMessage({
+                    content:
+                        (typeof data.message === 'string' && data.message) ||
+                        t('floating.proactiveAutoFailed'),
+                });
+            } else {
+                appendUserMessage(t('floating.proactiveUserBubble'));
+                appendBotMessage({ content: data.answer || t('floating.proactiveAutoEmpty') });
+            }
+            return;
+        }
+
+        const conversationId = await ensureConversation();
+        const res = await apiFetch(`/conversations/${conversationId}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content: question,
+                lang,
+                page_context: pageContext,
+            }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 423) {
+            conversationLocked.value = true;
+            window.toast?.error?.(typeof data.message === 'string' ? data.message : t('floating.chatLockedHint'));
+            return;
+        }
+        if (!res.ok) {
+            appendBotMessage({ content: t('floating.proactiveAutoFailed') });
+            return;
+        }
+        if (data?.conversation?.id) {
+            activeConversationId.value = data.conversation.id;
+            persistWidgetConversationId(data.conversation.id);
+        }
+        appendUserMessage(t('floating.proactiveUserBubble'));
+        appendBotMessage(data?.ai_message);
+    } catch {
+        appendBotMessage({ content: t('floating.proactiveAutoFailed') });
+    } finally {
+        loading.value = false;
+        await nextTick();
+        panelRef.value?.focusPanel?.();
+    }
+}
+
 async function openFromProactiveNudge() {
+    const snap = lastProactiveHelpDetail.value && typeof lastProactiveHelpDetail.value === 'object'
+        ? { ...lastProactiveHelpDetail.value }
+        : {};
+    lastProactiveHelpDetail.value = null;
     dismissProactiveNudge();
     await openWidget();
+    await sendProactiveAutoDiagnosis(snap);
 }
 
 const toggleWidget = async () => {

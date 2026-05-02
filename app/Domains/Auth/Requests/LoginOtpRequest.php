@@ -22,8 +22,9 @@ class LoginOtpRequest extends FormRequest
     public function messages()
     {
         return [
-            'otp.digits' => 'OTP must be 6 digits',
-            'phone.exists' => 'Phone not registered',
+            'otp.required' => 'کد تأیید را وارد کنید.',
+            'otp.digits' => 'کد تأیید باید دقیقاً ۶ رقم باشد.',
+            'phone.exists' => 'این شماره تلفن ثبت نشده است.',
         ];
     }
 

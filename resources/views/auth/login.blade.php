@@ -305,6 +305,7 @@
             'auth.otpExpired': 'کد تأیید منقضی شده است.',
             'auth.pleaseWait': 'لطفا صبر کنید.',
             'auth.tooManyRequests': 'تعداد درخواست بیش از حد مجاز.',
+            'auth.otpSentSuccess': 'کد تأیید ارسال شد.',
             'nav.register': 'ثبت‌نام'
         },
         en: {
@@ -325,6 +326,7 @@
             'auth.otpExpired': 'Verification code has expired.',
             'auth.pleaseWait': 'Please wait.',
             'auth.tooManyRequests': 'Too many requests.',
+            'auth.otpSentSuccess': 'Verification code sent.',
             'nav.register': 'Register'
         },
         ar: {
@@ -345,6 +347,7 @@
             'auth.otpExpired': 'انتهت صلاحية رمز التحقق.',
             'auth.pleaseWait': 'يرجى الانتظار.',
             'auth.tooManyRequests': 'طلبات كثيرة جداً.',
+            'auth.otpSentSuccess': 'تم إرسال رمز التحقق.',
             'nav.register': 'إنشاء حساب'
         }
     };
@@ -467,6 +470,11 @@
             'کد تایید منقضی': translations[locale]['auth.otpExpired'],
             'لطفا صبر کنید': translations[locale]['auth.pleaseWait'],
             'تعداد درخواست بیش از حد': translations[locale]['auth.tooManyRequests'],
+            // پاسخ‌های قدیمی انگلیسی API (در صورت باقی‌ماندن در کش یا کلاینت قدیمی)
+            'Invalid OTP': translations[locale]['auth.invalidOtp'],
+            'OTP expired': translations[locale]['auth.otpExpired'],
+            'OTP sent': translations[locale]['auth.otpSentSuccess'],
+            'OTP sent for login': translations[locale]['auth.otpSentSuccess'],
         };
 
         // Check if message matches any known error

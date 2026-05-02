@@ -224,12 +224,12 @@ class AuthController
         // 6. محیط local → برگرداندن OTP برای تست
         //if (app()->environment('local')) {
             return response()->json([
-                'message' => 'OTP sent',
+                'message' => 'کد تأیید ارسال شد.',
                 'otp' => $otp
             ]);
         //}
 
-        return response()->json(['message' => 'OTP sent for login']);
+        return response()->json(['message' => 'کد تأیید برای ورود ارسال شد.']);
     }
 
 //    public function verifyLoginOtp(LoginOtpRequest $request)
@@ -247,11 +247,21 @@ class AuthController
         $user = User::where('phone', $request->phone)->first();
 
         if (!$user || now()->diffInSeconds($user->otp_sent_at) > 120) {
-            return response()->json(['error' => ['code' => 'OTP_EXPIRED', 'message' => 'OTP expired']], 400);
+            return response()->json([
+                'error' => [
+                    'code' => 'OTP_EXPIRED',
+                    'message' => 'کد تأیید منقضی شده است. لطفاً دوباره درخواست کد دهید.',
+                ],
+            ], 400);
         }
 
         if (Cache::get('otp_login_' . $request->phone) != $request->otp) {
-            return response()->json(['error' => ['code' => 'OTP_INVALID', 'message' => 'Invalid OTP']], 400);
+            return response()->json([
+                'error' => [
+                    'code' => 'OTP_INVALID',
+                    'message' => 'کد تأیید نادرست است.',
+                ],
+            ], 400);
         }
 
         // 1) صدور JWT برای استفاده در API
@@ -336,7 +346,12 @@ class AuthController
             $token = $user->createToken('api');
             return ['access_token' => $token->plainTextToken];
         }
-        return response()->json(['error' => ['code' => 'OTP_INVALID', 'message' => 'Invalid OTP']], 400);
+        return response()->json([
+            'error' => [
+                'code' => 'OTP_INVALID',
+                'message' => 'کد تأیید نادرست است.',
+            ],
+        ], 400);
     }
 
     public function logout(Request $request)

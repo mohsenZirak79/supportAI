@@ -40,6 +40,22 @@ final class GuestChatQuestionAugmenter
         $pageKind = (string) ($ctx['pageKind'] ?? '');
         $pathname = mb_strtolower((string) ($ctx['pathname'] ?? ''));
 
+        if (! empty($ctx['proactiveTrigger'])) {
+            $lines[] = '[زمینهٔ رویداد] کاربر پس از بروز خطا یا هشدار در برنامه، روی «باز کردن چت» در پیشنهاد کمک کلیک کرده و هنوز متنی از خودش ننوشته است؛ فقط زمینهٔ صفحه و در صورت وجود جزئیات رویداد کمک را دارد.';
+            $src = isset($ctx['offerHelpSource']) && is_string($ctx['offerHelpSource']) ? trim($ctx['offerHelpSource']) : '';
+            if ($src !== '') {
+                $lines[] = 'منبع تشخیص خطا در اپ: '.$src;
+            }
+            $mh = isset($ctx['offerHelpMessage']) && is_string($ctx['offerHelpMessage']) ? trim($ctx['offerHelpMessage']) : '';
+            if ($mh !== '') {
+                $lines[] = 'پیام/کد همراه رویداد کمک: '.mb_substr($mh, 0, 400);
+            }
+            $tm = isset($ctx['offerHelpToastMethod']) && is_string($ctx['offerHelpToastMethod']) ? trim($ctx['offerHelpToastMethod']) : '';
+            if ($tm !== '') {
+                $lines[] = 'نوع toast: '.$tm;
+            }
+        }
+
         $errs = $ctx['serverValidationErrors'] ?? null;
         if (is_array($errs) && $errs !== []) {
             $lines[] = '[زمینهٔ صفحه — فقط بر اساس موارد زیر جواب بده؛ به سناریوهای دیگر حدس نزن]';
