@@ -22,11 +22,6 @@
             </transition>
 
             <div class="floating-chat-launcher-anchor">
-                <FloatingChatGreeting
-                    :visible="greetingVisible"
-                    :text="t('floating.greeting')"
-                    :text-dir="direction"
-                />
                 <FloatingChatLauncher
                     :aria-label="isOpen ? 'بستن چت شناور' : 'باز کردن چت شناور'"
                     @toggle="toggleWidget"
@@ -37,25 +32,22 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { apiFetch } from '../../lib/http';
 import { floatingChatWidgetConfig } from '../../config/floatingChatWidget';
 import { useLanguage } from '../../i18n';
 import FloatingChatLauncher from './FloatingChatLauncher.vue';
 import FloatingChatPanel from './FloatingChatPanel.vue';
-import FloatingChatGreeting from './FloatingChatGreeting.vue';
 
 const ACTIVE_CHAT_STORAGE_KEY = 'supportAI:active-conversation-id';
 const FLOATING_WIDGET_CONVERSATION_KEY = 'supportAI:floating-widget-conversation-id';
 const FLOATING_IMPORT_STORAGE_KEY = 'supportAI:floating-import-v1';
 const GUEST_FLOATING_SESSION_KEY = 'supportAI:floating-guest-thread-v1';
 
-const { t, initLocale, direction } = useLanguage();
+const { t, initLocale } = useLanguage();
 
 const config = floatingChatWidgetConfig;
 const isOpen = ref(false);
-/** پیام «نیاز به کمک…» همیشه وقتی پنل بسته است نمایش داده می‌شود */
-const greetingVisible = computed(() => !isOpen.value);
 const draft = ref('');
 const loading = ref(false);
 const messages = ref([]);
