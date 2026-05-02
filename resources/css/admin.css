@@ -953,6 +953,77 @@ body .jdp-container { z-index: 201000 !important; }
     margin-top: 0.5rem;
     opacity: 0.9;
 }
+
+/* مینی‌مارک‌داون پاسخ AI در مودال ادمین (هم‌خوان با AiAnswer.vue) */
+.detail-bubble .answer-text.admin-ai-markdown {
+    white-space: normal;
+    line-height: 1.85;
+    font-size: 0.9375rem;
+    word-break: break-word;
+    color: inherit;
+}
+.detail-bubble .answer-text.admin-ai-markdown h1.md-h1,
+.detail-bubble .answer-text.admin-ai-markdown h2.md-h2,
+.detail-bubble .answer-text.admin-ai-markdown h3.md-h3 {
+    font-weight: 600;
+    margin: 12px 0 6px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+    color: inherit;
+}
+.detail-bubble .answer-text.admin-ai-markdown h1.md-h1 { font-size: 1.05rem; }
+.detail-bubble .answer-text.admin-ai-markdown h2.md-h2 { font-size: 1rem; }
+.detail-bubble .answer-text.admin-ai-markdown h3.md-h3 { font-size: 0.95rem; }
+.detail-bubble .answer-text.admin-ai-markdown p {
+    margin: 6px 0;
+    color: inherit;
+    opacity: 0.98;
+}
+.detail-bubble .answer-text.admin-ai-markdown ul,
+.detail-bubble .answer-text.admin-ai-markdown ol {
+    margin: 8px 0;
+    padding: 0;
+    list-style: none;
+}
+.detail-bubble .answer-text.admin-ai-markdown li {
+    position: relative;
+    margin: 4px 0;
+    padding-inline-start: 20px;
+    line-height: 1.7;
+}
+.detail-bubble .answer-text.admin-ai-markdown ul li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    opacity: 0.55;
+    border-radius: 50%;
+}
+.detail-bubble .answer-text.admin-ai-markdown ol {
+    counter-reset: admin-md-ol;
+}
+.detail-bubble .answer-text.admin-ai-markdown ol li {
+    counter-increment: admin-md-ol;
+}
+.detail-bubble .answer-text.admin-ai-markdown ol li::before {
+    content: counter(admin-md-ol);
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    opacity: 0.75;
+    min-width: 1.1rem;
+    text-align: center;
+}
+.detail-bubble .answer-text.admin-ai-markdown strong {
+    font-weight: 700;
+    color: inherit;
+}
+
 .detail-attachments {
     margin-top: 0.5rem;
     display: flex;

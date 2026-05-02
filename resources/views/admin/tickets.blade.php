@@ -131,7 +131,7 @@
                   <div class="d-flex justify-content-${side}">
                     <div class="detail-bubble ${isSupport ? 'detail-bubble--agent' : 'detail-bubble--user'}" dir="rtl">
                         <div class="detail-bubble__sender">${who}</div>
-                        <div style="white-space:pre-wrap;word-break:break-word;">${escapeHtml(m.message || '')}</div>
+                        ${ticketMessageBodyHtml(isSupport, m.message)}
                         ${renderFiles(m.attachments||[])}
                         <div class="detail-bubble__time">${toEnDate(m.created_at)}</div>
                     </div>
@@ -193,6 +193,13 @@
                 return s || '-';
             }
             function escapeHtml(s){return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
+            function ticketMessageBodyHtml(isSupport, raw) {
+                const text = raw || '';
+                if (isSupport && typeof window.__supportAiRenderMiniMd === 'function') {
+                    return '<div class="answer-text admin-ai-markdown" dir="auto">' + window.__supportAiRenderMiniMd(text) + '</div>';
+                }
+                return '<div style="white-space:pre-wrap;word-break:break-word;" dir="auto">' + escapeHtml(text) + '</div>';
+            }
         });
     </script>
 @endpush

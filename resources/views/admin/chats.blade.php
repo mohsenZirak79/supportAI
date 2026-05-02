@@ -184,7 +184,7 @@
           <div class="d-flex justify-content-${side}">
             <div class="detail-bubble ${bubbleClass}" style="max-width: 90%;">
               <div class="detail-bubble__sender">${senderLabel}</div>
-              <div>${escapeHtml(m.content || '')}</div>
+              ${messageBodyHtml(isAi, m.content)}
               ${mediaHtml}
               <div class="detail-bubble__time">${fmtDate(m.created_at)}</div>
             </div>
@@ -364,6 +364,14 @@
                 return (s || '').replace(/[&<>"']/g, m => ({
                     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
                 }[m]))
+            }
+
+            function messageBodyHtml(isAi, raw) {
+                const text = raw || ''
+                if (isAi && typeof window.__supportAiRenderMiniMd === 'function') {
+                    return '<div class="answer-text admin-ai-markdown" dir="auto">' + window.__supportAiRenderMiniMd(text) + '</div>'
+                }
+                return '<div dir="auto">' + escapeHtml(text) + '</div>'
             }
 
             function fmtDate(iso) {

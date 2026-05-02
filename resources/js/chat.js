@@ -1,5 +1,6 @@
 // resources/js/chat.js
 import './bootstrap'; // اگر داری از bootstrap.js استفاده می‌کنی
+import { patchToastLikeObject } from './lib/notifySupportAiOfferHelp';
 import { createApp } from 'vue';
 import ChatInterface from './components/ChatInterface.vue';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
@@ -50,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // دسترسی سراسری (برای ChatInterface و کنسول)
     window.__toast = app.config.globalProperties.$toast;
+    patchToastLikeObject(window.__toast, 'chat-vue-toast');
 
     app.mount(el);
 });

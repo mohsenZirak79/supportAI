@@ -4,6 +4,11 @@
  * Bootstrap روی window قبل از soft-ui و سایر importها (نگاه کنید به admin/bootstrap-globals.js).
  */
 import './admin/bootstrap-globals.js';
+import { renderMiniMarkdownToHtml } from './lib/renderMiniMarkdown';
+
+if (typeof window !== 'undefined') {
+    window.__supportAiRenderMiniMd = renderMiniMarkdownToHtml;
+}
 
 import "./admin/jquery-3.7.1.min.js";
 import "./admin/bootstrap-notify.js";

@@ -142,7 +142,12 @@
     "newChatStarted": "A new conversation has started.",
     "newChatFailed": "Could not start a new conversation.",
     "chatLockedBanner": "A call request is registered for this chat; you cannot send new messages until support follows up. Tap “New chat” to talk to the assistant again.",
-    "chatLockedHint": "This chat is locked because of a call request. Use “New chat” to continue."
+    "chatLockedHint": "This chat is locked because of a call request. Use “New chat” to continue.",
+    "proactiveTitle": "Something went wrong?",
+    "proactiveBody": "If you hit an error or are stuck, I can help. Open chat and tell me what happened.",
+    "proactiveOpen": "Open chat",
+    "proactiveDismiss": "Dismiss suggestion",
+    "proactiveAria": "Assistant help offer after an error"
   },
   "notifications": {
     "title": "Notifications",

@@ -46,6 +46,7 @@
 <script setup>
 import { ref, computed, onBeforeUnmount, defineProps } from 'vue';
 import { apiFetch } from '../lib/http';
+import { renderMiniMarkdownToHtml } from '../lib/renderMiniMarkdown';
 import { useLanguage } from '../i18n';
 
 const { direction, t } = useLanguage();
@@ -60,88 +61,7 @@ const props = defineProps({
 
 const textTrim = computed(() => (props.text || '').trim());
 
-/* --------- مینی‌مارک‌داون: ### Heading, * / - bullets, 1. numbered, **bold** --------- */
-function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;'}[m]));
-}
-function inlineFormat(s) {
-    // **bold**
-    return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-}
-function renderMiniMd(src) {
-    const lines = src.split(/\r?\n/);
-    let out = [];
-    let inUL = false, inOL = false;
-    let pBuffer = [];
-
-    const flushP = () => {
-        if (pBuffer.length) {
-            const txt = inlineFormat(escapeHtml(pBuffer.join(' ')));
-            out.push(`<p>${txt}</p>`);
-            pBuffer = [];
-        }
-    };
-    const closeLists = () => {
-        if (inUL) { out.push('</ul>'); inUL = false; }
-        if (inOL) { out.push('</ol>'); inOL = false; }
-    };
-
-    for (let raw of lines) {
-        const line = raw.trim();
-
-        // Headings: ترتیب مهم است – اول ###، بعد ##، بعد #
-        if (/^###\s+/.test(line)) {
-            flushP(); closeLists();
-            const h = line.replace(/^###\s+/, '');
-            out.push(`<h3 class="md-h3">${inlineFormat(escapeHtml(h))}</h3>`);
-            continue;
-        }
-        if (/^##\s+/.test(line)) {
-            flushP(); closeLists();
-            const h = line.replace(/^##\s+/, '');
-            out.push(`<h2 class="md-h2">${inlineFormat(escapeHtml(h))}</h2>`);
-            continue;
-        }
-        if (/^#\s+/.test(line)) {
-            flushP(); closeLists();
-            const h = line.replace(/^#\s+/, '');
-            out.push(`<h1 class="md-h1">${inlineFormat(escapeHtml(h))}</h1>`);
-            continue;
-        }
-
-        // Bulleted list
-        const mUL = line.match(/^[*-]\s+(.+)/);
-        if (mUL) {
-            flushP();
-            if (!inUL) { closeLists(); out.push('<ul>'); inUL = true; }
-            out.push(`<li>${inlineFormat(escapeHtml(mUL[1]))}</li>`);
-            continue;
-        }
-
-        // Numbered list
-        const mOL = line.match(/^\d+\.\s+(.+)/);
-        if (mOL) {
-            flushP();
-            if (!inOL) { closeLists(); out.push('<ol>'); inOL = true; }
-            out.push(`<li>${inlineFormat(escapeHtml(mOL[1]))}</li>`);
-            continue;
-        }
-
-        // Blank line => پاراگراف جدید
-        if (line === '') {
-            flushP(); closeLists();
-            continue;
-        }
-
-        // Otherwise paragraph buffer
-        pBuffer.push(line);
-    }
-
-    flushP(); closeLists();
-    return out.join('\n');
-}
-
-const html = computed(() => renderMiniMd(textTrim.value));
+const html = computed(() => renderMiniMarkdownToHtml(textTrim.value));
 
 /* ------------------ TTS (Backend API) ------------------ */
 const speaking = ref(false);

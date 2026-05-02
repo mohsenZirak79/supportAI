@@ -1,6 +1,28 @@
 <template>
-    <div v-if="config.enableFloatingChatWidget" class="floating-chat-root" :class="{ 'is-open': isOpen }">
+    <div
+        v-if="config.enableFloatingChatWidget"
+        class="floating-chat-root"
+        :class="{ 'is-open': isOpen, 'has-proactive-nudge': proactiveNudgeVisible }"
+    >
         <div class="floating-chat-stack">
+            <transition name="nudge-pop">
+                <div
+                    v-if="proactiveNudgeVisible"
+                    class="floating-help-nudge"
+                    role="dialog"
+                    aria-live="polite"
+                    :aria-label="t('floating.proactiveAria')"
+                >
+                    <button type="button" class="floating-help-nudge__close" :aria-label="t('floating.proactiveDismiss')" @click="dismissProactiveNudge">
+                        ×
+                    </button>
+                    <p class="floating-help-nudge__title">{{ t('floating.proactiveTitle') }}</p>
+                    <p class="floating-help-nudge__body">{{ t('floating.proactiveBody') }}</p>
+                    <button type="button" class="floating-help-nudge__cta" @click="openFromProactiveNudge">
+                        {{ t('floating.proactiveOpen') }}
+                    </button>
+                </div>
+            </transition>
             <transition name="widget-pop">
                 <FloatingChatPanel
                     v-if="isOpen"
@@ -70,6 +92,61 @@ const recordingTime = ref(0);
 const recordingInterval = ref(null);
 const mediaRecorder = ref(null);
 const audioChunks = ref([]);
+
+const proactiveNudgeVisible = ref(false);
+let proactiveAutoHideTimer = null;
+
+const OFFER_HELP_EVENT = 'supportai:offer-help';
+
+function playSupportAiChime() {
+    try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        const ctx = new Ctx();
+        const gain = ctx.createGain();
+        gain.connect(ctx.destination);
+        const playTone = (freq, t0, dur) => {
+            const osc = ctx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, t0);
+            osc.connect(gain);
+            osc.start(t0);
+            osc.stop(t0 + dur);
+        };
+        const now = ctx.currentTime;
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.11, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+        playTone(880, now, 0.1);
+        playTone(1174, now + 0.1, 0.12);
+        ctx.resume?.().catch(() => {});
+        window.setTimeout(() => {
+            try {
+                ctx.close();
+            } catch {
+                /* ignore */
+            }
+        }, 500);
+    } catch {
+        /* ignore */
+    }
+    try {
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            navigator.vibrate([18, 40, 22]);
+        }
+    } catch {
+        /* ignore */
+    }
+}
+
+function dismissProactiveNudge() {
+    proactiveNudgeVisible.value = false;
+    if (proactiveAutoHideTimer) {
+        window.clearTimeout(proactiveAutoHideTimer);
+        proactiveAutoHideTimer = null;
+    }
+}
+
 
 const getStorage = () => {
     if (typeof window === 'undefined') return null;
@@ -518,6 +595,24 @@ const closeWidget = () => {
     isOpen.value = false;
 };
 
+function onOfferHelpEvent(ev) {
+    const d = (ev && ev.detail) || {};
+    if (isOpen.value) return;
+    proactiveNudgeVisible.value = true;
+    if (!d.silentSound) {
+        playSupportAiChime();
+    }
+    if (proactiveAutoHideTimer) window.clearTimeout(proactiveAutoHideTimer);
+    proactiveAutoHideTimer = window.setTimeout(() => {
+        dismissProactiveNudge();
+    }, 28000);
+}
+
+async function openFromProactiveNudge() {
+    dismissProactiveNudge();
+    await openWidget();
+}
+
 const toggleWidget = async () => {
     if (isOpen.value) {
         closeWidget();
@@ -560,7 +655,12 @@ const openFullChat = async () => {
 };
 
 const onEsc = (event) => {
-    if (event.key === 'Escape' && isOpen.value) {
+    if (event.key !== 'Escape') return;
+    if (proactiveNudgeVisible.value) {
+        dismissProactiveNudge();
+        return;
+    }
+    if (isOpen.value) {
         closeWidget();
     }
 };
@@ -592,10 +692,13 @@ onMounted(async () => {
     }
 
     document.addEventListener('keydown', onEsc);
+    document.addEventListener(OFFER_HELP_EVENT, onOfferHelpEvent);
 });
 
 onUnmounted(() => {
     document.removeEventListener('keydown', onEsc);
+    document.removeEventListener(OFFER_HELP_EVENT, onOfferHelpEvent);
+    dismissProactiveNudge();
     if (recordingInterval.value) window.clearInterval(recordingInterval.value);
     if (mediaRecorder.value) {
         mediaRecorder.value.stream?.getTracks().forEach((track) => track.stop());
@@ -627,6 +730,105 @@ onUnmounted(() => {
 }
 
 /* لانچر همیشه زیر لبهٔ چپ پنل؛ اندازه ثابت */
+.floating-help-nudge {
+    pointer-events: auto;
+    width: 100%;
+    max-width: 300px;
+    padding: 0.75rem 0.85rem 0.65rem;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #fffefb, #f0fdfa);
+    border: 1px solid rgba(13, 148, 136, 0.35);
+    box-shadow:
+        0 14px 36px rgba(15, 118, 110, 0.22),
+        0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+    position: relative;
+    text-align: start;
+    direction: rtl;
+}
+
+.floating-help-nudge__close {
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #64748b;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.floating-help-nudge__close:hover {
+    background: rgba(15, 23, 42, 0.06);
+    color: #0f172a;
+}
+
+.floating-help-nudge__title {
+    margin: 0 0 0.35rem;
+    padding-inline-end: 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f766e;
+}
+
+.floating-help-nudge__body {
+    margin: 0 0 0.65rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: #334155;
+}
+
+.floating-help-nudge__cta {
+    width: 100%;
+    padding: 0.45rem 0.65rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(135deg, #0f766e, #0891b2);
+    box-shadow: 0 4px 14px rgba(8, 145, 178, 0.35);
+}
+.floating-help-nudge__cta:hover {
+    filter: brightness(1.05);
+}
+
+.nudge-pop-enter-active {
+    transition: all 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nudge-pop-leave-active {
+    transition: opacity 0.22s ease;
+}
+.nudge-pop-enter-from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+}
+.nudge-pop-leave-to {
+    opacity: 0;
+}
+
+.floating-chat-root.has-proactive-nudge .floating-chat-launcher-anchor :deep(.floating-chat-launcher) {
+    animation: launcher-nudge-ring 1.1s ease-in-out 2;
+}
+
+@keyframes launcher-nudge-ring {
+    0%,
+    100% {
+        box-shadow:
+            0 18px 42px rgba(14, 116, 144, 0.34),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        box-shadow:
+            0 10px 28px rgba(234, 179, 8, 0.45),
+            0 0 0 4px rgba(250, 204, 21, 0.35),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+}
+
 .floating-chat-launcher-anchor {
     position: relative;
     width: 62px;

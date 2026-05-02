@@ -5,6 +5,7 @@ import { i18nPlugin } from './i18n'; // CSP-safe i18n plugin
 import VueToast from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 import { mountFloatingChatWidget } from './floating-chat';
+import { patchToastLikeObject } from './lib/notifySupportAiOfferHelp';
 
 const app = createApp(TicketDashboard);
 
@@ -17,6 +18,7 @@ app.use(VueToast, {
     duration: 4000,
     dismissible: true,
 });
+patchToastLikeObject(app.config.globalProperties.$toast, 'tickets-vue-toast');
 
 app.mount('#app');
 mountFloatingChatWidget();

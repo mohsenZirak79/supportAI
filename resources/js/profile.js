@@ -10,6 +10,7 @@ import VueToast from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 import './bootstrap';
 import { mountFloatingChatWidget } from './floating-chat';
+import { patchToastLikeObject } from './lib/notifySupportAiOfferHelp';
 
 // Initialize Vue app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         duration: 4000,
         dismissible: true,
     });
+    patchToastLikeObject(app.config.globalProperties.$toast, 'profile-vue-toast');
 
     // Mount the app
     app.mount(el);

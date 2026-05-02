@@ -546,5 +546,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 </script>
+@if ($errors->any())
+    <script>
+        window.setTimeout(function () {
+            try {
+                document.dispatchEvent(new CustomEvent('supportai:offer-help', { bubbles: true, detail: { source: 'register-validation' } }));
+            } catch (e) { /* ignore */ }
+        }, 600);
+    </script>
+@endif
 </body>
 </html>

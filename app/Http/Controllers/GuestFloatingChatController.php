@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\GuestChatQuestionAugmenter;
 use App\Support\PageContextForAi;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,12 +16,13 @@ class GuestFloatingChatController extends Controller
     public function ask(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'question' => 'required|string|min:1|max:2000',
+            'question' => 'required|string|min:1|max:3500',
             'lang' => 'nullable|string|max:8',
             'page_context' => 'nullable|array',
         ]);
 
         $pageContext = PageContextForAi::sanitize($validated['page_context'] ?? null);
+        $questionForAi = GuestChatQuestionAugmenter::embed($validated['question'], $pageContext);
 
         $lang = strtolower((string) ($validated['lang'] ?? 'fa'));
         if (! in_array($lang, ['fa', 'en', 'ar'], true)) {
@@ -35,7 +37,7 @@ class GuestFloatingChatController extends Controller
                 ->withOptions(['connect_timeout' => 10])
                 ->timeout((int) config('services.python_ai.timeout', 60))
                 ->post($askUrl, array_merge([
-                    'question' => $validated['question'],
+                    'question' => $questionForAi,
                     'guest' => true,
                     'user_type' => 'new',
                     'first_message' => false,
