@@ -10,20 +10,29 @@
             const el = document.querySelector('meta[name="csrf-token"]');
             return el ? el.getAttribute('content') : '{{ csrf_token() }}'
         }
-        (function(){
+        document.addEventListener('DOMContentLoaded', function(){
             const token = getCsrfToken();
             const tkMsgList = document.getElementById('tkMsgList');
             const tkMeta = document.getElementById('tkMeta');
             const replyBox = document.getElementById('replyBox');
             const replyForm = document.getElementById('replyForm');
+            const ticketModalEl = document.getElementById('ticketModal');
+
+            function showTicketModal() {
+                if (!ticketModalEl || !window.bootstrap || !window.bootstrap.Modal) return;
+                window.bootstrap.Modal.getOrCreateInstance(ticketModalEl).show();
+            }
 
             let currentTicketId = null;
             let canReply = false;
 
             document.querySelectorAll('.btn-view-ticket').forEach(btn=>{
-                btn.addEventListener('click', ()=> openTicket(btn));
+                btn.addEventListener('click', function (ev) {
+                    ev.preventDefault();
+                    openTicket(btn);
+                });
             });
-            document.getElementById('ticketModal').addEventListener('click', function(e){
+            if (ticketModalEl) ticketModalEl.addEventListener('click', function(e){
                 var retryBtn = e.target.closest('[data-retry-ticket]');
                 if (retryBtn && retryBtn.classList.contains('admin-retry-btn')) {
                     var id = retryBtn.getAttribute('data-retry-ticket');
@@ -34,16 +43,12 @@
             const urlParams = new URLSearchParams(window.location.search);
             const preselectId = urlParams.get('ticket');
             if (preselectId) {
-                const btn = document.querySelector(`.btn-view-ticket[data-id="${preselectId}"]`);
+                const safeId = preselectId.replace(/"/g, '');
+                const btn = document.querySelector('.btn-view-ticket[data-id="' + safeId + '"]');
                 if (btn) {
                     openTicket(btn);
                 } else {
-                    openTicketById(preselectId);
-                }
-                const modalEl = document.getElementById('ticketModal');
-                if (modalEl && window.bootstrap?.Modal) {
-                    const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
-                    modal.show();
+                    openTicketById(safeId);
                 }
             }
 
@@ -54,6 +59,7 @@
                 tkMeta.innerHTML = '';
                 tkMsgList.innerHTML = '<div class="detail-messages__loading">در حال بارگذاری…</div>';
                 replyBox.style.display = 'none';
+                showTicketModal();
 
                 try{
                     const res = await fetch(url, { headers: { 'Accept':'application/json' }});
@@ -76,6 +82,7 @@
                 tkMeta.innerHTML = '';
                 tkMsgList.innerHTML = '<div class="detail-messages__loading">در حال بارگذاری…</div>';
                 replyBox.style.display = 'none';
+                showTicketModal();
 
                 try{
                     const res = await fetch(url, { headers: { 'Accept':'application/json' }});
@@ -183,7 +190,7 @@
                 return s || '-';
             }
             function escapeHtml(s){return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
-        })();
+        });
     </script>
 @endpush
 
@@ -247,9 +254,7 @@
                                     class="list-page__btn-view btn-view-ticket"
                                     data-id="{{ $t->id }}"
                                     data-url="{{ route('admin.tickets.show', $t->id) }}"
-                                    type="button"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#ticketModal">
+                                    type="button">
                                     مشاهده
                                 </button>
                             </td>

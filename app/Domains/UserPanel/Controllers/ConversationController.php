@@ -8,6 +8,7 @@ use App\Domains\Shared\Models\User;
 use App\Http\Controllers\Controller;
 use App\Domains\Shared\Models\Conversation;
 use App\Domains\Shared\Models\Message;
+use App\Domains\Shared\Models\WidgetCallbackRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -114,6 +115,17 @@ class ConversationController extends Controller
     {
         $user = $request->user();
         abort_unless($user && $conversation->user_id === $user->id, 403);
+
+        $callbackLocked = WidgetCallbackRequest::query()
+            ->where('conversation_id', $conversation->id)
+            ->where('user_id', $user->id)
+            ->where('status', '!=', WidgetCallbackRequest::STATUS_CANCELLED)
+            ->exists();
+        if ($callbackLocked) {
+            return response()->json([
+                'message' => 'برای این گفتگو درخواست تماس ثبت شده است. برای ادامه از «چت جدید» در ویجت استفاده کنید یا گفتگوی دیگری باز کنید.',
+            ], 423);
+        }
 
         $validated = $request->validate([
             'content' => 'nullable|string|max:2000',

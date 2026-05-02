@@ -24,7 +24,7 @@
                     <template v-else>{{ msg.text || t('chat.voiceMessage') }}</template>
                 </div>
                 <div
-                    v-if="msg.sender === 'bot' && showPhoneCallbackOption && msg.aiMessageId && conversationId && !msg.callbackRegistered"
+                    v-if="msg.sender === 'bot' && showPhoneCallbackOption && !chatLocked && msg.aiMessageId && conversationId && !msg.callbackRegistered"
                     class="callback-cta"
                 >
                     <label class="callback-cta__row">
@@ -40,16 +40,20 @@
                         {{ t('floating.callbackSubmit') }}
                     </button>
                 </div>
-                <div v-else-if="msg.sender === 'bot' && msg.callbackRegistered" class="callback-done">
+                <div v-else-if="msg.sender === 'bot' && msg.callbackRegistered && !chatLocked" class="callback-done">
                     {{ t('floating.callbackRegistered') }}
                 </div>
             </div>
             <div v-if="loading" class="typing">{{ t('floating.processing') }}</div>
         </div>
 
+        <div v-if="chatLocked" class="chat-lock-banner" role="status">
+            {{ t('floating.chatLockedBanner') }}
+        </div>
+
         <FloatingChatInput
             :model-value="draft"
-            :disabled="loading"
+            :disabled="loading || chatLocked"
             :is-recording="isRecording"
             :recording-time="recordingTime"
             :dir="direction"
@@ -63,7 +67,10 @@
             @send-recording="$emit('send-recording')"
         />
 
-        <footer v-if="showOpenFullChat" class="widget-footer">
+        <footer v-if="showOpenFullChat" class="widget-footer widget-footer--row">
+            <button type="button" class="open-full-btn open-full-btn--secondary" @click="$emit('new-chat')">
+                {{ t('floating.newChat') }}
+            </button>
             <button type="button" class="open-full-btn" @click="$emit('open-full-chat')">
                 {{ t('floating.openFullChat') }}
             </button>
@@ -88,6 +95,8 @@ defineProps({
     showPhoneCallbackOption: { type: Boolean, default: false },
     /** شناسهٔ گفتگوی ویجت روی سرور */
     conversationId: { type: [String, Number], default: null },
+    /** پس از ثبت درخواست تماس برای این گفتگو */
+    chatLocked: { type: Boolean, default: false },
     isRecording: { type: Boolean, default: false },
     recordingTime: { type: Number, default: 0 },
 });
@@ -101,6 +110,7 @@ const emit = defineEmits([
     'cancel-recording',
     'send-recording',
     'phone-callback-request',
+    'new-chat',
 ]);
 
 const consentByMessageId = reactive({});
@@ -261,6 +271,17 @@ defineExpose({ focusPanel });
     font-weight: 600;
     padding-inline-start: 2px;
 }
+.chat-lock-banner {
+    flex-shrink: 0;
+    margin: 0 14px 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #92400e;
+    background: #fffbeb;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
 .bubble {
     max-width: 85%;
     border-radius: 14px;
@@ -288,8 +309,16 @@ defineExpose({ focusPanel });
     background: rgba(248, 250, 252, 0.55);
 }
 
+.widget-footer--row {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: stretch;
+}
+
 .open-full-btn {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     border: 0;
     border-radius: 12px;
     padding: 10px 12px;
@@ -303,6 +332,15 @@ defineExpose({ focusPanel });
 
 .open-full-btn:hover {
     background: rgba(15, 118, 110, 0.16);
+}
+
+.open-full-btn--secondary {
+    background: rgba(148, 163, 184, 0.2);
+    color: #334155;
+}
+
+.open-full-btn--secondary:hover {
+    background: rgba(148, 163, 184, 0.3);
 }
 
 .open-full-btn:active {

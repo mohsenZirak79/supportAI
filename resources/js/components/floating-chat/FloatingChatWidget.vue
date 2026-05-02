@@ -12,12 +12,14 @@
                     :show-open-full-chat="!isGuest"
                     :show-phone-callback-option="!isGuest"
                     :conversation-id="activeConversationId"
+                    :chat-locked="conversationLocked"
                     :is-recording="isRecording"
                     :recording-time="recordingTime"
                     @update:draft="draft = $event"
                     @send-text="sendText"
                     @close="closeWidget"
                     @open-full-chat="openFullChat"
+                    @new-chat="startNewWidgetChat"
                     @start-recording="startRecording"
                     @cancel-recording="cancelRecording"
                     @send-recording="sendRecording"
@@ -60,6 +62,8 @@ const panelRef = ref(null);
 
 const isGuest = ref(false);
 const authChecked = ref(false);
+/** پس از ثبت درخواست تماس برای همین گفتگو، ارسال پیام در ویجت بسته می‌شود تا «چت جدید». */
+const conversationLocked = ref(false);
 
 const isRecording = ref(false);
 const recordingTime = ref(0);
@@ -153,6 +157,24 @@ const persistGuestThread = () => {
     }
 };
 
+const refreshConversationLock = async () => {
+    if (isGuest.value || !activeConversationId.value) {
+        conversationLocked.value = false;
+        return;
+    }
+    try {
+        const res = await apiFetch(`/conversations/${activeConversationId.value}/widget-callback-lock`);
+        if (!res.ok) {
+            conversationLocked.value = false;
+            return;
+        }
+        const data = await res.json();
+        conversationLocked.value = Boolean(data.locked);
+    } catch {
+        conversationLocked.value = false;
+    }
+};
+
 const ensureConversation = async () => {
     if (isGuest.value) {
         throw new Error('guest has no server conversation');
@@ -203,7 +225,7 @@ const appendBotMessage = (payload) => {
 };
 
 const onPhoneCallbackRequest = async ({ aiMessageId, consent }) => {
-    if (!aiMessageId || !consent) return;
+    if (!aiMessageId || !consent || conversationLocked.value) return;
     let conversationId = activeConversationId.value;
     if (!conversationId) {
         try {
@@ -233,11 +255,49 @@ const onPhoneCallbackRequest = async ({ aiMessageId, consent }) => {
         messages.value.splice(idx, 1, { ...prev, callbackRegistered: true });
     }
     window.toast?.success?.(typeof data.message === 'string' ? data.message : 'درخواست تماس ثبت شد.');
+    conversationLocked.value = true;
+};
+
+const startNewWidgetChat = async () => {
+    if (isGuest.value || loading.value) return;
+    loading.value = true;
+    try {
+        try {
+            getStorage()?.removeItem(FLOATING_WIDGET_CONVERSATION_KEY);
+        } catch {
+            /* ignore */
+        }
+        activeConversationId.value = null;
+        messages.value = [];
+        draft.value = '';
+        conversationLocked.value = false;
+
+        const createRes = await apiFetch('/conversations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: 'چت جدید' }),
+        });
+        if (!createRes.ok) throw new Error('create failed');
+        const newConversation = await createRes.json();
+        activeConversationId.value = newConversation.id;
+        persistWidgetConversationId(newConversation.id);
+        await refreshConversationLock();
+        window.toast?.success?.(t('floating.newChatStarted'));
+    } catch {
+        window.toast?.error?.(t('floating.newChatFailed'));
+    } finally {
+        loading.value = false;
+    }
 };
 
 const sendText = async () => {
     const text = draft.value.trim();
     if (!text || loading.value) return;
+
+    if (!isGuest.value && conversationLocked.value) {
+        window.toast?.error?.(t('floating.chatLockedHint'));
+        return;
+    }
 
     appendUserMessage(text);
     draft.value = '';
@@ -289,8 +349,18 @@ const sendText = async () => {
                 page_context: collectPageContextForAi({ source: 'floating-widget' }),
             }),
         });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 423) {
+            conversationLocked.value = true;
+            const last = messages.value[messages.value.length - 1];
+            if (last && last.sender === 'user') {
+                messages.value.pop();
+            }
+            draft.value = text;
+            window.toast?.error?.(typeof data.message === 'string' ? data.message : t('floating.chatLockedHint'));
+            return;
+        }
         if (!res.ok) throw new Error('send failed');
-        const data = await res.json();
         if (data?.conversation?.id) {
             activeConversationId.value = data.conversation.id;
             persistWidgetConversationId(data.conversation.id);
@@ -313,6 +383,10 @@ const formatMicrophoneError = (error) => {
 const startRecording = async () => {
     if (isGuest.value) {
         appendBotMessage({ content: t('floating.guestVoiceDisabled') });
+        return;
+    }
+    if (conversationLocked.value) {
+        window.toast?.error?.(t('floating.chatLockedHint'));
         return;
     }
     if (loading.value || isRecording.value) return;
@@ -364,6 +438,11 @@ const sendRecording = () => {
 };
 
 const uploadVoice = async (blob) => {
+    if (conversationLocked.value) {
+        window.toast?.error?.(t('floating.chatLockedHint'));
+        cleanupRecording();
+        return;
+    }
     loading.value = true;
     const tempVoiceUrl = URL.createObjectURL(blob);
     messages.value.push({
@@ -395,8 +474,14 @@ const uploadVoice = async (blob) => {
                 page_context: collectPageContextForAi({ source: 'floating-widget-voice' }),
             }),
         });
+        const data = await messageRes.json().catch(() => ({}));
+        if (messageRes.status === 423) {
+            conversationLocked.value = true;
+            messages.value.pop();
+            window.toast?.error?.(typeof data.message === 'string' ? data.message : t('floating.chatLockedHint'));
+            return;
+        }
         if (!messageRes.ok) throw new Error('voice send failed');
-        const data = await messageRes.json();
         if (data?.conversation?.id) {
             activeConversationId.value = data.conversation.id;
             persistWidgetConversationId(data.conversation.id);
@@ -418,6 +503,7 @@ const openWidget = async () => {
     if (!isGuest.value) {
         try {
             await ensureConversation();
+            await refreshConversationLock();
         } catch {
             /* ignore */
         }
@@ -486,6 +572,14 @@ watch(
     },
     { deep: true }
 );
+
+watch([activeConversationId, isGuest], async ([id, guest]) => {
+    if (guest || !id) {
+        conversationLocked.value = false;
+        return;
+    }
+    await refreshConversationLock();
+});
 
 onMounted(async () => {
     initLocale();

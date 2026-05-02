@@ -19,17 +19,27 @@
 
 @push('scripts')
     <script>
-        (function () {
+        document.addEventListener('DOMContentLoaded', function () {
             const titleEl = document.getElementById('convModalLabel')
             const msgList = document.getElementById('msgList')
             const refList = document.getElementById('refList')
             const convMeta = document.getElementById('convMeta')
+            const convModalEl = document.getElementById('convModal')
+
+            function showConvModal() {
+                if (!convModalEl || !window.bootstrap || !window.bootstrap.Modal) return
+                window.bootstrap.Modal.getOrCreateInstance(convModalEl).show()
+            }
 
             let currentConvBtn = null;
             document.querySelectorAll('.btn-view-conv').forEach(btn => {
-                btn.addEventListener('click', () => { currentConvBtn = btn; openConversation(btn); })
+                btn.addEventListener('click', function (ev) {
+                    ev.preventDefault()
+                    currentConvBtn = btn
+                    openConversation(btn)
+                })
             });
-            document.getElementById('convModal').addEventListener('click', function(e){
+            if (convModalEl) convModalEl.addEventListener('click', function(e){
                 var retryBtn = e.target.closest('.admin-retry-btn[data-retry-conv]');
                 if (retryBtn && currentConvBtn) openConversation(currentConvBtn);
             });
@@ -43,6 +53,7 @@
                 convMeta.innerHTML = ''
                 msgList.innerHTML = '<div class="detail-messages__loading">در حال بارگذاری…</div>'
                 refList.innerHTML = ''
+                showConvModal()
 
                 try {
                     const res = await fetch(url, {headers: {'Accept': 'application/json'}})
@@ -359,10 +370,13 @@
 
             const openConv = new URLSearchParams(window.location.search).get('open')
             if (openConv) {
-                const btn = document.querySelector('.btn-view-conv[data-conv="' + openConv + '"]')
-                if (btn) btn.click()
+                const btn = document.querySelector('.btn-view-conv[data-conv="' + openConv.replace(/"/g, '') + '"]')
+                if (btn) {
+                    currentConvBtn = btn
+                    openConversation(btn)
+                }
             }
-        })();
+        });
     </script>
 @endpush
 
@@ -405,8 +419,6 @@
                                     data-title="{{ $chat->title }}"
                                     data-url="{{ route('admin.chats.detail', $chat->id) }}"
                                     data-conv="{{ $chat->id }}"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#convModal"
                                     type="button">
                                     مشاهده
                                 </button>

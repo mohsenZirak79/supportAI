@@ -1,6 +1,12 @@
 // /resources/js/admin.js
 
-import "./admin/bootstrap.min.js";
+/**
+ * Bootstrap از npm تا زیر Vite/ESM آبجکت روی window قرار بگیرد؛
+ * نسخهٔ UMD قدیمی (bootstrap.min.js) با module.exports به global وصل نمی‌شد و data-bs-toggle مودال کار نمی‌کرد.
+ */
+import * as bootstrap from 'bootstrap';
+window.bootstrap = bootstrap;
+
 import "./admin/jquery-3.7.1.min.js";
 import "./admin/bootstrap-notify.js";
 import "./admin/choices.min.js";

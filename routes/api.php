@@ -101,6 +101,7 @@ Route::prefix('v1')
         Route::post('conversations/import-floating', [ConversationController::class, 'importFloatingTranscript']);
         Route::post('widget-callback-requests', [WidgetCallbackRequestController::class, 'store']);
         Route::delete('widget-callback-requests/{widgetCallbackRequest}', [WidgetCallbackRequestController::class, 'destroy']);
+        Route::get('conversations/{conversation}/widget-callback-lock', [WidgetCallbackRequestController::class, 'lockStatus']);
         Route::patch('conversations/{conversation}/title', [ConversationController::class, 'updateTitle']);
         Route::delete('conversations/{conversation}', [ConversationController::class, 'destroy']);
         Route::post('conversations/{conversation}/messages', [ConversationController::class, 'sendMessage']);

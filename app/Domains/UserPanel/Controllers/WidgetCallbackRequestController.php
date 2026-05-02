@@ -12,6 +12,23 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class WidgetCallbackRequestController extends Controller
 {
+    /**
+     * اگر برای این گفتگو درخواست تماس فعال (غیر از لغوشده) وجود داشته باشد، ویجت نباید پیام جدید بفرستد.
+     */
+    public function lockStatus(Request $request, Conversation $conversation)
+    {
+        $user = $request->user();
+        abort_unless($user && $conversation->user_id === $user->id, 403);
+
+        $locked = WidgetCallbackRequest::query()
+            ->where('conversation_id', $conversation->id)
+            ->where('user_id', $user->id)
+            ->where('status', '!=', WidgetCallbackRequest::STATUS_CANCELLED)
+            ->exists();
+
+        return response()->json(['locked' => $locked]);
+    }
+
     public function store(Request $request)
     {
         $user = $request->user();

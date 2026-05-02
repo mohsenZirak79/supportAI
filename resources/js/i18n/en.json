@@ -137,7 +137,12 @@
     "processing": "Processing…",
     "callbackConsentLabel": "I agree that support may call me on the phone number saved on my account.",
     "callbackSubmit": "Request a call",
-    "callbackRegistered": "Call request submitted."
+    "callbackRegistered": "Call request submitted.",
+    "newChat": "New chat",
+    "newChatStarted": "A new conversation has started.",
+    "newChatFailed": "Could not start a new conversation.",
+    "chatLockedBanner": "A call request is registered for this chat; you cannot send new messages until support follows up. Tap “New chat” to talk to the assistant again.",
+    "chatLockedHint": "This chat is locked because of a call request. Use “New chat” to continue."
   },
   "notifications": {
     "title": "Notifications",
