@@ -56,6 +56,20 @@ final class GuestChatQuestionAugmenter
             }
         }
 
+        $kid = $ctx['kishDemoScenarioId'] ?? null;
+        if ($kid !== null && $kid !== '' && $kid !== 0) {
+            $lines[] = '[پرزنت — فرم نمونهٔ سفر کیش — سناریوی شمارهٔ '.(string) $kid.']';
+            $lines[] = 'این دادهٔ نمایشی است؛ کاربر برای دمو خطا را عمداً فعال کرده. پاسخ باید چندمرحله‌ای، با فرم/کد فرضی مشخص، و قابل ارائه در جلسهٔ رسمی باشد — نه یک جملهٔ کلی.';
+            $n = isset($ctx['kishDemoNarrative']) && is_string($ctx['kishDemoNarrative']) ? trim($ctx['kishDemoNarrative']) : '';
+            if ($n !== '') {
+                $lines[] = 'شرح سناریو: '.mb_substr($n, 0, 800);
+            }
+            $h = isset($ctx['kishDemoResolutionHints']) && is_string($ctx['kishDemoResolutionHints']) ? trim($ctx['kishDemoResolutionHints']) : '';
+            if ($h !== '') {
+                $lines[] = 'ساختار پیشنهادی پاسخ: '.mb_substr($h, 0, 500);
+            }
+        }
+
         $errs = $ctx['serverValidationErrors'] ?? null;
         if (is_array($errs) && $errs !== []) {
             $lines[] = '[زمینهٔ صفحه — فقط بر اساس موارد زیر جواب بده؛ به سناریوهای دیگر حدس نزن]';

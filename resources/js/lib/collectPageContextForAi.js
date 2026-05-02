@@ -33,6 +33,7 @@ function guessPageKindFromPath(pathname) {
     if (p.includes('/otp') || p.includes('/verify')) return 'verify-otp';
     if (p === '/' || p.endsWith('/landing')) return 'landing';
     if (p.includes('/chat')) return 'chat';
+    if (p.includes('/demo/kish-presentation')) return 'kish-demo';
     return '';
 }
 

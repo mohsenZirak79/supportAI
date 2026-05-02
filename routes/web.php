@@ -16,12 +16,31 @@ use App\Domains\Role\Controllers\RoleController;
 
 use App\Domains\Auth\Controllers\AuthController;
 
+/*
+ * اگر برای فایل مستقیم public/manifest.json وب‌سرور/WAF پاسخ 403 بدهد، درخواست به PHP نمی‌رسد.
+ * manifest از مسیر جداگانه سرو می‌شود تا همیشه از لاراول برگردد.
+ */
+Route::get('/pwa/site.webmanifest', static function () {
+    $path = public_path('manifest.json');
+    if (! is_file($path) || ! is_readable($path)) {
+        abort(404);
+    }
+
+    return response()->file($path, [
+        'Content-Type' => 'application/manifest+json; charset=UTF-8',
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->name('pwa.manifest');
+
 // Landing page - redirects authenticated users to dashboard
 Route::get('/', [\App\Domains\Auth\Controllers\LandingController::class, 'index'])->name('landing');
 
 // Landing page auth routes (email/password with remember me)
 Route::post('/landing/login', [\App\Domains\Auth\Controllers\LandingController::class, 'login'])->name('landing.login');
 Route::post('/landing/register', [\App\Domains\Auth\Controllers\LandingController::class, 'register'])->name('landing.register');
+
+/** صفحهٔ پرزنت: فرم نمونهٔ کیش + سناریوهای خطا برای ویجت چت (بدون احراز هویت) */
+Route::view('/demo/kish-presentation', 'demo.kish-presentation')->name('demo.kish-presentation');
 
 Route::get('/chat', fn () => View::make('chat.index'))->name('chat')->middleware('ensure.jwt.cookie');
 Route::get('/ticket', fn () => View::make('tickets.index'))->middleware('ensure.jwt.cookie');

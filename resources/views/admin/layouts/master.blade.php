@@ -10,6 +10,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
     <meta name="theme-color" content="#0e7490">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="پارس فناوران مبتکر">
 
     @vite(['resources/css/admin.css', 'resources/js/admin.js', 'resources/js/register.js'])

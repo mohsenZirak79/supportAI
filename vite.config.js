@@ -33,6 +33,7 @@ export default defineConfig({
                 'resources/js/profile.js',   // ← User profile page
                 'resources/js/admin.js',     // ← اضافه
                 'resources/js/register.js',
+                'resources/js/kish-demo.js',
             ],
             refresh: true,
             // manifest: '.vite/manifest.json',
