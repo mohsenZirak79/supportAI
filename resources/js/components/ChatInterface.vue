@@ -151,7 +151,7 @@
                 @click="closeSidebar"
             />
 
-            <main v-if="activeChatId" class="cg-main chat-main">
+            <main v-if="showConversationView" class="cg-main chat-main">
                 <div v-if="isMobile" class="cg-mobile-chat-top">
                     <button
                         type="button"
@@ -260,11 +260,11 @@
                 </form>
             </main>
 
-            <main v-else class="cg-main cg-main--empty cg-main--landing chat-main empty-state">
-                <div v-if="isMobile" class="cg-mobile-chat-top cg-mobile-chat-top--on-dark">
+            <main v-else class="cg-main cg-main--empty cg-main--landing-start chat-main empty-state">
+                <div v-if="isMobile" class="cg-mobile-chat-top">
                     <button
                         type="button"
-                        class="cg-icon-btn mobile-menu-btn cg-icon-btn--on-dark"
+                        class="cg-icon-btn mobile-menu-btn"
                         :aria-label="$t('chat.openSidebar')"
                         @click.stop="toggleSidebar"
                     >
@@ -1237,6 +1237,34 @@ const activeChat = computed(() => {
     return chats.value.find(chat => chat.id === activeChatId.value) || null;
 });
 
+/** هنگام باز کردن گفتگوی دیگر از لیست، لود پیام‌ها؛ برای تشخیص «چت تازهٔ بدون پیام» از فلش لندینگ جلوگیری می‌شود */
+const activeChatMessagesLoading = ref(false);
+/** اگر با «چت جدید» ساخته شده باشد تا اولین پیام، همان صفحهٔ شروع (لندینگ) بماند حتی در حین loadMessages */
+const justCreatedConversationId = ref(null);
+
+const showEmptyHeroLanding = computed(() => {
+    if (!activeChatId.value) {
+        return true;
+    }
+    const c = activeChat.value;
+    const n = Array.isArray(c?.messages) ? c.messages.length : 0;
+    if (n > 0) {
+        return false;
+    }
+    const isJustCreated =
+        justCreatedConversationId.value != null &&
+        String(justCreatedConversationId.value) === String(activeChatId.value);
+    if (isJustCreated) {
+        return true;
+    }
+    if (activeChatMessagesLoading.value) {
+        return false;
+    }
+    return true;
+});
+
+const showConversationView = computed(() => !showEmptyHeroLanding.value);
+
 const filteredChats = computed(() => {
     const q = chatSearchQuery.value.trim().toLowerCase();
     if (!q) return chats.value;
@@ -1417,12 +1445,13 @@ const startNewChat = async () => {
         });
         if (res.ok) {
             const newChat = await res.json();
+            justCreatedConversationId.value = newChat.id;
             chats.value.unshift({
                 id: newChat.id,
                 title: newChat.title,
                 messages: []
             });
-            setActiveChat(newChat.id);
+            await setActiveChat(newChat.id);
         }
     } catch (e) {
         toast.error(t('chat.newChatError'));
@@ -1432,9 +1461,20 @@ const startNewChat = async () => {
 // فعال‌سازی چت
 const setActiveChat = async (id) => {
     closeChatMenu();
+    if (
+        justCreatedConversationId.value != null &&
+        String(justCreatedConversationId.value) !== String(id)
+    ) {
+        justCreatedConversationId.value = null;
+    }
     activeChatId.value = id;
     persistActiveConversationId(id);
-    await loadMessages(id);
+    activeChatMessagesLoading.value = true;
+    try {
+        await loadMessages(id);
+    } finally {
+        activeChatMessagesLoading.value = false;
+    }
     await nextTick();
     scrollToBottom();
 };
