@@ -505,6 +505,7 @@ onUnmounted(() => {
     flex-shrink: 0;
     align-self: flex-start;
     pointer-events: auto;
+    overflow: visible;
 }
 
 .floating-chat-root :deep(button),
