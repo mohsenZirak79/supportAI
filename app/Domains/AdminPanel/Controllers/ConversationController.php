@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Notifications\ReferralRespondedNotification;
 use App\Domains\Shared\Services\RoundRobinAssigner;
 use App\Support\PageContextForAi;
+use App\Support\PythonAiAskExtras;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ConversationController extends Controller
@@ -201,11 +202,11 @@ class ConversationController extends Controller
                 $aiBaseUrl = rtrim(config('services.python_ai.url', 'http://127.0.0.1:5000'), '/');
                 $askUrl = $aiBaseUrl . '/api/ask';
                 \Log::info('AI API request', ['url' => $askUrl]);
-                $resp = Http::withoutVerifying()->withOptions(['connect_timeout' => 10])->timeout((int) config('services.python_ai.timeout', 60))->post($askUrl, array_merge([
+                $resp = Http::withoutVerifying()->withOptions(['connect_timeout' => 10])->timeout((int) config('services.python_ai.timeout', 120))->post($askUrl, array_merge([
                     'question' => $validated['content'] ?? '',
                     'user_type' => 'new',
                     'first_message' => $isFirstMessage,
-                ], $pageContext !== null ? ['page_context' => $pageContext] : []));
+                ], PythonAiAskExtras::forAskRequest(), $pageContext !== null ? ['page_context' => $pageContext] : []));
 
                 if ($resp->successful()) {
                     $json = $resp->json();

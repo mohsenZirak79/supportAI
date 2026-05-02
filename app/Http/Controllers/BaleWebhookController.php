@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\BaleApiService;
+use App\Support\PythonAiAskExtras;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
@@ -191,14 +192,14 @@ class BaleWebhookController extends Controller
         try {
             $resp = Http::withoutVerifying()
                 ->withOptions(['connect_timeout' => 10])
-                ->timeout(60)
-                ->post($askUrl, [
+                ->timeout((int) config('services.python_ai.timeout', 120))
+                ->post($askUrl, array_merge([
                     'question'      => $question,
                     'user_type'      => 'new',
                     'first_message'  => $isFirstMessage,
                     'lang'           => 'fa',
                     'user_name'      => $userName ?? '',
-                ]);
+                ], PythonAiAskExtras::forAskRequest()));
 
             if ($resp->successful()) {
                 $json = $resp->json();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Support\GuestChatQuestionAugmenter;
 use App\Support\PageContextForAi;
+use App\Support\PythonAiAskExtras;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -35,14 +36,14 @@ class GuestFloatingChatController extends Controller
         try {
             $resp = Http::withoutVerifying()
                 ->withOptions(['connect_timeout' => 10])
-                ->timeout((int) config('services.python_ai.timeout', 60))
+                ->timeout((int) config('services.python_ai.timeout', 120))
                 ->post($askUrl, array_merge([
                     'question' => $questionForAi,
                     'guest' => true,
                     'user_type' => 'new',
                     'first_message' => false,
                     'lang' => $lang,
-                ], $pageContext !== null ? ['page_context' => $pageContext] : []));
+                ], PythonAiAskExtras::forAskRequest(), $pageContext !== null ? ['page_context' => $pageContext] : []));
 
             if (! $resp->successful()) {
                 $body = $resp->json();

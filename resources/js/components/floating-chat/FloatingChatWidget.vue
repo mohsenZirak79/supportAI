@@ -70,6 +70,7 @@ import FloatingChatPanel from './FloatingChatPanel.vue';
 
 const ACTIVE_CHAT_STORAGE_KEY = 'supportAI:active-conversation-id';
 const FLOATING_WIDGET_CONVERSATION_KEY = 'supportAI:floating-widget-conversation-id';
+/** قبلاً برای مهمان در sessionStorage نگه داشته می‌شد؛ با هر بار بارگذاری صفحه پاک می‌شود. */
 const GUEST_FLOATING_SESSION_KEY = 'supportAI:floating-guest-thread-v1';
 
 const { t, initLocale } = useLanguage();
@@ -187,6 +188,9 @@ const checkAuth = async () => {
                 /* ignore */
             }
             activeConversationId.value = null;
+            clearGuestFloatingThreadStorage();
+            messages.value = [];
+            draft.value = '';
         }
     } catch {
         authChecked.value = true;
@@ -197,38 +201,17 @@ const checkAuth = async () => {
             /* ignore */
         }
         activeConversationId.value = null;
+        clearGuestFloatingThreadStorage();
+        messages.value = [];
+        draft.value = '';
     }
 };
 
-const loadGuestThreadFromStorage = () => {
-    if (!isGuest.value) return;
-    const raw = getStorage()?.getItem(GUEST_FLOATING_SESSION_KEY);
-    if (!raw) return;
+/** مهمان: گفتگو فقط در همین بار بارگذاری صفحه؛ رفرش یا رفتن به URL دیگر → ویجت خالی. */
+const clearGuestFloatingThreadStorage = () => {
+    if (typeof window === 'undefined') return;
     try {
-        const data = JSON.parse(raw);
-        if (Array.isArray(data.messages) && data.messages.length) {
-            messages.value = data.messages;
-        }
-    } catch {
-        /* ignore */
-    }
-};
-
-const persistGuestThread = () => {
-    if (!isGuest.value || typeof window === 'undefined') return;
-    try {
-        window.sessionStorage.setItem(
-            GUEST_FLOATING_SESSION_KEY,
-            JSON.stringify({
-                title: 'چت جدید',
-                messages: messages.value.map((m) => ({
-                    id: m.id,
-                    sender: m.sender,
-                    text: m.text || '',
-                    created_at: m.created_at,
-                })),
-            })
-        );
+        getStorage()?.removeItem(GUEST_FLOATING_SESSION_KEY);
     } catch {
         /* ignore */
     }
@@ -665,14 +648,6 @@ const onEsc = (event) => {
     }
 };
 
-watch(
-    messages,
-    () => {
-        if (isGuest.value) persistGuestThread();
-    },
-    { deep: true }
-);
-
 watch([activeConversationId, isGuest], async ([id, guest]) => {
     if (guest || !id) {
         conversationLocked.value = false;
@@ -684,9 +659,7 @@ watch([activeConversationId, isGuest], async ([id, guest]) => {
 onMounted(async () => {
     initLocale();
     await checkAuth();
-    if (isGuest.value) {
-        loadGuestThreadFromStorage();
-    } else {
+    if (!isGuest.value) {
         const wid = readWidgetStoredConversationId();
         if (wid) activeConversationId.value = wid;
     }

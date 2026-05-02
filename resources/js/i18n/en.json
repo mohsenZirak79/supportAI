@@ -128,7 +128,7 @@
     "importFloatingError": "Could not import the saved chat. Please try again."
   },
   "floating": {
-    "guestNeedLoginForAi": "Sign in to get AI replies. Your messages are kept here; use “Open full chat” after login to save them to your main chat.",
+    "guestNeedLoginForAi": "Sign in to get AI replies. Guest messages in this widget are not saved and clear when you refresh or navigate to another page.",
     "guestVoiceDisabled": "Voice messages are available after you sign in, in the full chat.",
     "openFullChat": "Open full chat",
     "onlineStatus": "Online",

@@ -21,6 +21,7 @@ use Symfony\Component\Process\Process;
 use App\Notifications\ReferralRespondedNotification;
 use App\Domains\Shared\Services\RoundRobinAssigner;
 use App\Support\PageContextForAi;
+use App\Support\PythonAiAskExtras;
 
 class ConversationController extends Controller
 {
@@ -348,14 +349,14 @@ class ConversationController extends Controller
                 \Log::info('AI API request', ['url' => $askUrl]);
                 $resp = Http::withoutVerifying()
                     ->withOptions(['connect_timeout' => 10])
-                    ->timeout((int) config('services.python_ai.timeout', 60))
+                    ->timeout((int) config('services.python_ai.timeout', 120))
                     ->post($askUrl, array_merge([
                         'question' => $validated['content'] ?? '',
                         'user_type' => 'new',
                         'first_message' => $isFirstMessage,
                         'lang' => $lang,
                         'user_name' => $userName,
-                    ], $pageContext !== null ? ['page_context' => $pageContext] : []));
+                    ], PythonAiAskExtras::forAskRequest(), $pageContext !== null ? ['page_context' => $pageContext] : []));
 
                 if ($resp->successful()) {
                     $json = $resp->json();
@@ -364,6 +365,7 @@ class ConversationController extends Controller
 
                     // Log for debugging
                     \Log::info('AI Response received', [
+                        'answer_length' => mb_strlen((string) $aiReplyText, 'UTF-8'),
                         'first_message_sent' => $isFirstMessage,
                         'first_message_received_by_python' => $json['_debug_first_message'] ?? 'N/A',
                         'has_chat_topic' => isset($json['chat_topic']),

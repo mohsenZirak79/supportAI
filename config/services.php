@@ -36,7 +36,10 @@ return [
     ],
     'python_ai' => [
         'url' => env('PYTHON_AI_URL', 'http://127.0.0.1:5000'),
-        'timeout' => (int) env('PYTHON_AI_TIMEOUT', 60), // ثانیه؛ برای پاسخ سریع‌تر در حالت تعاون (فقط یک درخواست به Gemini) ۶۰ کافی است
+        // برای پاسخ‌های بلند؛ اگر Nginx/PHP زودتر قطع کند، fastcgi_read_timeout را هم بالا ببر
+        'timeout' => (int) env('PYTHON_AI_TIMEOUT', 120),
+        // به بدنهٔ POST /api/ask اضافه می‌شود؛ سرویس Python باید در تماس با Gemini (و غیره) از آن استفاده کند
+        'max_output_tokens' => (int) env('PYTHON_AI_MAX_OUTPUT_TOKENS', 8192),
     ],
 
     'bale' => [

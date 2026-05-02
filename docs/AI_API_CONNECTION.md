@@ -19,7 +19,8 @@
 
 - در **ConversationController** (هم UserPanel هم AdminPanel):
   - `Http::withoutVerifying()` برای رفع خطای SSL.
-  - `->timeout(config('services.python_ai.timeout', 60))` (پیش‌فرض ۶۰ ثانیه؛ قابل تغییر با `PYTHON_AI_TIMEOUT` در `.env`).
+  - `->timeout(config('services.python_ai.timeout', 120))` (پیش‌فرض ۱۲۰ ثانیه؛ قابل تغییر با `PYTHON_AI_TIMEOUT` در `.env`).
+  - در بدنهٔ `/api/ask` فیلد **`max_output_tokens`** از `PYTHON_AI_MAX_OUTPUT_TOKENS` (پیش‌فرض ۸۱۹۲) ارسال می‌شود؛ **سرویس Python باید آن را به مدل بدهد** وگرنه سقف پیش‌فرض مدل می‌تواند پاسخ را وسط جمله قطع کند.
   - `->withOptions(['connect_timeout' => 10])`.
 - در **config/services.php**: پیش‌فرض `PYTHON_AI_URL` برابر `http://127.0.0.1:5000` (نه localhost).
 - در **.env** مقدار `PYTHON_AI_URL=http://127.0.0.1:5000` (بدون فاصله، بدون `/` در آخر).
@@ -68,7 +69,16 @@ fastcgi_read_timeout 120;
 
 سپس Nginx را reload کن.
 
-### ۵) سرویس Gunicorn (Python)
+### ۵) پاسخ AI وسط جمله قطع می‌شود
+
+این معمولاً **سقف خروجی مدل** (مثلاً Gemini `max_output_tokens`) یا **برش دستی** رشته در اپ Python است، نه محدودیت ستون دیتابیس Laravel.
+
+1. در `.env` مقدار `PYTHON_AI_MAX_OUTPUT_TOKENS=8192` (یا بیشتر تا سقف مجاز API) بگذار و `php artisan config:clear` کن.
+2. در **kish-Ai / Flask** مطمئن شو هنگام ساخت درخواست به مدل، همان مقدار `max_output_tokens` از بدنهٔ JSON درخواست خوانده و به API مدل پاس داده می‌شود؛ هر `[:N]` یا `truncate` روی متن پاسخ را حذف کن مگر دلیل امنیتی داشته باشد.
+3. در لاگ Laravel بعد از پاسخ موفق، **`answer_length`** ثبت می‌شود؛ اگر عدد کوچک است ولی کاربر انتظار متن بلند دارد، مشکل از سمت Python/مدل است.
+4. اگر قطع شدن همراه با خطای تایم‌اوت یا پاسخ خالی از Nginx است، `fastcgi_read_timeout` و `PYTHON_AI_TIMEOUT` را بالا ببر (بخش ۴).
+
+### ۶) سرویس Gunicorn (Python)
 
 مطمئن شو فقط **یک** instance از Gunicorn روی پورت ۵۰۰۰ در حال اجراست و با آدرس درست bind شده (مثلاً `127.0.0.1:5000`). اگر قبلاً «Address already in use» داشتی، قبل از استارت سرویس پورت را آزاد کن:
 
@@ -87,7 +97,8 @@ sudo systemctl start voice-assistant.service
 |------|-----|
 | curl از شل جواب می‌دهد، Laravel نه | اتصال از **محیط PHP** به همان آدرس را چک کن با `GET /api/v1/_ping-ai`. اگر آنجا خطا داد، آدرس یا شبکه برای PHP مشکل دارد (مثلاً Docker یا فایروال). |
 | خطای SSL برای ai.mokhtal.xyz | در کد `withoutVerifying()` اضافه شده؛ اگر هنوز خطا می‌بینی، از `http://127.0.0.1:5000` استفاده کن. |
-| تایم‌اوت | timeout از config خوانده می‌شود (پیش‌فرض ۶۰ ثانیه؛ `PYTHON_AI_TIMEOUT` در `.env`). connect_timeout برابر ۱۰ ثانیه است. |
+| تایم‌اوت | timeout از config خوانده می‌شود (پیش‌فرض ۱۲۰ ثانیه؛ `PYTHON_AI_TIMEOUT` در `.env`). connect_timeout برابر ۱۰ ثانیه است. |
+| پاسخ نصفه (وسط جمله) | در Python سقف `max_output_tokens` مدل را بالا ببر؛ Laravel مقدار `PYTHON_AI_MAX_OUTPUT_TOKENS` را در بدنهٔ `/api/ask` می‌فرستد. لاگ `answer_length` را ببین. |
 | پاسخ AI کند است | در سرویس Python (kish-Ai) در **config.json** مقدار `taavon_mode: true` بگذار تا فقط یک درخواست به Gemini زده شود (بدون RAG و بدون chat_topic). برای سرعت بیشتر می‌توانی `taavon_fast_model: "gemini-2.0-flash"` هم بگذاری. |
 | لاگ دقیق خطا | در catch همان `url` و `message` و `exception` لاگ می‌شود؛ با `tail` روی `storage/logs/laravel.log` می‌توانی ببینی دقیقاً به چه آدرسی درخواست رفته و چه خطایی برگشته. |
 
