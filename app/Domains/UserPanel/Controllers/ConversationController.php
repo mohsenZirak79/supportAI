@@ -20,6 +20,7 @@ use Illuminate\Http\Client\RequestException;
 use Symfony\Component\Process\Process;
 use App\Notifications\ReferralRespondedNotification;
 use App\Domains\Shared\Services\RoundRobinAssigner;
+use App\Support\AiClientSafeMessage;
 use App\Support\PageContextForAi;
 use App\Support\PythonAiAskExtras;
 
@@ -272,6 +273,7 @@ class ConversationController extends Controller
                             }
                         } else {
                             $logHttpError('multipart', $resp1);
+                            $aiReplyText = AiClientSafeMessage::fa();
 
                             // 3) تلاش دوم: JSON/base64 (اگر هنوز جواب نگرفتیم)
                             $sendPath = $tmpWav ?: $srcPath;
@@ -302,8 +304,7 @@ class ConversationController extends Controller
                                 }
                             } else {
                                 $logHttpError('json_base64', $resp2);
-                                $aiReplyText = 'خطا در سرویس voice-to-answer ('
-                                    .$resp1->status().'/'.$resp2->status().')';
+                                $aiReplyText = AiClientSafeMessage::fa();
                             }
                         }
                     } catch (ConnectionException|RequestException $e) {
@@ -315,7 +316,7 @@ class ConversationController extends Controller
                             'converted'=> (bool)$tmpWav,
                             'trace'    => $e->getTraceAsString(),
                         ]);
-                        $aiReplyText = 'خطا در ارتباط با سرویس هوش مصنوعی.';
+                        $aiReplyText = AiClientSafeMessage::fa();
                     } finally {
                         if ($tmpWav && file_exists($tmpWav)) @unlink($tmpWav);
                     }
@@ -407,10 +408,7 @@ class ConversationController extends Controller
                 } else {
                     $errorBody = $resp->body();
                     \Log::warning('AI API failed', ['status' => $resp->status(), 'body' => $errorBody]);
-                    // Show actual error for debugging
-                    $errorJson = json_decode($errorBody, true);
-                    $actualError = $errorJson['error'] ?? 'Unknown error';
-                    $aiReplyText = "خطا در سرویس ask ({$resp->status()}): {$actualError}";
+                    $aiReplyText = AiClientSafeMessage::fa();
                 }
             }
         } catch (\Throwable $e) {
@@ -421,7 +419,7 @@ class ConversationController extends Controller
                 'exception' => get_class($e),
                 'trace' => $e->getTraceAsString(),
             ]);
-            $aiReplyText = 'خطا در ارتباط با سرویس هوش مصنوعی.';
+            $aiReplyText = AiClientSafeMessage::fa();
         }
 
         // 4) ثبت پیام AI (متن)

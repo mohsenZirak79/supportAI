@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\AiClientSafeMessage;
 use App\Support\GuestChatQuestionAugmenter;
 use App\Support\PageContextForAi;
 use App\Support\PythonAiAskExtras;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 /**
  * چت ویجت برای کاربران بدون لاگین — پروکسی به سرویس Python با guest=true (FAQ عمومی).
@@ -46,12 +48,14 @@ class GuestFloatingChatController extends Controller
                 ], PythonAiAskExtras::forAskRequest(), $pageContext !== null ? ['page_context' => $pageContext] : []));
 
             if (! $resp->successful()) {
-                $body = $resp->json();
-                $msg = is_array($body) ? ($body['error'] ?? $resp->body()) : $resp->body();
+                Log::warning('guest-floating-chat: upstream AI failed', [
+                    'status' => $resp->status(),
+                    'body' => mb_substr($resp->body(), 0, 4000),
+                ]);
 
                 return response()->json([
                     'success' => false,
-                    'message' => is_string($msg) ? mb_substr($msg, 0, 500) : 'خطا در سرویس هوش مصنوعی',
+                    'message' => AiClientSafeMessage::fa(),
                 ], 502);
             }
 
@@ -64,9 +68,14 @@ class GuestFloatingChatController extends Controller
                 'lang' => $json['lang'] ?? $lang,
             ]);
         } catch (\Throwable $e) {
+            Log::error('guest-floating-chat: exception', [
+                'message' => $e->getMessage(),
+                'exception' => get_class($e),
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'ارتباط با سرویس پاسخ‌گو برقرار نشد.',
+                'message' => AiClientSafeMessage::fa(),
             ], 503);
         }
     }

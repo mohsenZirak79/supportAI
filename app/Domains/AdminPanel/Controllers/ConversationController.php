@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use App\Notifications\ReferralRespondedNotification;
 use App\Domains\Shared\Services\RoundRobinAssigner;
+use App\Support\AiClientSafeMessage;
 use App\Support\PageContextForAi;
 use App\Support\PythonAiAskExtras;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -192,7 +193,7 @@ class ConversationController extends Controller
                         // اگر صوت برگشته باشد (هر یک از شکل‌های رایج)
                         $aiVoiceDataUrl = $json['audio_data'] ?? $json['voice_base64'] ?? null;
                     } else {
-                        $aiReplyText = 'خطا در سرویس voice-to-answer (' . $resp->status() . ')';
+                        $aiReplyText = AiClientSafeMessage::fa();
                     }
                 } else {
                     $aiReplyText = 'فایل صوتی کاربر پیدا نشد.';
@@ -219,7 +220,7 @@ class ConversationController extends Controller
                         $conversation->update(['title' => $json['suggested_title']]);
                     }
                 } else {
-                    $aiReplyText = 'خطا در سرویس ask (' . $resp->status() . ')';
+                    $aiReplyText = AiClientSafeMessage::fa();
                 }
             }
         } catch (\Throwable $e) {
@@ -230,7 +231,7 @@ class ConversationController extends Controller
                 'exception' => get_class($e),
                 'trace' => $e->getTraceAsString(),
             ]);
-            $aiReplyText = 'خطا در ارتباط با سرویس هوش مصنوعی.';
+            $aiReplyText = AiClientSafeMessage::fa();
         }
 
         // 4) ثبت پیام AI (متن)

@@ -260,18 +260,11 @@
                 </form>
             </main>
 
-            <main
-                v-else
-                class="cg-main cg-main--empty chat-main empty-state"
-                role="button"
-                tabindex="0"
-                @click="startNewChat"
-                @keydown.enter.prevent="startNewChat"
-            >
-                <div v-if="isMobile" class="cg-mobile-chat-top">
+            <main v-else class="cg-main cg-main--empty cg-main--landing chat-main empty-state">
+                <div v-if="isMobile" class="cg-mobile-chat-top cg-mobile-chat-top--on-dark">
                     <button
                         type="button"
-                        class="cg-icon-btn mobile-menu-btn"
+                        class="cg-icon-btn mobile-menu-btn cg-icon-btn--on-dark"
                         :aria-label="$t('chat.openSidebar')"
                         @click.stop="toggleSidebar"
                     >
@@ -283,11 +276,67 @@
                     </button>
                     <span class="cg-mobile-chat-top__title">{{ $t('chat.title') }}</span>
                 </div>
-                <div class="cg-empty-wrap">
-                    <div class="cg-empty-card empty-content">
-                        <h2>{{ $t('chat.startNewChat') }}</h2>
-                        <p>{{ $t('chat.startNewChatDesc') }}</p>
+                <div class="cg-landing">
+                    <div class="cg-landing__body">
+                        <h1 class="cg-landing__title">{{ $t('chat.emptyHeroTitle') }}</h1>
+                        <form class="cg-landing-form" @submit.prevent="sendMessage">
+                            <div class="cg-landing-pill">
+                                <button
+                                    type="button"
+                                    class="cg-landing-pill__plus"
+                                    :aria-label="$t('chat.landingAttachAria')"
+                                    :title="$t('chat.landingAttachAria')"
+                                    @click.stop
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path d="M12 5v14M5 12h14"/>
+                                    </svg>
+                                </button>
+                                <textarea
+                                    ref="emptyMsgInput"
+                                    v-model="inputMessage"
+                                    class="cg-landing-pill__input"
+                                    rows="1"
+                                    :placeholder="$t('chat.emptyHeroPlaceholder')"
+                                    @input="autoGrow"
+                                    @keydown="onKeydown"
+                                />
+                                <div class="cg-landing-pill__trailing">
+                                    <span class="cg-landing-pill__mode" aria-hidden="true">{{ $t('chat.emptyHeroMode') }}</span>
+                                    <button
+                                        type="button"
+                                        class="cg-landing-pill__icon-btn"
+                                        :disabled="loading"
+                                        :aria-label="$t('chat.recordVoice')"
+                                        :title="$t('chat.recordVoice')"
+                                        @click="startRecordingWithActiveChat"
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                            <line x1="12" y1="19" x2="12" y2="23"/>
+                                            <line x1="8" y1="23" x2="16" y2="23"/>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        class="cg-landing-pill__icon-btn cg-landing-pill__icon-btn--send"
+                                        :disabled="loading || !inputMessage.trim()"
+                                        :aria-label="$t('chat.send')"
+                                        :title="$t('chat.send')"
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <button type="button" class="cg-landing-chip" @click="applyLandingChipPrompt">
+                            {{ $t('chat.emptyHeroChip') }}
+                        </button>
                     </div>
+                    <p class="cg-landing__disclaimer">{{ $t('chat.emptyHeroDisclaimer') }}</p>
                 </div>
             </main>
         </div>
@@ -446,6 +495,7 @@ import TypingIndicator from './chat-app/TypingIndicator.vue';
 import {useToast} from 'vue-toast-notification'
 import {apiFetch} from '../lib/http';
 import { collectPageContextForAi } from '../lib/collectPageContextForAi';
+import { aiUserSafeReply } from '../lib/aiUserSafeReply';
 import { useLanguage } from '../i18n';
 
 // i18n setup - CSP-safe, no vue-i18n
@@ -1035,8 +1085,10 @@ const uploadVoice = async (blob) => {
             })
         });
         if (!messageRes.ok) {
-            const errText = await messageRes.text().catch(() => '');
-            console.error('send voice failed', messageRes.status, errText);
+            try {
+                await messageRes.text();
+            } catch (_) {}
+            console.error('send voice failed', messageRes.status);
             throw new Error('send failed');
         }
 
@@ -1079,12 +1131,11 @@ const uploadVoice = async (blob) => {
             } catch (_) {}
         }
 
-        // 6) پیام AI را با متن ثابت به UI اضافه کن (پاسخ واقعی نمایش/ذخیره نمی‌شود)
         if (ai_message) {
             chat.messages.push({
                 id: ai_message.id,
                 sender: 'bot',
-                text: ai_message.content || '',
+                text: aiUserSafeReply(ai_message.content, t),
                 created_at: ai_message.created_at
             });
 
@@ -1104,7 +1155,7 @@ const uploadVoice = async (blob) => {
             chat.messages.push({
                 id: 'ai-fallback-' + Date.now(),
                 sender: 'bot',
-                text: t('chat.voiceProcessError'),
+                text: t('chat.aiServiceUnavailable'),
                 created_at: new Date().toISOString()
             });
         }
@@ -1112,7 +1163,7 @@ const uploadVoice = async (blob) => {
         await nextTick();
         scrollToBottom();
     } catch (error) {
-        console.error('Upload voice error:', error);
+        console.error('Upload voice error');
 
         // حذف پیام موقت در صورت خطا
         const tempMsgIndex = chat.messages.findIndex(m => m.id === tempMsgId);
@@ -1121,7 +1172,7 @@ const uploadVoice = async (blob) => {
         }
         URL.revokeObjectURL(tempVoiceUrl);
 
-        toast.error(t('chat.uploadVoiceError'));
+        toast.error(t('chat.aiServiceUnavailable'));
     }
 };
 
@@ -1401,9 +1452,33 @@ const handleExternalConversationChange = async (event) => {
     }
 };
 
+const ensureChatBeforeSend = async () => {
+    if (activeChatId.value) return true;
+    await startNewChat();
+    await nextTick();
+    return !!activeChatId.value;
+};
+
+const startRecordingWithActiveChat = async () => {
+    if (loading.value) return;
+    const ok = await ensureChatBeforeSend();
+    if (!ok) return;
+    await nextTick();
+    await startRecording();
+};
+
+const applyLandingChipPrompt = () => {
+    inputMessage.value = t('chat.emptyHeroChipPrompt');
+    nextTick(() => {
+        autoGrow();
+        emptyMsgInput.value?.focus?.();
+    });
+};
+
 // ارسال پیام
 const sendMessage = async () => {
     if (!inputMessage.value.trim() || loading.value) return;
+    if (!(await ensureChatBeforeSend())) return;
 
     const userMsg = {
         sender: 'user',
@@ -1419,8 +1494,9 @@ const sendMessage = async () => {
     inputMessage.value = '';
     await nextTick();
     scrollToBottom();
-    inputMessage.value = ''
-    if (msgInput.value) msgInput.value.style.height = 'auto'
+    inputMessage.value = '';
+    if (msgInput.value) msgInput.value.style.height = 'auto';
+    if (emptyMsgInput.value) emptyMsgInput.value.style.height = 'auto';
     loading.value = true;
     await nextTick();
     scrollToBottom();
@@ -1463,11 +1539,13 @@ const sendMessage = async () => {
                 chatLocal.title = conversation.title;
             }
 
-            // پاسخ AI با متن ثابت (محتوا در UI/state/inspect نمایش داده نمی‌شود)
             const botMsg = {
                 id: ai_message?.id ?? 'ai-fallback-' + Date.now(),
                 sender: 'bot',
-                text: ai_message?.content ?? t('chat.sendError'),
+                text:
+                    ai_message != null
+                        ? aiUserSafeReply(ai_message.content, t)
+                        : t('chat.aiServiceUnavailable'),
                 created_at: ai_message?.created_at ?? new Date().toISOString(),
                 has_media: false,
                 has_voice: false,
@@ -1477,22 +1555,20 @@ const sendMessage = async () => {
             await nextTick();
             scrollToBottom();
         } else {
-            let errMsg = t('chat.sendError');
             try {
-                const errData = await res.json();
-                errMsg = errData?.error ?? errData?.message ?? errMsg;
+                await res.text();
             } catch (_) {}
-            throw new Error(errMsg);
+            throw new Error('send failed');
         }
-    } catch (error) {
+    } catch {
         const chatLocal = chats.value.find(c => c.id === activeChatId.value);
         if (chatLocal) {
             chatLocal.messages.push({
                 sender: 'bot',
-                text: typeof error?.message === 'string' ? error.message : t('chat.sendError')
+                text: t('chat.aiServiceUnavailable'),
             });
         }
-        toast.error(t('chat.sendError'));
+        toast.error(t('chat.aiServiceUnavailable'));
     } finally {
         loading.value = false;
         await nextTick();
@@ -1516,14 +1592,15 @@ const renameChat = async (chatId, title) => {
         throw e;
     }
 };
-const msgInput = ref(null)
+const msgInput = ref(null);
+const emptyMsgInput = ref(null);
 
 // 2-2) رشد خودکار بدون اسکرول
 function autoGrow() {
-    const ta = msgInput.value
-    if (!ta) return
-    ta.style.height = 'auto'
-    ta.style.height = Math.min(ta.scrollHeight, 220) + 'px'
+    const ta = msgInput.value || emptyMsgInput.value;
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 220) + 'px';
 }
 
 // 2-3) Enter = ارسال / Shift+Enter = خط جدید

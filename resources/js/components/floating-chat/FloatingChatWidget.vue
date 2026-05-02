@@ -62,6 +62,7 @@
 <script setup>
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { apiFetch } from '../../lib/http';
+import { aiUserSafeReply } from '../../lib/aiUserSafeReply';
 import { collectPageContextForAi } from '../../lib/collectPageContextForAi';
 import { floatingChatWidgetConfig } from '../../config/floatingChatWidget';
 import { useLanguage } from '../../i18n';
@@ -280,7 +281,7 @@ const appendBotMessage = (payload) => {
         id: serverId ?? `widget-ai-${Date.now()}`,
         aiMessageId: serverId,
         sender: 'bot',
-        text: payload?.content || 'پاسخی دریافت نشد.',
+        text: aiUserSafeReply(payload?.content, t),
         created_at: payload?.created_at ?? new Date().toISOString(),
         callbackRegistered: false,
     });
@@ -382,16 +383,12 @@ const sendText = async () => {
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                appendBotMessage({
-                    content:
-                        (typeof data.message === 'string' && data.message) ||
-                        'موقتاً پاسخ در دسترس نیست. بعداً دوباره تلاش کنید.',
-                });
+                appendBotMessage({ content: t('chat.aiServiceUnavailable') });
             } else {
-                appendBotMessage({ content: data.answer || 'پاسخی دریافت نشد.' });
+                appendBotMessage({ content: data.answer ?? '' });
             }
         } catch {
-            appendBotMessage({ content: 'خطا در ارسال پیام. لطفا دوباره تلاش کنید.' });
+            appendBotMessage({ content: t('chat.aiServiceUnavailable') });
         } finally {
             loading.value = false;
         }
@@ -419,7 +416,7 @@ const sendText = async () => {
                 messages.value.pop();
             }
             draft.value = text;
-            window.toast?.error?.(typeof data.message === 'string' ? data.message : t('floating.chatLockedHint'));
+            window.toast?.error?.(t('floating.chatLockedHint'));
             return;
         }
         if (!res.ok) throw new Error('send failed');
@@ -429,7 +426,7 @@ const sendText = async () => {
         }
         appendBotMessage(data?.ai_message);
     } catch {
-        appendBotMessage({ content: 'خطا در ارسال پیام. لطفا دوباره تلاش کنید.' });
+        appendBotMessage({ content: t('chat.aiServiceUnavailable') });
     } finally {
         loading.value = false;
     }
@@ -540,7 +537,7 @@ const uploadVoice = async (blob) => {
         if (messageRes.status === 423) {
             conversationLocked.value = true;
             messages.value.pop();
-            window.toast?.error?.(typeof data.message === 'string' ? data.message : t('floating.chatLockedHint'));
+            window.toast?.error?.(t('floating.chatLockedHint'));
             return;
         }
         if (!messageRes.ok) throw new Error('voice send failed');
@@ -550,7 +547,7 @@ const uploadVoice = async (blob) => {
         }
         appendBotMessage(data?.ai_message);
     } catch {
-        appendBotMessage({ content: 'خطا در ارسال پیام صوتی.' });
+        appendBotMessage({ content: t('chat.aiServiceUnavailable') });
     } finally {
         loading.value = false;
         URL.revokeObjectURL(tempVoiceUrl);
@@ -643,14 +640,10 @@ async function sendProactiveAutoDiagnosis(offerDetail) {
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                appendBotMessage({
-                    content:
-                        (typeof data.message === 'string' && data.message) ||
-                        t('floating.proactiveAutoFailed'),
-                });
+                appendBotMessage({ content: t('chat.aiServiceUnavailable') });
             } else {
                 appendUserMessage(t('floating.proactiveUserBubble'));
-                appendBotMessage({ content: data.answer || t('floating.proactiveAutoEmpty') });
+                appendBotMessage({ content: data.answer ?? '' });
             }
             return;
         }
@@ -668,11 +661,11 @@ async function sendProactiveAutoDiagnosis(offerDetail) {
         const data = await res.json().catch(() => ({}));
         if (res.status === 423) {
             conversationLocked.value = true;
-            window.toast?.error?.(typeof data.message === 'string' ? data.message : t('floating.chatLockedHint'));
+            window.toast?.error?.(t('floating.chatLockedHint'));
             return;
         }
         if (!res.ok) {
-            appendBotMessage({ content: t('floating.proactiveAutoFailed') });
+            appendBotMessage({ content: t('chat.aiServiceUnavailable') });
             return;
         }
         if (data?.conversation?.id) {
@@ -682,7 +675,7 @@ async function sendProactiveAutoDiagnosis(offerDetail) {
         appendUserMessage(t('floating.proactiveUserBubble'));
         appendBotMessage(data?.ai_message);
     } catch {
-        appendBotMessage({ content: t('floating.proactiveAutoFailed') });
+        appendBotMessage({ content: t('chat.aiServiceUnavailable') });
     } finally {
         loading.value = false;
         await nextTick();
